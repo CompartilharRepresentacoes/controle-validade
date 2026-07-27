@@ -14707,7 +14707,7 @@ function abrirEditEAN(id) {
   document.getElementById('ee_nome').value = item.nome;
   document.getElementById('ee_codigo').value = item.codigo || '';
   document.getElementById('ee_und').value = item.und || '';
-  document.getElementById('ee_qtde_caixa').value = item.qtde_caixa || '';
+  document.getElementById('ee_qtde_caixa').value = item.qtdeCaixa || '';
   document.getElementById('ee_shelflife').value = item.shelfLife || '';
   document.getElementById('ee_fabrica').value = item.fabrica || '';
   var _eeFotoLabel = document.getElementById('ee_fotoLabel');
@@ -14792,7 +14792,7 @@ function salvarEdicaoEAN() {
   if (idx < 0) return;
   var foto = window._eeNovaFoto || catalogo[idx].foto || '';
   window._eeNovaFoto = null;
-  catalogo[idx] = Object.assign({}, catalogo[idx], { ean: ean, nome: nome, codigo: codigo, und: und, qtde_caixa: qtde_caixa, shelfLife: shelfLife, fabrica: fabrica, foto: foto, codigosRedes: redesCodigos });
+  catalogo[idx] = Object.assign({}, catalogo[idx], { ean: ean, nome: nome, codigo: codigo, und: und, qtdeCaixa: qtde_caixa, shelfLife: shelfLife, fabrica: fabrica, foto: foto, codigosRedes: redesCodigos });
   FS_CATALOGO.doc(String(id)).set(catalogo[idx]);
   document.getElementById('editEANModal').classList.add('hidden');
   renderCatalogo();
