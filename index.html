@@ -1343,6 +1343,9 @@
             </button>
             <div id="msPanel_uf" class="flt-ms-panel"></div>
           </div>
+          <label style="display:flex;align-items:center;gap:6px;border:0.5px solid #fca5a5;background:#fef2f2;border-radius:8px;padding:8px 10px;font-size:13px;color:#991b1b;font-weight:500;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" id="filtroSellOut" onchange="renderTabela()" style="accent-color:#dc2626;margin:0" />SellOut solicitado
+          </label>
         </div>
         <div class="flt-ms-wrap">
           <button type="button" class="flt-ms-btn" onclick="_fmsToggle('rede')">
@@ -7205,8 +7208,30 @@ function solicitarSellOut(id) {
     selloutSolicitadoPor: p.selloutSolicitadoPor,
     selloutSolicitadoEm: hoje,
   });
+  _notificarVendedorSellOut(p);
   renderTabela();
+  if (!document.getElementById('modalStatus')?.classList.contains('hidden')) _msFiltrFab();
   showToast('✅ SellOut solicitado! O time de vendas foi avisado.', '#166534');
+}
+
+// Avisa o(s) vendedor(es) responsáveis pela UF do produto, via Comunicados (mensagem direcionada)
+function _notificarVendedorSellOut(p) {
+  const vendedores = usuarios.filter(u => u.role === 'vendedor' && (u.ufs||[]).includes(p.uf||''));
+  if (!vendedores.length) return;
+  vendedores.forEach(v => {
+    FS_COMUNICADOS.add({
+      titulo: 'SellOut solicitado',
+      mensagem: `${sessao?.nome||'Promotor'} solicitou SellOut para "${p.produto||''}" na loja ${p.loja||''} (${p.uf||''}).`,
+      categoria: 'Alerta',
+      destinatarios: 'especifico_vendedor',
+      destinatarioNome: v.nome,
+      autorNome: sessao?.nome || '',
+      autorRole: sessao?.role || '',
+      criadoEm: new Date().toISOString(),
+      agendadoPara: null,
+      lidos: []
+    });
+  });
 }
 function confirmarLimparTudo() {
   if (!confirm('Remover TODOS os produtos? Ação irreversível.')) return;
@@ -7445,19 +7470,28 @@ function _msFiltrFab() {
     ul.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:16px 0">Nenhum produto neste status.</p>';
     return;
   }
+  const isPromotorMs = sessao && sessao.role === 'promotor';
   ul.innerHTML = filtrado.map(p => {
     const d      = diasRestantes(p.validade);
+    const st     = statusDe(d);
     const qtdTxt = `${p.quantidade||0}${p.und ? ' ' + p.und.charAt(0).toUpperCase() + p.und.slice(1).toLowerCase() : ''}`;
-    return `<div style="background:${c.diasBg};border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:0.5px solid ${c.headBorder}">
-      <div style="flex:1;min-width:0;margin-right:10px">
-        <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}</p>
-        <p style="font-size:11px;color:#64748b;margin:0 0 1px">${esc(p.loja||'—')} · ${esc(p.uf||'—')}</p>
-        <p style="font-size:11px;color:#64748b;margin:0">${esc(p.fabrica||'—')} · ${qtdTxt}</p>
+    const podeSellOut = isPromotorMs && st !== 'ok' && !p.selloutSolicitado;
+    const btnSellOut = podeSellOut
+      ? `<button onclick="solicitarSellOut(${p.id})" style="margin-top:8px;width:100%;background:#fff;border:0.5px solid #d97706;color:#92400e;font-size:12px;font-weight:500;border-radius:8px;padding:6px 0;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer"><i class="ti ti-tag" style="font-size:14px" aria-hidden="true"></i>Solicitar SellOut</button>`
+      : (p.selloutSolicitado ? `<p style="margin:8px 0 0;font-size:11px;font-weight:500;color:#dc2626;text-align:center">SellOut solicitado</p>` : '');
+    return `<div style="background:${c.diasBg};border-radius:8px;padding:10px 12px;border:0.5px solid ${c.headBorder}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0;margin-right:10px">
+          <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}</p>
+          <p style="font-size:11px;color:#64748b;margin:0 0 1px">${esc(p.loja||'—')} · ${esc(p.uf||'—')}</p>
+          <p style="font-size:11px;color:#64748b;margin:0">${esc(p.fabrica||'—')} · ${qtdTxt}</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <p style="font-size:12px;font-weight:500;color:${c.diasColor};margin:0 0 2px">${c.diasFmt(d)}</p>
+          <p style="font-size:10px;color:#94a3b8;margin:0">${fmtData(p.validade)}</p>
+        </div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <p style="font-size:12px;font-weight:500;color:${c.diasColor};margin:0 0 2px">${c.diasFmt(d)}</p>
-        <p style="font-size:10px;color:#94a3b8;margin:0">${fmtData(p.validade)}</p>
-      </div>
+      ${btnSellOut}
     </div>`;
   }).join('');
 }
@@ -7663,6 +7697,7 @@ function renderTabela() {
   // diretor vê todos os UFs — sem filtro adicional
 
   const lojasFiltroNorm = fLojas.length ? new Set(fLojas.map(normTxt)) : null;
+  const fSellOut = document.getElementById('filtroSellOut')?.checked || false;
 
   let lista=listaBase.filter(p=>{
     const d=diasRestantes(p.validade), st=statusDe(d);
@@ -7679,6 +7714,7 @@ function renderTabela() {
     if (fPromVs.length && !fPromVs.includes(p.promotor)) return false;
     if (fRedes.length) { const lr=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); if (!lr||!fRedes.includes(lr.rede)) return false; }
     if (lojasFiltroNorm && !lojasFiltroNorm.has(normTxt(p.loja))) return false;
+    if (fSellOut && !p.selloutSolicitado) return false;
     if (busca&&!normTxt([p.produto,p.promotor,p.loja,p.fabrica,p.uf].join(' ')).includes(busca)) return false;
     const fDtI=dataParaISO(document.getElementById('filtroDataInicio')?.value||'');
     const fDtF=dataParaISO(document.getElementById('filtroDataFim')?.value||'');
@@ -13339,6 +13375,7 @@ function limparFiltrosProdutos() {
   const el = id => document.getElementById(id);
   const eBusca = el('busca'); if (eBusca) eBusca.value = '';
   const eStatus = el('filtroStatus'); if (eStatus) eStatus.value = 'todos';
+  const eSellOut = el('filtroSellOut'); if (eSellOut) eSellOut.checked = false;
   ['fabrica','promotorVend','vendedor','uf','rede','loja','produto'].forEach(key => { _msSel[key] = []; });
   _msFecharTodos();
   _limparFiltroData();
