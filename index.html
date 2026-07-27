@@ -7109,8 +7109,22 @@ function _atualizarBtnEditConcorrencia() {
       resumo.innerHTML = ['c1','c2','c3']
         .filter(k => _concorrenciaEdit[k]?.nome)
         .map(k => {
-          const preco = _concorrenciaEdit[k].preco ? ` · <strong>R$ ${_parsePrecoBR(_concorrenciaEdit[k].preco).toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong>` : '';
-          return `<div>${esc(_concorrenciaEdit[k].nome)}${preco}</div>`;
+          const item = _concorrenciaEdit[k];
+          const precoNum = item.preco ? _parsePrecoBR(item.preco) : 0;
+          let preco = '';
+          if (precoNum) {
+            const unidade = item.unidade || 'PC';
+            preco = ` · <strong>R$ ${precoNum.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong>`;
+            if (unidade === 'KG') {
+              preco += '/KG';
+              const undProduto = (document.getElementById('edit_und')?.value || '').toUpperCase();
+              const pesoG = _extrairPesoGramas(_concEditProdutoNome || document.getElementById('edit_produto')?.value || '');
+              if (undProduto === 'PC' && pesoG) {
+                preco += ` <span style="color:#166534">≈ R$ ${(precoNum * (pesoG/1000)).toLocaleString('pt-BR',{minimumFractionDigits:2})} (${pesoG}g)</span>`;
+              }
+            }
+          }
+          return `<div>${esc(item.nome)}${preco}</div>`;
         }).join('');
     } else {
       resumo.style.display = 'none';
