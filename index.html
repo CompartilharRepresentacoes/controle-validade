@@ -3010,7 +3010,7 @@
       <!-- Concorrente 1 -->
       <div style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px">Concorrente 1</label>
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 84px 38px 30px;gap:6px;align-items:start">
           <div style="position:relative">
             <input id="conc1_nome" type="text" placeholder="Digite para buscar..." autocomplete="off"
               class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full"
@@ -3020,12 +3020,18 @@
           <input id="conc1_preco" type="text" inputmode="numeric" placeholder="0,00" maxlength="12"
             class="border border-slate-300 rounded-lg px-3 py-2 text-sm"
             oninput="_mascaraPreco(this); _concAtualizarBtn()" />
+          <button type="button" id="conc1_un" data-un="PC" onclick="_concToggleUnidade(1)" title="Unidade do preço do concorrente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:600;padding:0;height:36px">PC</button>
+          <button type="button" onclick="_concVerEquivalente(1)" title="Consultar preço equivalente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#64748b;height:36px;display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-calculator" style="font-size:15px" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
       <!-- Concorrente 2 -->
       <div style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px">Concorrente 2 <span style="font-weight:400;opacity:.6">(opcional)</span></label>
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 84px 38px 30px;gap:6px;align-items:start">
           <div style="position:relative">
             <input id="conc2_nome" type="text" placeholder="Digite para buscar..." autocomplete="off"
               class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full"
@@ -3035,12 +3041,18 @@
           <input id="conc2_preco" type="text" inputmode="numeric" placeholder="0,00" maxlength="12"
             class="border border-slate-300 rounded-lg px-3 py-2 text-sm"
             oninput="_mascaraPreco(this); _concAtualizarBtn()" />
+          <button type="button" id="conc2_un" data-un="PC" onclick="_concToggleUnidade(2)" title="Unidade do preço do concorrente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:600;padding:0;height:36px">PC</button>
+          <button type="button" onclick="_concVerEquivalente(2)" title="Consultar preço equivalente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#64748b;height:36px;display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-calculator" style="font-size:15px" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
       <!-- Concorrente 3 -->
       <div style="margin-bottom:18px">
         <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:3px">Concorrente 3 <span style="font-weight:400;opacity:.6">(opcional)</span></label>
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 84px 38px 30px;gap:6px;align-items:start">
           <div style="position:relative">
             <input id="conc3_nome" type="text" placeholder="Digite para buscar..." autocomplete="off"
               class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full"
@@ -3050,6 +3062,12 @@
           <input id="conc3_preco" type="text" inputmode="numeric" placeholder="0,00" maxlength="12"
             class="border border-slate-300 rounded-lg px-3 py-2 text-sm"
             oninput="_mascaraPreco(this); _concAtualizarBtn()" />
+          <button type="button" id="conc3_un" data-un="PC" onclick="_concToggleUnidade(3)" title="Unidade do preço do concorrente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:600;padding:0;height:36px">PC</button>
+          <button type="button" onclick="_concVerEquivalente(3)" title="Consultar preço equivalente"
+            style="border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#64748b;height:36px;display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-calculator" style="font-size:15px" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -6993,6 +7011,52 @@ function _concAtualizarBtn() {
   }
 }
 
+// Extrai a gramatura (em gramas) a partir do nome do produto, ex: "Qj Gouda Fracionado Quatá 170g" -> 170
+function _extrairPesoGramas(nome) {
+  if (!nome) return null;
+  const s = String(nome);
+  let m = s.match(/(\d+(?:[.,]\d+)?)\s*kg\b/i);
+  if (m) return parseFloat(m[1].replace(',', '.')) * 1000;
+  m = s.match(/(\d+(?:[.,]\d+)?)\s*g\b/i);
+  if (m) return parseFloat(m[1].replace(',', '.'));
+  return null;
+}
+function _concNomeProdutoAtual() {
+  return _concorrenciaCtx === 'edit'
+    ? (_concEditProdutoNome || '')
+    : (document.getElementById('f_produto')?.value || '');
+}
+function _concSetUnidadeBtn(n, un) {
+  const btn = document.getElementById('conc' + n + '_un');
+  if (!btn) return;
+  btn.dataset.un = un;
+  btn.textContent = un;
+  btn.style.background = un === 'KG' ? '#1d4ed8' : '#f1f5f9';
+  btn.style.color = un === 'KG' ? '#ffffff' : '#64748b';
+}
+function _concToggleUnidade(n) {
+  const btn = document.getElementById('conc' + n + '_un');
+  if (!btn) return;
+  _concSetUnidadeBtn(n, btn.dataset.un === 'KG' ? 'PC' : 'KG');
+  _concAtualizarBtn();
+}
+function _concVerEquivalente(n) {
+  const precoInput = document.getElementById('conc' + n + '_preco');
+  const nomeInput  = document.getElementById('conc' + n + '_nome');
+  const unBtn      = document.getElementById('conc' + n + '_un');
+  const preco = _parsePrecoBR(precoInput?.value || '');
+  if (!preco) { showToast('⚠️ Informe o preço do concorrente primeiro.', '#92400e'); return; }
+  if ((unBtn?.dataset.un || 'PC') !== 'KG') {
+    showToast('Preço já está em PC, mesma unidade do seu produto.', '#0f766e');
+    return;
+  }
+  const pesoG = _extrairPesoGramas(_concNomeProdutoAtual());
+  if (!pesoG) { showToast('⚠️ Não encontrei a gramatura no nome do produto.', '#92400e'); return; }
+  const equivalente = preco * (pesoG / 1000);
+  const nomeConc = nomeInput?.value?.trim() || 'Concorrente';
+  showToast(`${nomeConc}: R$ ${preco.toLocaleString('pt-BR',{minimumFractionDigits:2})}/KG ≈ R$ ${equivalente.toLocaleString('pt-BR',{minimumFractionDigits:2})} (${pesoG}g)`, '#166534');
+}
+
 function abrirModalConcorrenciaEdit() {
   _concorrenciaCtx = 'edit';
   const semFlag = _concorrenciaEdit?.semConcorrente || false;
@@ -7000,6 +7064,7 @@ function abrirModalConcorrenciaEdit() {
   ['1','2','3'].forEach(n => {
     document.getElementById('conc'+n+'_nome').value  = (!semFlag && _concorrenciaEdit?.['c'+n]?.nome)  ? _concorrenciaEdit['c'+n].nome  : '';
     document.getElementById('conc'+n+'_preco').value = (!semFlag && _concorrenciaEdit?.['c'+n]?.preco) ? _concorrenciaEdit['c'+n].preco : '';
+    _concSetUnidadeBtn(n, (!semFlag && _concorrenciaEdit?.['c'+n]?.unidade) || 'PC');
     const drop = document.getElementById('concDrop'+n);
     if (drop) drop.style.display = 'none';
   });
@@ -7051,6 +7116,7 @@ function abrirModalConcorrencia() {
   ['1','2','3'].forEach(n => {
     document.getElementById('conc'+n+'_nome').value  = (!semFlag && _concorrencia?.['c'+n]?.nome)  ? _concorrencia['c'+n].nome  : '';
     document.getElementById('conc'+n+'_preco').value = (!semFlag && _concorrencia?.['c'+n]?.preco) ? _concorrencia['c'+n].preco : '';
+    _concSetUnidadeBtn(n, (!semFlag && _concorrencia?.['c'+n]?.unidade) || 'PC');
     const drop = document.getElementById('concDrop'+n);
     if (drop) drop.style.display = 'none';
   });
@@ -7070,9 +7136,9 @@ function salvarConcorrencia() {
     resultado = { semConcorrente: true };
   } else {
     const dados = {
-      c1: { nome: document.getElementById('conc1_nome').value.trim(), preco: document.getElementById('conc1_preco').value },
-      c2: { nome: document.getElementById('conc2_nome').value.trim(), preco: document.getElementById('conc2_preco').value },
-      c3: { nome: document.getElementById('conc3_nome').value.trim(), preco: document.getElementById('conc3_preco').value },
+      c1: { nome: document.getElementById('conc1_nome').value.trim(), preco: document.getElementById('conc1_preco').value, unidade: document.getElementById('conc1_un')?.dataset.un || 'PC' },
+      c2: { nome: document.getElementById('conc2_nome').value.trim(), preco: document.getElementById('conc2_preco').value, unidade: document.getElementById('conc2_un')?.dataset.un || 'PC' },
+      c3: { nome: document.getElementById('conc3_nome').value.trim(), preco: document.getElementById('conc3_preco').value, unidade: document.getElementById('conc3_un')?.dataset.un || 'PC' },
     };
     ['c1','c2','c3'].forEach(k => { if (!dados[k].nome && !dados[k].preco) delete dados[k]; });
     resultado = Object.keys(dados).length ? dados : null;
@@ -7116,6 +7182,7 @@ function limparConcorrencia() {
   ['1','2','3'].forEach(n => {
     document.getElementById('conc'+n+'_nome').value  = '';
     document.getElementById('conc'+n+'_preco').value = '';
+    _concSetUnidadeBtn(n, 'PC');
   });
   atualizarBtnConcorrencia();
 }
