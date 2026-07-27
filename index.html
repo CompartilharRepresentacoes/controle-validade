@@ -7026,6 +7026,10 @@ function _concNomeProdutoAtual() {
     ? (_concEditProdutoNome || '')
     : (document.getElementById('f_produto')?.value || '');
 }
+function _concUnidadeProdutoAtual() {
+  const id = _concorrenciaCtx === 'edit' ? 'edit_und' : 'f_und';
+  return (document.getElementById(id)?.value || '').toUpperCase();
+}
 function _concSetUnidadeBtn(n, un) {
   const btn = document.getElementById('conc' + n + '_un');
   if (!btn) return;
@@ -7046,6 +7050,11 @@ function _concVerEquivalente(n) {
   const unBtn      = document.getElementById('conc' + n + '_un');
   const preco = _parsePrecoBR(precoInput?.value || '');
   if (!preco) { showToast('⚠️ Informe o preço do concorrente primeiro.', '#92400e'); return; }
+  const undProduto = _concUnidadeProdutoAtual();
+  if (undProduto !== 'PC') {
+    showToast('Conversão disponível apenas quando o seu produto é vendido por PC.', '#92400e');
+    return;
+  }
   if ((unBtn?.dataset.un || 'PC') !== 'KG') {
     showToast('Preço já está em PC, mesma unidade do seu produto.', '#0f766e');
     return;
