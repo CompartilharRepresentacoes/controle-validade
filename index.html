@@ -11271,7 +11271,7 @@ async function renderFreqVisita() {
       const loja = lojas.find(l => String(l.id) === String(r.lojaId));
       const diasAgendados = _freqGetDatasDoMes(mes, r.dias || []);
       const movs = historico.filter(m => {
-        if (m.atualizadoPor !== promotorNome) return false;
+        if (normTxt(m.promotor) !== normTxt(promotorNome)) return false;
         const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
         if (d.getFullYear() !== ano || d.getMonth()+1 !== mesNum) return false;
         return loja ? (String(m.lojaId) === String(loja.id) || m.loja === loja.nome) : false;
@@ -15191,7 +15191,7 @@ function _calcularRupturas() {
   const grupos = {};
   historico.forEach(function(m) {
     const key = (m.produto || m.prod || '') + '|||' + (m.lojaId || m.loja || '');
-    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.atualizadoPor || '', movs: [] };
+    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.promotor || '', movs: [] };
     grupos[key].movs.push(m);
   });
 
