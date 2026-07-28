@@ -3849,10 +3849,10 @@
       <div class="flex flex-col gap-1 col-span-2">
         <label class="text-xs font-medium text-slate-600">Preço (R$)</label>
         <div style="display:flex;gap:8px;align-items:stretch">
-          <input id="edit_preco" type="number" min="0" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" style="flex:1" />
+          <input id="edit_preco" type="number" min="0" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" style="width:92px;flex:0 0 92px" />
           <button type="button" id="btnEditConcorrencia" onclick="abrirModalConcorrenciaEdit()"
-            style="display:inline-flex;align-items:center;gap:5px;background:#fff7ed;color:#c2410c;border:0.5px solid #fed7aa;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s">
-            <i class="ti ti-chart-bar" style="font-size:14px" aria-hidden="true"></i> Concorrência
+            style="flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:5px;background:#fff7ed;color:#c2410c;border:0.5px solid #fed7aa;border-radius:8px;padding:8px 6px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s">
+            <i class="ti ti-chart-bar" style="font-size:14px;flex-shrink:0" aria-hidden="true"></i> Concorrência
           </button>
         </div>
         <div id="editConcResumo" style="display:none;margin-top:5px;background:#fff7ed;border-radius:7px;padding:6px 10px;font-size:11px;color:#92400e;display:flex;flex-direction:column;gap:2px"></div>
