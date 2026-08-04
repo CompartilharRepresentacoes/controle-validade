@@ -9348,7 +9348,7 @@ function renderGraficos() {
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{
         title:ctx=>{const i=ctx[0].dataIndex;return`${dados[i].nome} — Total: ${totais[i]} ${dados[i].und.toLowerCase()}`;},
-        label:ctx=>{if(!ctx.raw)return null;const d=ctx.dataset._dias;const u=dados[ctx.dataIndex].und.toLowerCase();return`· ${ctx.raw} ${u} — ${ctx.dataset.label} (${d<=20?'Atenção '+d+'d':'OK '+d+'d'})`;},
+        label:ctx=>{if(!ctx.raw)return null;const d=ctx.dataset._dias;const u=dados[ctx.dataIndex].und.toLowerCase();return`· ${ctx.raw} ${u} — ${fmtData(ctx.dataset.label)} (${d<=20?'Atenção '+d+'d':'OK '+d+'d'})`;},
         filter:ctx=>ctx.raw>0
       }}},
       scales:{
