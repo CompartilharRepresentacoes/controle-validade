@@ -13339,14 +13339,20 @@ function renderHistorico(resetLimite) {
     if (a === 'vencimento') return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-clock-off" style="font-size:10px"></i>VENCIDO</span>`;
     return `<span style="background:#e2e8f0;color:#475569;font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px">${esc(a)}</span>`;
   };
+  // Exibe o código do catálogo antes do nome do produto (ex: "1184- Creme de Queijo Quatá 180g")
+  const _prodComCodigo = (nome) => {
+    const cat = catalogo.find(c => normTxt(c.nome) === normTxt(nome || ''));
+    return cat?.codigo ? `${cat.codigo}- ${nome || ''}` : (nome || '');
+  };
   // Calcular Vida Útil consumida no cadastro
   const _calcVidaUtil = (m) => {
-    if (!m.shelfLife || !m.dataFabricacao || !m.data) return null;
+    const dataRef = m.dataEntrega || m.data;
+    if (!m.shelfLife || !m.dataFabricacao || !dataRef) return null;
     const fab  = new Date(m.dataFabricacao + 'T00:00:00');
-    const reg  = new Date(m.data + 'T00:00:00');
+    const reg  = new Date(dataRef + 'T00:00:00');
     const dias = Math.max(0, Math.round((reg - fab) / 86400000));
     const pct  = Math.round((dias / m.shelfLife) * 100);
-    return { dias, pct, alerta: pct > 33 };
+    return { dias, pct, alerta: pct > 33, viaEntrega: !!m.dataEntrega };
   };
 
   tbody.innerHTML = visiveis.map(m => {
@@ -13388,7 +13394,7 @@ function renderHistorico(resetLimite) {
       }</td>
       <td style="font-weight:700;color:${m.tipo==='entrada'?'#16a34a':m.tipo==='saida_vencimento'?'#d97706':'#dc2626'}">${m.tipo==='entrada'?'+':'-'}${m.qtde} ${esc(m.und)}</td>
       <td>${m.estoqueApos} ${esc(m.und)}</td>
-      <td>${esc(m.produto)}</td>
+      <td>${esc(_prodComCodigo(m.produto))}</td>
       <td style="${vu?.alerta?'color:#dc2626;font-weight:600':''}">${fmtData(m.dataFabricacao)||'—'}</td>
       <td style="${m.tipo==='saida_vencimento'?'color:#dc2626;font-weight:600':''}">${fmtData(m.validade)||'—'}</td>
       <td>${m.shelfLife?`<span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:600;border-radius:4px;padding:1px 6px">${m.shelfLife} dias</span>`:'—'}</td>
@@ -13575,6 +13581,7 @@ function salvarDataEntrega(movId, dataEntrega) {
     });
   }
   showToast('📅 Data de entrega salva!', '#166534');
+  renderHistorico(false);
 }
 
 // ── Saídas automáticas por vencimento ────────
