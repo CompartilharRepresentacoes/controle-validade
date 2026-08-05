@@ -2288,7 +2288,7 @@
           </div>
         </div>
         <div class="overflow-x-auto">
-          <table><thead><tr id="hTableHead"><th>Data</th><th>Ação</th><th>Tipo</th><th>Qtde</th><th>Estoque</th><th>Produto</th><th>Fabricação</th><th>Vencimento</th><th>ShelfLife</th><th>Vida Útil</th><th>Data de Entrega</th><th>Loja</th><th>UF</th><th>Promotor</th><th>Presença</th><th></th></tr></thead><tbody id="hTableBody"></tbody></table>
+          <table><thead><tr id="hTableHead"><th>Data</th><th>Ação</th><th>Tipo</th><th>Qtde</th><th>Estoque</th><th>Produto</th><th>Fabricação</th><th>Vencimento</th><th>ShelfLife</th><th>Vida Útil</th><th>Data de Entrega</th><th>Loja</th><th>UF</th><th>Usuário</th><th>Presença</th><th></th></tr></thead><tbody id="hTableBody"></tbody></table>
         </div>
         <div id="hSemDados" class="hidden text-center py-10 text-slate-400 text-sm">Nenhuma movimentação registrada ainda.</div>
       </div>
@@ -5082,7 +5082,7 @@ async function exportarHistorico() {
   showToast('⏳ Gerando Excel...','#1e3a8a');
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Histórico');
-  const cols = ['#','DATA','AÇÃO','TIPO','QTDE','ESTOQUE','PRODUTO','FABRICAÇÃO','VENCIMENTO','SHELFLIFE (dias)','VIDA ÚTIL (%)','DATA DE ENTREGA','LOJA','UF','PROMOTOR'];
+  const cols = ['#','DATA','AÇÃO','TIPO','QTDE','ESTOQUE','PRODUTO','FABRICAÇÃO','VENCIMENTO','SHELFLIFE (dias)','VIDA ÚTIL (%)','DATA DE ENTREGA','LOJA','UF','USUÁRIO'];
   await _cabecalhoExcel(wb, ws, 'CONTROLE DE VALIDADE — HISTÓRICO DE MOVIMENTAÇÕES', cols.length);
   const hr = ws.getRow(5); hr.height = 18;
   cols.forEach((c,i) => { const cell=hr.getCell(i+1); _estiloCabecalho(cell); cell.value=c; });
@@ -5109,7 +5109,7 @@ async function exportarHistorico() {
       toDate(m.dataEntrega),
       m.loja||'',
       m.uf||'',
-      m.promotor||''
+      m.usuarioAcao||m.promotor||''
     ]);
     // Formatar datas
     [2,8,9,12].forEach(col => {
@@ -13704,7 +13704,7 @@ function renderHistorico(resetLimite) {
       <td>${entregaCell}</td>
       <td>${esc(m.loja)}</td>
       <td style="text-align:center">${esc(m.uf)}</td>
-      <td>${esc(m.promotor)}</td>
+      <td>${esc(m.usuarioAcao || m.promotor)}</td>
       <td style="text-align:center;white-space:nowrap">${(() => {
         const p = m.presencaLoja;
         const dist = m.distanciaLoja;
@@ -13982,6 +13982,18 @@ function _capturarPresencaLoja(lojaObj) {
 }
 
 // ── Registro de movimentações ────────────────
+// Recupera a data de entrega já registrada para este exato lançamento (mesmo produto/loja/validade),
+// para não deixar uma alteração posterior gerar uma data de entrega em branco ou divergente.
+function _dataEntregaOrigem(produto) {
+  const candidatos = historico.filter(m =>
+    m.produto === (produto.produto || '') &&
+    m.loja === (produto.loja || '') &&
+    m.validade === (produto.validade || '') &&
+    m.dataEntrega
+  );
+  return candidatos.length ? candidatos[candidatos.length - 1].dataEntrega : null;
+}
+
 function _registrarMovimento(tipo, qtde, produto, acao, atualizadoPor, geoInfo) {
   if (!produto || !qtde) return;
   const lojaObj  = lojas.find(l => normTxt(l.nome) === normTxt(produto.loja));
@@ -13990,6 +14002,7 @@ function _registrarMovimento(tipo, qtde, produto, acao, atualizadoPor, geoInfo) 
   const dataFabricacao = (shelfLife && produto.validade)
     ? new Date(new Date(produto.validade + 'T00:00:00').getTime() - shelfLife * 86400000).toISOString().slice(0,10)
     : null;
+  const acaoFinal = acao || 'alteracao';
   const rawId  = Date.now() + Math.random();
   const fsId   = 'h_' + Math.round(rawId);
   const mov = {
@@ -13997,19 +14010,20 @@ function _registrarMovimento(tipo, qtde, produto, acao, atualizadoPor, geoInfo) 
     firestoreId:    fsId,
     data:           new Date().toISOString().slice(0,10),
     tipo,
-    acao:           acao || 'alteracao',
+    acao:           acaoFinal,
     qtde:           Math.abs(qtde),
     produto:        produto.produto  || '',
     validade:       produto.validade || '',
     shelfLife:      shelfLife,
     dataFabricacao: dataFabricacao,
-    dataEntrega:    null,
+    dataEntrega:    acaoFinal === 'alteracao' ? _dataEntregaOrigem(produto) : null,
     loja:           produto.loja     || '',
     rede:           lojaObj?.rede    || '',
     uf:             produto.uf       || '',
     fabrica:        produto.fabrica  || '',
     und:            produto.und      || '',
     promotor:       atualizadoPor || produto.promotor || '',
+    usuarioAcao:    sessao?.nome || atualizadoPor || produto.promotor || '',
     estoqueApos:    Number(produto.quantidade) || 0,
     presencaLoja:   geoInfo?.presencaLoja   || null,
     distanciaLoja:  geoInfo?.distanciaLoja  ?? null,
