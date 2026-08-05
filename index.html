@@ -13,6 +13,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -2302,14 +2303,30 @@
          Aba: Roteirização
          ════════════════════════════════════════ -->
     <div id="viewRoteirizacao" style="display:none;margin-bottom:24px">
-      <!-- Sub-tabs -->
-      <div style="display:flex;gap:0;margin-bottom:16px;background:white;border:1px solid #bfdbfe;border-radius:12px;overflow:hidden">
+      <!-- Sub-tabs (ocultos para o promotor) -->
+      <div id="rotSubTabs" style="display:flex;gap:0;margin-bottom:16px;background:white;border:1px solid #bfdbfe;border-radius:12px;overflow:hidden">
         <button id="rotTabCadastrar" onclick="rotSetTab('cadastrar')" style="flex:1;padding:10px 16px;font-size:13px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:#1e3a5f;color:white;border-radius:0;transition:background .15s">
           <i class="ti ti-route" style="font-size:15px" aria-hidden="true"></i> Cadastrar Roteirização
         </button>
         <button id="rotTabFrequencia" onclick="rotSetTab('frequencia')" style="flex:1;padding:10px 16px;font-size:13px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:white;color:#475569;border-left:1px solid #bfdbfe;border-radius:0;transition:background .15s">
           <i class="ti ti-calendar-stats" style="font-size:15px" aria-hidden="true"></i> Frequência de Visita
         </button>
+      </div>
+
+      <!-- Painel: Meu Roteiro (somente promotor, leitura) -->
+      <div id="rotPanelPromotor" style="display:none">
+        <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <div style="width:36px;height:36px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center">
+              <i class="ti ti-route" style="font-size:18px;color:#1e40af" aria-hidden="true"></i>
+            </div>
+            <div>
+              <h2 id="rotPromTitulo" style="font-size:16px;font-weight:700;color:#1e3a5f;margin:0">Meu Roteiro</h2>
+              <p id="rotPromSub" style="font-size:12px;color:#64748b;margin:0"></p>
+            </div>
+          </div>
+          <div id="rotPromGrade"></div>
+        </div>
       </div>
 
       <!-- Painel: Cadastrar Roteirização -->
@@ -2421,7 +2438,10 @@
       <div id="rotRelatorio" style="display:none;background:white;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:16px;border:1px solid #e2e8f0">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <i class="ti ti-clipboard-list" style="font-size:18px;color:#1e3a5f"></i>
-          <span style="font-size:14px;font-weight:700;color:#1e3a5f">Roteiros cadastrados</span>
+          <span style="font-size:14px;font-weight:700;color:#1e3a5f;margin-right:auto">Roteiros cadastrados</span>
+          <button id="rotBtnPdf" onclick="abrirModalPdfRoteiro()" style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">
+            <i class="ti ti-file-type-pdf" style="font-size:14px" aria-hidden="true"></i> Gerar PDF
+          </button>
         </div>
         <div id="rotRelatorioBody"></div>
       </div>
@@ -3067,6 +3087,28 @@
     <div class="flex gap-2">
       <button onclick="fecharModalConcorrencia()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg px-4 py-2 text-sm transition">Cancelar</button>
       <button onclick="salvarConcorrencia()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 text-sm transition">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gerar PDF de Roteiros -->
+<div id="modalPdfRoteiro" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4" style="z-index:9999">
+  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-1">
+      <span style="font-size:15px;font-weight:600;color:#1e293b;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-file-type-pdf" style="font-size:16px;color:#dc2626" aria-hidden="true"></i> Gerar PDF de roteiros
+      </span>
+      <button onclick="fecharModalPdfRoteiro()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;line-height:1">×</button>
+    </div>
+    <p id="pdfRotSub" style="font-size:12px;color:#64748b;margin:0 0 12px">Selecione os promotores</p>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#1d4ed8;font-weight:600;padding:6px 2px;border-bottom:1px solid #f1f5f9;margin-bottom:6px;cursor:pointer">
+      <input type="checkbox" id="pdfRotTodos" onchange="_pdfRotToggleTodos(this.checked)" /> Selecionar todos
+    </label>
+    <div id="pdfRotLista" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:2px"></div>
+    <p style="font-size:10px;color:#94a3b8;margin:10px 0 12px" id="pdfRotAviso"></p>
+    <div class="flex gap-2">
+      <button onclick="fecharModalPdfRoteiro()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg px-4 py-2 text-sm transition">Cancelar</button>
+      <button onclick="gerarPdfRoteiros()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg px-4 py-2 text-sm transition">Gerar PDF</button>
     </div>
   </div>
 </div>
@@ -4256,7 +4298,7 @@ function entrarNoApp(user, novoLogin) {
   if (btnProd3) btnProd3.style.display = 'inline-flex';
   // Botão Roteirização: visível para admin e vendedor
   const btnRoteir2 = document.getElementById('btnViewRoteirizacao');
-  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor'].includes(user.role)) ? 'inline-flex' : 'none';
+  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor','promotor'].includes(user.role)) ? 'inline-flex' : 'none';
   // Botão Ranking: visível para todos os perfis
   const btnRank2 = document.getElementById('btnViewRanking');
   if (btnRank2) btnRank2.style.display = 'inline-flex';
@@ -10480,6 +10522,46 @@ function _rotMesLabel(mes) {
   const [ano, m] = mes.split('-');
   return `${_MESES_PT[parseInt(m)-1]} ${ano}`;
 }
+
+// Painel "Meu Roteiro" — visão de leitura do promotor, só o mês atual
+function _renderMeuRoteiro() {
+  const nome    = sessao?.nome || '';
+  const tituloEl = document.getElementById('rotPromTitulo');
+  const subEl    = document.getElementById('rotPromSub');
+  const gradeEl  = document.getElementById('rotPromGrade');
+  if (!gradeEl) return;
+  if (tituloEl) tituloEl.textContent = 'Meu Roteiro — ' + _rotMesLabel(_rotGetMesAtual());
+
+  const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel || '') === normTxt(nome));
+  const ufsStr = [...new Set(lojasVinc.map(l => l.uf).filter(Boolean))].sort().join(', ');
+  if (subEl) subEl.textContent = lojasVinc.length
+    ? `${lojasVinc.length} loja${lojasVinc.length>1?'s':''} vinculada${lojasVinc.length>1?'s':''}${ufsStr?' · '+ufsStr:''}`
+    : 'Nenhuma loja vinculada ainda';
+
+  if (!lojasVinc.length) {
+    gradeEl.innerHTML = `<div style="text-align:center;padding:24px 16px;color:#94a3b8"><i class="ti ti-route-off" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i><p style="font-size:13px;margin:0">Você ainda não tem lojas vinculadas neste mês.</p></div>`;
+    return;
+  }
+
+  const _diaSemanaHoje = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][new Date().getDay()];
+  const grade = _DIAS_SEMANA.map(dia => ({
+    dia,
+    lojas: lojasVinc.filter(l => (l.diasVisita || []).includes(dia)),
+    hoje: dia === _diaSemanaHoje
+  }));
+
+  gradeEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
+    ${grade.map(g => `<div>
+      <div style="font-size:11px;font-weight:${g.hoje?'700':'500'};color:${g.hoje?'#1e40af':'#475569'};text-align:center;margin-bottom:5px;padding:3px 2px;border-radius:6px;background:${g.hoje?'#dbeafe':'transparent'}">
+        ${g.dia}${g.hoje?' ●':''}
+      </div>
+      ${g.lojas.length
+        ? g.lojas.map(l => `<div style="font-size:10px;background:#dbeafe;color:#1e40af;border-radius:5px;padding:3px 5px;margin-bottom:3px;text-align:center;line-height:1.3">${esc(l.nome||'')}</div>`).join('')
+        : `<div style="font-size:10px;color:#cbd5e1;text-align:center;padding:3px 0">—</div>`
+      }
+    </div>`).join('')}
+  </div>`;
+}
 function _rotDocKey(promotorNome, mes) {
   return promotorNome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + mes;
 }
@@ -10528,6 +10610,19 @@ async function rotCopiarMesAnterior() {
 }
 
 function initRoteirizacao() {
+  const subTabs = document.getElementById('rotSubTabs');
+  const pProm   = document.getElementById('rotPanelPromotor');
+  if (sessao?.role === 'promotor') {
+    if (subTabs) subTabs.style.display = 'none';
+    document.getElementById('rotPanelCadastrar').style.display  = 'none';
+    document.getElementById('rotPanelFrequencia').style.display = 'none';
+    if (pProm) pProm.style.display = '';
+    _renderMeuRoteiro();
+    return;
+  }
+  if (subTabs) subTabs.style.display = '';
+  if (pProm)   pProm.style.display   = 'none';
+  rotSetTab('cadastrar');
   _rotPopularSelMes();
   const isAdmin  = sessao?.role === 'admin';
   const isVend   = sessao?.role === 'vendedor';
@@ -10984,6 +11079,104 @@ function _rotRelGetProms() {
     ])];
   }
   return promsNomes.sort((a,b) => a.localeCompare(b,'pt-BR'));
+}
+
+// ── Gerar PDF de roteiros (mês atual) ────────
+function abrirModalPdfRoteiro() {
+  const nomes = _rotRelGetProms();
+  const lista = document.getElementById('pdfRotLista');
+  const aviso = document.getElementById('pdfRotAviso');
+  const todos = document.getElementById('pdfRotTodos');
+  if (!nomes.length) { showToast('⚠️ Nenhum promotor disponível para gerar PDF.', '#92400e'); return; }
+  if (lista) {
+    lista.innerHTML = nomes.map(n =>
+      `<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#334155;padding:5px 2px;cursor:pointer">
+        <input type="checkbox" value="${esc(n)}" checked onchange="_pdfRotSincTodos()" /> ${esc(n)}
+      </label>`
+    ).join('');
+  }
+  if (todos) todos.checked = true;
+  if (aviso) aviso.textContent = sessao?.role === 'vendedor' ? 'Você só vê os promotores da sua responsabilidade.' : '';
+  document.getElementById('modalPdfRoteiro').classList.remove('hidden');
+}
+function fecharModalPdfRoteiro() {
+  document.getElementById('modalPdfRoteiro').classList.add('hidden');
+}
+function _pdfRotToggleTodos(checked) {
+  document.querySelectorAll('#pdfRotLista input[type=checkbox]').forEach(cb => cb.checked = checked);
+}
+function _pdfRotSincTodos() {
+  const boxes = document.querySelectorAll('#pdfRotLista input[type=checkbox]');
+  const todos = document.getElementById('pdfRotTodos');
+  if (todos) todos.checked = Array.from(boxes).every(cb => cb.checked);
+}
+function gerarPdfRoteiros() {
+  const nomes = Array.from(document.querySelectorAll('#pdfRotLista input[type=checkbox]:checked')).map(cb => cb.value);
+  if (!nomes.length) { showToast('⚠️ Selecione ao menos um promotor.', '#92400e'); return; }
+  if (typeof window.jspdf === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca de PDF e tente novamente.', '#92400e'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const mesLabel   = _rotMesLabel(_rotGetMesAtual());
+  const margemEsq  = 14;
+  const larguraPag = doc.internal.pageSize.getWidth();
+  let y = 18;
+
+  nomes.forEach((nome, idx) => {
+    if (idx > 0) { doc.addPage(); y = 18; }
+    doc.setFontSize(14);
+    doc.setTextColor(30,58,95);
+    doc.setFont(undefined, 'bold');
+    doc.text('Roteiro — ' + mesLabel, margemEsq, y);
+    y += 8;
+    doc.setFontSize(12);
+    doc.setTextColor(0,0,0);
+    doc.text(nome, margemEsq, y);
+    y += 7;
+
+    const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel||'') === normTxt(nome));
+    const ufsStr = [...new Set(lojasVinc.map(l=>l.uf).filter(Boolean))].sort().join(', ');
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100,100,100);
+    doc.text(`${lojasVinc.length} loja(s) vinculada(s)${ufsStr?' · '+ufsStr:''}`, margemEsq, y);
+    y += 7;
+    doc.setDrawColor(220,220,220);
+    doc.line(margemEsq, y, larguraPag-margemEsq, y);
+    y += 7;
+
+    if (!lojasVinc.length) {
+      doc.setFontSize(10);
+      doc.setTextColor(150,150,150);
+      doc.text('Nenhuma loja vinculada neste mês.', margemEsq, y);
+      return;
+    }
+
+    _DIAS_SEMANA.forEach(dia => {
+      const doDia = lojasVinc.filter(l => (l.diasVisita||[]).includes(dia));
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(30,64,175);
+      doc.text(dia, margemEsq, y);
+      doc.setFont(undefined, 'normal');
+      if (!doDia.length) {
+        doc.setTextColor(180,180,180);
+        doc.text('—', margemEsq+22, y);
+        y += 7;
+      } else {
+        doDia.forEach((l, i2) => {
+          doc.setTextColor(30,30,30);
+          doc.text('• ' + (l.nome||''), margemEsq+22, y);
+          y += 5.5;
+        });
+        y += 1.5;
+      }
+      if (y > 270) { doc.addPage(); y = 18; }
+    });
+  });
+
+  doc.save('roteiros_' + _rotGetMesAtual() + '.pdf');
+  fecharModalPdfRoteiro();
+  showToast('✅ PDF gerado!', '#166534');
 }
 
 async function salvarRoteirizacao() {
