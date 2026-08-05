@@ -13316,6 +13316,38 @@ function renderMovChart() {
   _movChart.update();
 }
 
+// Vida útil consumida até a data de entrega (se houver) ou até o registro no sistema
+function _calcVidaUtilMov(m) {
+  const dataRef = m.dataEntrega || m.data;
+  if (!m.shelfLife || !m.dataFabricacao || !dataRef) return null;
+  const fab  = new Date(m.dataFabricacao + 'T00:00:00');
+  const reg  = new Date(dataRef + 'T00:00:00');
+  const dias = Math.max(0, Math.round((reg - fab) / 86400000));
+  const pct  = Math.round((dias / m.shelfLife) * 100);
+  return { dias, pct, alerta: pct > 33, viaEntrega: !!m.dataEntrega };
+}
+// Alerta: entrega ocorreu além de 1/3 da vida útil do produto
+function _calcEntregaAlerta(m) {
+  if (!m.dataEntrega || !m.dataFabricacao || !m.shelfLife) return null;
+  const fab  = new Date(m.dataFabricacao + 'T00:00:00');
+  const ent  = new Date(m.dataEntrega    + 'T00:00:00');
+  const dias = Math.max(0, Math.round((ent - fab) / 86400000));
+  const pct  = Math.round((dias / m.shelfLife) * 100);
+  return pct > 33;
+}
+function _estiloEntregaInput(entregaAlerta) {
+  return entregaAlerta === true
+    ? 'border:1.5px solid #fca5a5;border-radius:6px;padding:3px 6px;font-size:10px;background:#fff5f5;color:#991b1b;cursor:pointer'
+    : entregaAlerta === false
+      ? 'border:1.5px solid #86efac;border-radius:6px;padding:3px 6px;font-size:10px;background:#f0fdf4;color:#166534;cursor:pointer'
+      : 'border:1px solid #e2e8f0;border-radius:6px;padding:3px 6px;font-size:10px;background:#f8fafc;cursor:pointer';
+}
+function _htmlVidaUtil(vu) {
+  return vu
+    ? `<span style="font-size:11px;font-weight:700;color:${vu.alerta?'#dc2626':'#16a34a'}">${vu.dias} dias (${vu.pct}%)${vu.alerta?' ⚠️':''}</span>`
+    : `<span style="color:#94a3b8;font-size:10px;">—</span>`;
+}
+
 function renderHistorico(resetLimite) {
   if (resetLimite !== false) _hLimite = 10;
   _popularMovSelects('h');
@@ -13344,44 +13376,17 @@ function renderHistorico(resetLimite) {
     const cat = catalogo.find(c => normTxt(c.nome) === normTxt(nome || ''));
     return cat?.codigo ? `${cat.codigo}- ${nome || ''}` : (nome || '');
   };
-  // Calcular Vida Útil consumida no cadastro
-  const _calcVidaUtil = (m) => {
-    const dataRef = m.dataEntrega || m.data;
-    if (!m.shelfLife || !m.dataFabricacao || !dataRef) return null;
-    const fab  = new Date(m.dataFabricacao + 'T00:00:00');
-    const reg  = new Date(dataRef + 'T00:00:00');
-    const dias = Math.max(0, Math.round((reg - fab) / 86400000));
-    const pct  = Math.round((dias / m.shelfLife) * 100);
-    return { dias, pct, alerta: pct > 33, viaEntrega: !!m.dataEntrega };
-  };
-
   tbody.innerHTML = visiveis.map(m => {
-    const vu = _calcVidaUtil(m);
-
-    // Verificação da data de entrega (1/3 do ShelfLife)
-    let entregaAlerta = null; // null = sem data, true = além do 1/3, false = dentro do 1/3
-    if (m.dataEntrega && m.dataFabricacao && m.shelfLife) {
-      const fab  = new Date(m.dataFabricacao + 'T00:00:00');
-      const ent  = new Date(m.dataEntrega    + 'T00:00:00');
-      const dias = Math.max(0, Math.round((ent - fab) / 86400000));
-      const pct  = Math.round((dias / m.shelfLife) * 100);
-      entregaAlerta = pct > 33;
-    }
+    const vu = _calcVidaUtilMov(m);
+    const entregaAlerta = _calcEntregaAlerta(m);
 
     // Cor da linha: apenas por tipo/ação (data de entrega colore só a célula)
     const rowCls = m.tipo==='saida'||m.acao==='exclusao' ? 'row-expired'
                  : m.acao==='atualizacao_promotor' ? 'row-warning' : '';
 
-    const vuCell = vu
-      ? `<span style="font-size:11px;font-weight:700;color:${vu.alerta?'#dc2626':'#16a34a'}">${vu.dias} dias (${vu.pct}%)${vu.alerta?' ⚠️':''}</span>`
-      : `<span style="color:#94a3b8;font-size:10px;">—</span>`;
-
-    const entregaStyle = entregaAlerta === true
-      ? 'border:1.5px solid #fca5a5;border-radius:6px;padding:3px 6px;font-size:10px;background:#fff5f5;color:#991b1b;cursor:pointer'
-      : entregaAlerta === false
-        ? 'border:1.5px solid #86efac;border-radius:6px;padding:3px 6px;font-size:10px;background:#f0fdf4;color:#166534;cursor:pointer'
-        : 'border:1px solid #e2e8f0;border-radius:6px;padding:3px 6px;font-size:10px;background:#f8fafc;cursor:pointer';
-    const entregaCell = `<input type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value)" style="${entregaStyle}" />`;
+    const vuCell = _htmlVidaUtil(vu);
+    const entregaStyle = _estiloEntregaInput(entregaAlerta);
+    const entregaCell = `<input type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value,this)" style="${entregaStyle}" />`;
 
     return `<tr class="${rowCls}">
       <td>${fmtData(m.data)}</td>
@@ -13398,7 +13403,7 @@ function renderHistorico(resetLimite) {
       <td style="${vu?.alerta?'color:#dc2626;font-weight:600':''}">${fmtData(m.dataFabricacao)||'—'}</td>
       <td style="${m.tipo==='saida_vencimento'?'color:#dc2626;font-weight:600':''}">${fmtData(m.validade)||'—'}</td>
       <td>${m.shelfLife?`<span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:600;border-radius:4px;padding:1px 6px">${m.shelfLife} dias</span>`:'—'}</td>
-      <td>${vuCell}</td>
+      <td id="hVU_${m.id}">${vuCell}</td>
       <td>${entregaCell}</td>
       <td>${esc(m.loja)}</td>
       <td style="text-align:center">${esc(m.uf)}</td>
@@ -13568,7 +13573,13 @@ function irParaHistoricoEntrega() {
   renderHistorico();
 }
 
-function salvarDataEntrega(movId, dataEntrega) {
+function salvarDataEntrega(movId, dataEntrega, inputEl) {
+  // Enquanto o navegador ainda não montou um ano de 4 dígitos plausível, ignora
+  // (evita salvar valores incompletos como "0002" enquanto o usuário digita)
+  if (dataEntrega) {
+    const ano = parseInt(dataEntrega.slice(0, 4), 10);
+    if (!ano || ano < 2000 || ano > 2100) return;
+  }
   const idx = historico.findIndex(m => m.id === movId);
   if (idx < 0) return;
   historico[idx].dataEntrega = dataEntrega || null;
@@ -13581,7 +13592,12 @@ function salvarDataEntrega(movId, dataEntrega) {
     });
   }
   showToast('📅 Data de entrega salva!', '#166534');
-  renderHistorico(false);
+  // Atualiza só a célula de Vida Útil e a cor do próprio campo — sem redesenhar a linha
+  // (redesenhar destruiria o <input type="date"> e interromperia a digitação)
+  const m = historico[idx];
+  const vuEl = document.getElementById('hVU_' + movId);
+  if (vuEl) vuEl.innerHTML = _htmlVidaUtil(_calcVidaUtilMov(m));
+  if (inputEl) inputEl.style.cssText = _estiloEntregaInput(_calcEntregaAlerta(m));
 }
 
 // ── Saídas automáticas por vencimento ────────
