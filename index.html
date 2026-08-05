@@ -1748,6 +1748,7 @@
           <p id="acompSemDados" class="hidden" style="text-align:center;padding:28px;color:#94a3b8;font-size:13px">Nenhuma solicitação registrada.</p>
         </div>
       </div>
+      <input type="file" id="acompAnexoInput" accept="image/*,.pdf" class="hidden" onchange="_acompProcessarAnexo(this)" />
     </div>
 
     <!-- View: Gráficos -->
@@ -12669,6 +12670,12 @@ function renderAcompSellOut() {
 
     const tdStyle = `style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;vertical-align:middle;${bgRow};${txtClr}"`;
 
+    const temAnexo = !!r.anexoUrl;
+    const anexoBtn = temAnexo
+      ? `<button onclick="_acompVerAnexo('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#2563eb;padding:3px;border-radius:4px" title="Ver anexo: ${esc(r.anexoNome||'')}">📎</button>
+         <button onclick="_acompRemoverAnexo('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:10px;color:#cbd5e1;padding:1px;border-radius:4px" title="Remover anexo" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>`
+      : `<button onclick="_acompAnexar('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#94a3b8;padding:3px;border-radius:4px" title="Anexar confirmação do fornecedor" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#94a3b8'">📎</button>`;
+
     return `<tr id="acompRow_${r.id}">
       <td ${tdStyle} style="white-space:nowrap;padding:7px 10px;border-bottom:0.5px solid #e2e8f0;${bgRow};${txtClr}">${dataBR}</td>
       <td ${tdStyle}>${esc(r.fabrica)}</td>
@@ -12683,6 +12690,7 @@ function renderAcompSellOut() {
       <td ${tdStyle}>${enviada}</td>
       <td ${tdStyle}>${badgeHtml}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;text-align:center;${bgRow}">
+        ${anexoBtn}
         <button onclick="_acompDeletar('${r.id}',${i})" style="background:none;border:none;cursor:pointer;font-size:15px;color:#94a3b8;padding:3px;border-radius:4px" title="Excluir" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">🗑️</button>
       </td>
     </tr>`;
@@ -12854,6 +12862,87 @@ async function _acompDeletar(id, idx) {
     renderAcompSellOut();
     showToast('✅ Registro excluído.','#166534');
   } catch(e) { showToast('Erro ao excluir.','#92400e'); }
+}
+
+// ── Anexar e-mail/confirmação do fornecedor no SellOut ───────
+let _acompAnexoTargetId = null;
+
+function _acompAnexar(id) {
+  _acompAnexoTargetId = id;
+  document.getElementById('acompAnexoInput')?.click();
+}
+
+function _acompProcessarAnexo(input) {
+  if (!input.files || !input.files[0] || !_acompAnexoTargetId) { input.value = ''; return; }
+  const file = input.files[0];
+  const id = _acompAnexoTargetId;
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        const ratio = Math.min(MAX / img.width, MAX / img.height, 1);
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        const ctx2d = canvas.getContext('2d');
+        ctx2d.fillStyle = '#ffffff';
+        ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+        ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+        _acompSalvarAnexo(id, canvas.toDataURL('image/jpeg', 0.82), file.name);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    if (file.size > 900 * 1024) {
+      showToast('⚠️ Arquivo muito grande (máx. ~900 KB). Envie uma imagem ou um PDF menor.', '#92400e');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => _acompSalvarAnexo(id, e.target.result, file.name);
+    reader.readAsDataURL(file);
+  }
+  input.value = '';
+}
+
+async function _acompSalvarAnexo(id, dataUrl, nomeArquivo) {
+  try {
+    await FS_SELLOUT_HIST.doc(id).update({ anexoUrl: dataUrl, anexoNome: nomeArquivo });
+    const real = selloutHist.find(r => r.id === id);
+    if (real) { real.anexoUrl = dataUrl; real.anexoNome = nomeArquivo; }
+    renderAcompSellOut();
+    showToast('📎 Confirmação anexada!', '#166534');
+  } catch (e) {
+    showToast('❌ Erro ao anexar: ' + e.message, '#991b1b');
+  }
+}
+
+function _acompVerAnexo(id) {
+  const r = selloutHist.find(r => r.id === id);
+  if (!r?.anexoUrl) return;
+  const w = window.open();
+  if (!w) { showToast('⚠️ Permita pop-ups para visualizar o anexo.', '#92400e'); return; }
+  if (r.anexoUrl.startsWith('data:application/pdf')) {
+    w.document.write(`<title>${esc(r.anexoNome||'Anexo')}</title><iframe src="${r.anexoUrl}" style="width:100%;height:100vh;border:none"></iframe>`);
+  } else {
+    w.document.write(`<title>${esc(r.anexoNome||'Anexo')}</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${r.anexoUrl}" style="max-width:100%;max-height:100vh"></body>`);
+  }
+}
+
+async function _acompRemoverAnexo(id) {
+  if (!confirm('Remover o anexo deste registro?')) return;
+  try {
+    await FS_SELLOUT_HIST.doc(id).update({ anexoUrl: null, anexoNome: null });
+    const real = selloutHist.find(r => r.id === id);
+    if (real) { real.anexoUrl = null; real.anexoNome = null; }
+    renderAcompSellOut();
+    showToast('🗑 Anexo removido.', '#7f1d1d');
+  } catch (e) {
+    showToast('❌ Erro ao remover anexo.', '#991b1b');
+  }
 }
 
 // ── Cobertura de Visitas ─────────────────────────────────────
