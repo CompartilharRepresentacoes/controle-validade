@@ -11546,13 +11546,21 @@ async function renderFreqVisita() {
     }));
     const rows = [...rowsAgendados, ...rowsExtras];
 
-    // totalVisitou: conta visitas em qualquer dia do período (agendado ou não), limitado aos agendados
+    // totalAgend/totalVisitou: o cap "visitado" é aplicado SEMANA A SEMANA (mesma regra do grid
+    // detalhado e do acordeão por semana), nunca somando o mês inteiro de uma vez — do contrário
+    // uma visita numa semana pode "casar" numericamente com um agendamento de outra semana e
+    // inflar o card geral sem que nenhuma semana individual reflita essa visita.
     const totalAgend   = rows.reduce((s, r) => s + r.diasAgendados.filter(d => !diasFiltro || diasFiltro.includes(d)).length, 0);
-    const _diasFiltroOuTodos = diasFiltro || Array.from({length: ultimo}, (_,i) => i+1);
     const totalVisitou = rows.reduce((s, r) => {
-      const agSem = r.diasAgendados.filter(d => _diasFiltroOuTodos.includes(d));
-      const visitNaSem = _diasFiltroOuTodos.filter(d => r.diasComVisita.has(d)).length;
-      return s + Math.min(visitNaSem, agSem.length);
+      let t = 0;
+      semanas.forEach(sem => {
+        const diasSemEfet = diasFiltro ? sem.dias.filter(d => diasFiltro.includes(d)) : sem.dias;
+        if (!diasSemEfet.length) return;
+        const agSemRow = r.diasAgendados.filter(d => diasSemEfet.includes(d));
+        const visitsDiasNaSem = diasSemEfet.filter(d => r.diasComVisita.has(d)).length;
+        t += Math.min(visitsDiasNaSem, agSemRow.length);
+      });
+      return s + t;
     }, 0);
     const totalNao     = totalAgend - totalVisitou;
     const pctGeral     = totalAgend > 0 ? Math.round(totalVisitou / totalAgend * 100) : 0;
