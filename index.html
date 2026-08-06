@@ -3166,6 +3166,50 @@
           </div>
           <i class="ti ti-chevron-right" style="font-size:16px;color:#6ee7b7;margin-left:auto" aria-hidden="true"></i>
         </button>
+        <button type="button" onclick="_maEscolherOpcao('rede')"
+          style="display:flex;align-items:center;gap:14px;padding:16px 18px;border:2px solid #ddd6fe;border-radius:14px;background:#f5f3ff;cursor:pointer;text-align:left;width:100%;transition:background .15s"
+          onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+          <div style="width:44px;height:44px;border-radius:12px;background:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="ti ti-building-factory-2" style="font-size:22px;color:#fff" aria-hidden="true"></i>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#5b21b6">O que essa rede compra?</div>
+            <div style="font-size:12px;color:#7c3aed;margin-top:2px">Ver produtos por fábrica e rede</div>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:16px;color:#c4b5fd;margin-left:auto" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- STEP R1: Consulta por Rede — Filtros -->
+      <div id="ma-stepR1" style="display:none;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#272a4a;margin-bottom:8px">Fábrica</div>
+          <select id="maR-fabrica" style="width:100%;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:14px;box-sizing:border-box;background:#fff;color:#1e293b">
+            <option value="">Selecione a fábrica...</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#272a4a;margin-bottom:8px">Rede</div>
+          <select id="maR-rede" style="width:100%;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:14px;box-sizing:border-box;background:#fff;color:#1e293b">
+            <option value="">Selecione a rede...</option>
+          </select>
+        </div>
+        <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px;font-size:12px;color:#6d28d9">Mostra só os produtos dessa fábrica que a rede tem código próprio cadastrado.</div>
+      </div>
+
+      <!-- STEP R2: Consulta por Rede — Lista -->
+      <div id="ma-stepR2" style="display:none;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
+        <div id="maR-lista" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#94a3b8 #e2e8f0"></div>
+      </div>
+
+      <!-- STEP R3: Consulta por Rede — Detalhe do produto -->
+      <div id="ma-stepR3" style="display:none;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b" id="maR-det-codLabel">Código na rede</span><span style="font-weight:600;color:#1e293b" id="maR-det-cod">—</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">EAN</span><span style="font-weight:600;color:#1e293b" id="maR-det-ean">—</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">Qtde por caixa</span><span style="font-weight:600;color:#1e293b" id="maR-det-qtde">—</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">Prazo de Validade</span><span style="font-weight:600;color:#1e293b" id="maR-det-shelf">—</span></div>
+        </div>
       </div>
 
       <!-- STEP Q1: Consulta — Filtros -->
@@ -14402,9 +14446,18 @@ function salvarEdicao() {
   let _maProdConfirmado = false;
   let _maFabricaSel = null;
   let _maAdicionarOutro = false;
+  let _maRedeFabSel = null;
+  let _maRedeRedeSel = null;
+  let _maRedeListaAtual = [];
+
+  function _capPrimeira(s) {
+    s = s || '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
 
   window.abrirMeAjuda = function() {
     _maStep = 0; _maLojaObj = null; _maProdObj = null; _maProdConfirmado = false; _maFabricaSel = null;
+    _maRedeFabSel = null; _maRedeRedeSel = null; _maRedeListaAtual = [];
     document.getElementById('ma-busca-loja').value = '';
     document.getElementById('ma-busca-prod').value = '';
     document.getElementById('ma-validade').value = '';
@@ -14424,7 +14477,7 @@ function salvarEdicao() {
 
   function _maIrStep0() {
     _maStep = 0;
-    ['ma-step0','ma-step1','ma-step2','ma-step3','ma-step4','ma-stepQ1','ma-stepQ2'].forEach(id => {
+    ['ma-step0','ma-step1','ma-step2','ma-step3','ma-step4','ma-stepQ1','ma-stepQ2','ma-stepR1','ma-stepR2','ma-stepR3'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
@@ -14444,6 +14497,8 @@ function salvarEdicao() {
       document.getElementById('ma-btn-prox').style.display = '';
       _maRenderLojas('');
       _maIrStep(1);
+    } else if (opcao === 'rede') {
+      _maAbrirConsultaRede();
     } else {
       _maAbrirConsulta();
     }
@@ -14491,12 +14546,16 @@ function salvarEdicao() {
     if (_maStep === 0) { fecharMeAjuda(); return; }
     if (_maStep === 'Q1') { _maIrStep0(); return; }
     if (_maStep === 'Q2') { _maAbrirConsulta(); return; }
+    if (_maStep === 'R1') { _maIrStep0(); return; }
+    if (_maStep === 'R2') { _maAbrirConsultaRede(); return; }
+    if (_maStep === 'R3') { _maVoltarParaListaRede(); return; }
     if (_maStep > 1) _maIrStep(_maStep - 1);
     else _maIrStep0();
   };
 
   window._maProximo = function() {
     if (_maStep === 'Q1') { _maPesquisarLancamentos(); return; }
+    if (_maStep === 'R1') { _maPesquisarPorRede(); return; }
     if (_maStep === 1) _maProxStep2();
     else if (_maStep === 2) _maProxStep3();
     else if (_maStep === 3) _maProxStep4();
@@ -14506,7 +14565,7 @@ function salvarEdicao() {
   function _maIrStep(n) {
     _maStep = n;
     // Garantir que screens de consulta e step0 estejam ocultos
-    ['ma-step0','ma-stepQ1','ma-stepQ2'].forEach(id => {
+    ['ma-step0','ma-stepQ1','ma-stepQ2','ma-stepR1','ma-stepR2','ma-stepR3'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
@@ -14927,9 +14986,95 @@ function salvarEdicao() {
 
   // ── CONSULTA: "O que eu já lancei?" ────────────────────────────────
 
+  function _maAbrirConsultaRede() {
+    _maStep = 'R1';
+    ['ma-step0','ma-step1','ma-step2','ma-step3','ma-step4','ma-stepQ1','ma-stepQ2','ma-stepR2','ma-stepR3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    document.getElementById('ma-stepR1').style.display = 'block';
+    const progBar = document.getElementById('ma-prog-bar');
+    if (progBar) progBar.style.display = 'none';
+    document.getElementById('ma-titulo').textContent = 'O que essa rede compra?';
+    document.getElementById('ma-sub').textContent = 'Selecione a fábrica e a rede';
+    document.getElementById('ma-btn-prox').style.display = '';
+    document.getElementById('ma-btn-prox').textContent = 'Pesquisar';
+    document.getElementById('ma-btn-prox').style.background = '#7c3aed';
+    document.getElementById('ma-btn-prox').disabled = false;
+    document.getElementById('ma-btn-prox').style.opacity = '1';
+    document.getElementById('ma-btn-voltar').textContent = 'Voltar';
+    const selFab  = document.getElementById('maR-fabrica');
+    const selRede = document.getElementById('maR-rede');
+    const fabsSet = [...new Set(catalogo.map(p => p.fabrica).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+    const redesSet = [...new Set(redesConfig.map(r => r.nome).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+    const fabAnterior = selFab.value, redeAnterior = selRede.value;
+    selFab.innerHTML = '<option value="">Selecione a fábrica...</option>' + fabsSet.map(f => `<option value="${esc(f)}">${esc(_capPrimeira(f))}</option>`).join('');
+    selRede.innerHTML = '<option value="">Selecione a rede...</option>' + redesSet.map(r => `<option value="${esc(r)}">${esc(_capPrimeira(r))}</option>`).join('');
+    if (fabsSet.includes(fabAnterior)) selFab.value = fabAnterior;
+    if (redesSet.includes(redeAnterior)) selRede.value = redeAnterior;
+  }
+
+  function _maPesquisarPorRede() {
+    const fab  = document.getElementById('maR-fabrica').value;
+    const rede = document.getElementById('maR-rede').value;
+    if (!fab || !rede) { showToast('Selecione a fábrica e a rede.', '#92400e'); return; }
+    _maRedeFabSel = fab;
+    _maRedeRedeSel = rede;
+    let lista = catalogo.filter(p => (p.fabrica||'') === fab);
+    lista = lista.map(p => ({...p, _codRede: _maGetCodRede(p, rede)})).filter(p => p._codRede);
+    lista.sort((a,b) => (a.codigo||'').localeCompare(b.codigo||'', 'pt-BR', {numeric:true}) || (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    _maRedeListaAtual = lista;
+
+    _maStep = 'R2';
+    document.getElementById('ma-stepR1').style.display = 'none';
+    document.getElementById('ma-stepR2').style.display = 'block';
+    document.getElementById('ma-titulo').textContent = _capPrimeira(fab) + ' · ' + _capPrimeira(rede);
+    document.getElementById('ma-sub').textContent = lista.length + ' produto' + (lista.length!==1?'s':'');
+    document.getElementById('ma-btn-prox').style.display = 'none';
+    document.getElementById('ma-btn-voltar').textContent = 'Voltar';
+
+    const el = document.getElementById('maR-lista');
+    if (!lista.length) {
+      el.innerHTML = `<div style="text-align:center;padding:28px 0;color:#94a3b8;font-size:14px"><i class="ti ti-package-off" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>Nenhum produto dessa fábrica com código cadastrado para essa rede.</div>`;
+      return;
+    }
+    el.innerHTML = lista.map((p,i) => `
+      <button type="button" onclick="_maVerProdutoRede(${i})" style="display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer;font-size:13px;color:#1e293b">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.codigo||'')}- ${esc(p.nome||'')}</span>
+        <i class="ti ti-chevron-right" style="font-size:15px;color:#94a3b8;flex-shrink:0;margin-left:8px" aria-hidden="true"></i>
+      </button>`).join('');
+  }
+
+  window._maVerProdutoRede = function(i) {
+    const p = _maRedeListaAtual[i];
+    if (!p) return;
+    _maStep = 'R3';
+    document.getElementById('ma-stepR2').style.display = 'none';
+    document.getElementById('ma-stepR3').style.display = 'block';
+    document.getElementById('ma-titulo').textContent = (p.codigo ? p.codigo+'- ' : '') + (p.nome||'');
+    document.getElementById('ma-sub').textContent = 'Detalhes do produto';
+    document.getElementById('ma-btn-prox').style.display = 'none';
+    document.getElementById('ma-btn-voltar').textContent = 'Voltar';
+    document.getElementById('maR-det-codLabel').textContent = 'Código na rede (' + _capPrimeira(_maRedeRedeSel||'') + ')';
+    document.getElementById('maR-det-cod').textContent = p._codRede || '—';
+    document.getElementById('maR-det-ean').textContent = p.ean || '—';
+    const und = (p.und||'').toUpperCase();
+    document.getElementById('maR-det-qtde').textContent = p.qtdeCaixa ? (p.qtdeCaixa + (und?' '+und:'')) : '—';
+    document.getElementById('maR-det-shelf').textContent = p.shelfLife ? (p.shelfLife + ' dias') : '—';
+  };
+
+  function _maVoltarParaListaRede() {
+    _maStep = 'R2';
+    document.getElementById('ma-stepR3').style.display = 'none';
+    document.getElementById('ma-stepR2').style.display = 'block';
+    document.getElementById('ma-titulo').textContent = _capPrimeira(_maRedeFabSel||'') + ' · ' + _capPrimeira(_maRedeRedeSel||'');
+    document.getElementById('ma-sub').textContent = _maRedeListaAtual.length + ' produto' + (_maRedeListaAtual.length!==1?'s':'');
+    document.getElementById('ma-btn-voltar').textContent = 'Voltar';
+  }
+
   function _maAbrirConsulta() {
     _maStep = 'Q1';
-    ['ma-step0','ma-step1','ma-step2','ma-step3','ma-step4','ma-stepQ2'].forEach(id => {
+    ['ma-step0','ma-step1','ma-step2','ma-step3','ma-step4','ma-stepQ2','ma-stepR1','ma-stepR2','ma-stepR3'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
