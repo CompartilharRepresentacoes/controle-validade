@@ -7894,6 +7894,7 @@ function renderTabela() {
     if (isDiretor) {
       thead.innerHTML =
         `<th onclick="setSortCol('status')">Status ${sa}</th>` +
+        `<th onclick="setSortCol('dataRegistro')">Data ${sa}</th>` +
         `<th onclick="setSortCol('fabrica')">Fábrica ${sa}</th>` +
         `<th onclick="setSortCol('loja')">Loja ${sa}</th>` +
         `<th onclick="setSortCol('produto')">Produto ${sa}</th>` +
@@ -7904,6 +7905,7 @@ function renderTabela() {
     } else if (isVendedor) {
       thead.innerHTML =
         `<th onclick="setSortCol('status')">Status ${sa}</th>` +
+        `<th onclick="setSortCol('dataRegistro')">Data ${sa}</th>` +
         `<th onclick="setSortCol('fabrica')">Fábrica ${sa}</th>` +
         `<th onclick="setSortCol('loja')">Loja ${sa}</th>` +
         `<th onclick="setSortCol('produto')">Produto ${sa}</th>` +
@@ -7915,6 +7917,7 @@ function renderTabela() {
     } else if (isPromotor) {
       thead.innerHTML =
         `<th onclick="setSortCol('status')">Status ${sa}</th>` +
+        `<th onclick="setSortCol('dataRegistro')">Data ${sa}</th>` +
         `<th onclick="setSortCol('fabrica')">Fábrica ${sa}</th>` +
         `<th onclick="setSortCol('loja')">Loja ${sa}</th>` +
         `<th onclick="setSortCol('produto')">Produto ${sa}</th>` +
@@ -7927,6 +7930,7 @@ function renderTabela() {
       // admin — layout completo
       thead.innerHTML =
         `<th onclick="setSortCol('status')">Status ${sa}</th>` +
+        `<th onclick="setSortCol('dataRegistro')">Data ${sa}</th>` +
         `<th onclick="setSortCol('fabrica')">Fábrica ${sa}</th>` +
         `<th onclick="setSortCol('loja')">Loja ${sa}</th>` +
         `<th onclick="setSortCol('produto')">Produto ${sa}</th>` +
@@ -7963,8 +7967,9 @@ function renderTabela() {
     const lojaUF = p.uf ? `<strong>${esc(p.uf)}</strong> · ${esc(p.loja)}` : esc(p.loja);
 
     if (isDiretor) {
-      // Diretor: Status / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Preço
+      // Diretor: Status / Data / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Preço
       return `<tr class="${rowCls}"${rowStyle}>${badge}
+        <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
         <td class="font-medium">${esc(p.produto)}${soBadge}</td>
@@ -7976,8 +7981,9 @@ function renderTabela() {
     }
 
     if (isVendedor) {
-      // Vendedor: Status / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Preço / Promotor
+      // Vendedor: Status / Data / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Preço / Promotor
       return `<tr class="${rowCls}"${rowStyle}>${badge}
+        <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
         <td class="font-medium">${esc(p.produto)}${soBadge}</td>
@@ -7990,8 +7996,9 @@ function renderTabela() {
     }
 
     if (isPromotor) {
-      // Promotor: Status / Fábrica / Loja / Produto / Qtd / Vencimento / Dias / Preço / Ação
+      // Promotor: Status / Data / Fábrica / Loja / Produto / Qtd / Vencimento / Dias / Preço / Ação
       return `<tr class="${rowCls}"${rowStyle}>${badge}
+        <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${esc(p.loja)}</td>
         <td class="font-medium">${esc(p.produto)}${soBadge}</td>
@@ -8003,8 +8010,9 @@ function renderTabela() {
       </tr>`;
     }
 
-    // Admin — layout completo: Status / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Promotor / Preço / Ações
+    // Admin — layout completo: Status / Data / Fábrica / Loja(UF·Nome) / Produto / Qtd / Vencimento / Dias / Promotor / Preço / Ações
     return `<tr class="${rowCls}"${rowStyle}>${badge}
+      <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
       <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
       <td class="font-medium">${lojaUF}</td>
       <td class="font-medium">${esc(p.produto)}${soBadge}</td>
