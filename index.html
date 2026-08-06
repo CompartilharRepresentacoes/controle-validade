@@ -10692,9 +10692,7 @@ function initRoteirizacao() {
     if (selVend) {
       selVend.innerHTML = '<option value="">Selecione um vendedor…</option>' +
         vendedores.map(v => {
-          const ufsStr = (v.ufs||[]).join(' · ');
-          const label  = ufsStr ? `${v.nome} (${ufsStr})` : v.nome;
-          return `<option value="${esc(v.nome)}" ${v.nome===cv?'selected':''}>${esc(label)}</option>`;
+          return `<option value="${esc(v.nome)}" ${v.nome===cv?'selected':''}>${esc(v.nome)}</option>`;
         }).join('');
     }
     if (selVend && selVend.value) {
@@ -10788,7 +10786,7 @@ function _rotAplicarFiltros() {
   if (!_rotLojasTodas.length) return;
   _rotRenderVinculadas();
   const rede     = document.getElementById('rotSelRede')?.value || '';
-  const busca    = (document.getElementById('rotBuscaLoja')?.value || '').trim().toLowerCase();
+  const busca    = normTxt((document.getElementById('rotBuscaLoja')?.value || '').trim());
   const listDiv  = document.getElementById('rotListaLojas');
   const dicaBusca= document.getElementById('rotDicaBusca');
   const infoEl   = document.getElementById('rotBuscaInfo');
@@ -10805,7 +10803,7 @@ function _rotAplicarFiltros() {
   // Filtrar excluindo já vinculadas (aparecem na seção acima)
   let filtradas = _rotLojasTodas.filter(l => !_rotState[String(l.id)]?.vinculada);
   if (rede)  filtradas = filtradas.filter(l => l.rede === rede);
-  if (busca) filtradas = filtradas.filter(l => (l.nome || '').toLowerCase().includes(busca));
+  if (busca) filtradas = filtradas.filter(l => normTxt(l.nome || '').includes(busca));
 
   if (dicaBusca) dicaBusca.style.display = 'none';
   if (listDiv)   listDiv.style.display   = filtradas.length ? '' : 'none';
