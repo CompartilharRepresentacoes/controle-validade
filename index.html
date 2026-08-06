@@ -11124,14 +11124,22 @@ function gerarPdfRoteiros() {
   if (!nomes.length) { showToast('⚠️ Selecione ao menos um promotor.', '#92400e'); return; }
   if (typeof window.jspdf === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca de PDF e tente novamente.', '#92400e'); return; }
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const mesLabel   = _rotMesLabel(_rotGetMesAtual());
-  const margemEsq  = 14;
-  const larguraPag = doc.internal.pageSize.getWidth();
-  let y = 18;
+  const doc = new jsPDF({ orientation: 'landscape' });
+  const mesLabel    = _rotMesLabel(_rotGetMesAtual());
+  const margemEsq   = 14;
+  const margemTopo  = 18;
+  const larguraPag  = doc.internal.pageSize.getWidth();
+  const alturaPag   = doc.internal.pageSize.getHeight();
+  const nCols       = _DIAS_SEMANA.length;
+  const colW        = (larguraPag - margemEsq*2) / nCols;
+  const fonteCel    = 8;
+  const lineH       = 3.6;
+  const padCel      = 2;
+  const altHeaderTb = 7;
 
   nomes.forEach((nome, idx) => {
-    if (idx > 0) { doc.addPage(); y = 18; }
+    if (idx > 0) doc.addPage();
+    let y = margemTopo;
     doc.setFontSize(14);
     doc.setTextColor(30,58,95);
     doc.setFont(undefined, 'bold');
@@ -11148,39 +11156,63 @@ function gerarPdfRoteiros() {
     doc.setFont(undefined, 'normal');
     doc.setTextColor(100,100,100);
     doc.text(`${lojasVinc.length} loja(s) vinculada(s)${ufsStr?' · '+ufsStr:''}`, margemEsq, y);
-    y += 7;
-    doc.setDrawColor(220,220,220);
-    doc.line(margemEsq, y, larguraPag-margemEsq, y);
-    y += 7;
+    y += 6;
 
     if (!lojasVinc.length) {
       doc.setFontSize(10);
       doc.setTextColor(150,150,150);
-      doc.text('Nenhuma loja vinculada neste mês.', margemEsq, y);
+      doc.text('Nenhuma loja vinculada neste mês.', margemEsq, y+4);
       return;
     }
 
-    _DIAS_SEMANA.forEach(dia => {
-      const doDia = lojasVinc.filter(l => (l.diasVisita||[]).includes(dia));
-      doc.setFontSize(10);
+    // Lojas de cada dia (Seg..Sáb) e o texto já quebrado para caber na largura da coluna
+    const porDia = _DIAS_SEMANA.map(dia => lojasVinc.filter(l => (l.diasVisita||[]).includes(dia)));
+    doc.setFontSize(fonteCel);
+    const cortesPorDia = porDia.map(doDia => doDia.map(l => doc.splitTextToSize(l.nome||'', colW - padCel*2)));
+
+    const desenharHeaderTabela = () => {
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(30,64,175);
-      doc.text(dia, margemEsq, y);
-      doc.setFont(undefined, 'normal');
-      if (!doDia.length) {
-        doc.setTextColor(180,180,180);
-        doc.text('—', margemEsq+22, y);
-        y += 7;
-      } else {
-        doDia.forEach((l, i2) => {
-          doc.setTextColor(30,30,30);
-          doc.text('• ' + (l.nome||''), margemEsq+22, y);
-          y += 5.5;
-        });
-        y += 1.5;
+      doc.setFontSize(9.5);
+      _DIAS_SEMANA.forEach((dia, c) => {
+        const x = margemEsq + c*colW;
+        doc.setFillColor(30,64,175);
+        doc.rect(x, y, colW, altHeaderTb, 'F');
+        doc.setTextColor(255,255,255);
+        doc.text(dia, x + colW/2, y + altHeaderTb/2 + 1.2, { align: 'center' });
+      });
+      y += altHeaderTb;
+    };
+    desenharHeaderTabela();
+
+    // "Restante" — o que ainda falta desenhar de cada coluna, linha de loja a linha de loja
+    const restante = porDia.map(d => d.slice());
+    const restanteCortes = cortesPorDia.map(d => d.slice());
+
+    while (restante.some(d => d.length)) {
+      const linhasPorCol = restanteCortes.map(d => d.length ? d[0].length : 1);
+      const alturaLinha = Math.max(6, Math.max(...linhasPorCol)*lineH + padCel*2);
+
+      if (y + alturaLinha > alturaPag - 14) {
+        doc.addPage();
+        y = margemTopo;
+        desenharHeaderTabela();
       }
-      if (y > 270) { doc.addPage(); y = 18; }
-    });
+
+      _DIAS_SEMANA.forEach((dia, c) => {
+        const x = margemEsq + c*colW;
+        doc.setDrawColor(226,232,240);
+        doc.rect(x, y, colW, alturaLinha);
+        restante[c].shift();
+        const linhas = restanteCortes[c].shift();
+        if (linhas) {
+          doc.setFont(undefined, 'normal');
+          doc.setFontSize(fonteCel);
+          doc.setTextColor(30,41,59);
+          doc.text(linhas, x + padCel, y + padCel + lineH - 1);
+        }
+      });
+      y += alturaLinha;
+    }
   });
 
   doc.save('roteiros_' + _rotGetMesAtual() + '.pdf');
