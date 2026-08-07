@@ -2106,21 +2106,51 @@
             <span style="font-size:13px;font-weight:700;color:#fff">Ruptura de Gôndola</span>
             <span style="font-size:11px;color:#93c5fd;margin-left:4px">— calculado automaticamente pelo Histórico</span>
           </div>
-          <!-- Filtros -->
-          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
-            <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as Redes</option></select>
-            <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Vendedores</option></select>
-            <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as UFs</option></select>
-            <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as Lojas</option></select>
-            <select id="gRuptPromotor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Promotores</option></select>
-            <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Produtos</option></select>
-            <div style="width:1px;height:20px;background:#e2e8f0;align-self:center"></div>
-            <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-            <span style="font-size:12px;color:#94a3b8">até</span>
-            <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-            <button onclick="limparFiltrosGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-500 hover:bg-slate-50 flex items-center gap-1" style="height:38px;white-space:nowrap">
-              <i class="ti ti-x" style="font-size:13px" aria-hidden="true"></i> Limpar filtro
+          <!-- Filtrar por data -->
+          <div class="flex flex-wrap items-end gap-3" style="margin-bottom:12px">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Data inicial</label>
+              <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Data final</label>
+              <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+            </div>
+            <button type="button" onclick="limparFiltrosGraficoRuptura()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
+              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
             </button>
+          </div>
+          <!-- Cascata -->
+          <div class="flex flex-wrap items-end gap-3" style="margin-bottom:14px">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Fábrica</label>
+              <select id="gRuptFabrica" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Vendedor</label>
+              <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">UF</label>
+              <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Rede</label>
+              <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Loja</label>
+              <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Produto</label>
+              <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
+            </div>
           </div>
           <!-- Cards de resumo -->
           <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
@@ -15794,7 +15824,7 @@ function _calcularRupturas() {
   const grupos = {};
   historico.forEach(function(m) {
     const key = (m.produto || m.prod || '') + '|||' + (m.lojaId || m.loja || '');
-    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.promotor || '', movs: [] };
+    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.promotor || '', fabrica: m.fabrica || '', movs: [] };
     grupos[key].movs.push(m);
   });
 
@@ -15837,6 +15867,7 @@ function _calcularRupturas() {
         uf: g.uf,
         vendedor: g.vendedor,
         promotor: g.promotor,
+        fabrica: g.fabrica,
         dataSaida: dataSaida,
         dataFim: proxEntrada,
         dias: dias,
@@ -15858,16 +15889,33 @@ function _gRuptPopularSelects(todasRupturas) {
       [...new Set(vals.filter(Boolean))].sort(function(a,b){return a.localeCompare(b,'pt-BR');})
         .map(function(v){return '<option value="' + esc(v) + '"' + (v===cur?' selected':'') + '>' + esc(v) + '</option>';}).join('');
   };
-  setOpts('gRuptRede',    todasRupturas.map(function(r){return r.rede;}));
-  setOpts('gRuptVendedor',todasRupturas.map(function(r){return r.vendedor;}));
-  setOpts('gRuptUF',      todasRupturas.map(function(r){return r.uf;}));
-  setOpts('gRuptLoja',    todasRupturas.map(function(r){return r.loja;}));
-  setOpts('gRuptPromotor',todasRupturas.map(function(r){return r.promotor;}));
-  setOpts('gRuptProduto', todasRupturas.map(function(r){return r.produto;}));
+
+  // ── Cascata: Fábrica → Vendedor → UF → Rede → Loja → Produto ──
+  setOpts('gRuptFabrica', todasRupturas.map(function(r){return r.fabrica;}));
+  const fFab = document.getElementById('gRuptFabrica')?.value || '';
+
+  const baseFab = fFab ? todasRupturas.filter(function(r){return r.fabrica===fFab;}) : todasRupturas;
+  setOpts('gRuptVendedor', baseFab.map(function(r){return r.vendedor;}));
+  const fVend = document.getElementById('gRuptVendedor')?.value || '';
+
+  const baseVend = fVend ? baseFab.filter(function(r){return r.vendedor===fVend;}) : baseFab;
+  setOpts('gRuptUF', baseVend.map(function(r){return r.uf;}));
+  const fUF = document.getElementById('gRuptUF')?.value || '';
+
+  const baseUF = fUF ? baseVend.filter(function(r){return r.uf===fUF;}) : baseVend;
+  setOpts('gRuptRede', baseUF.map(function(r){return r.rede;}));
+  const fRede = document.getElementById('gRuptRede')?.value || '';
+
+  const baseRede = fRede ? baseUF.filter(function(r){return r.rede===fRede;}) : baseUF;
+  setOpts('gRuptLoja', baseRede.map(function(r){return r.loja;}));
+  const fLoja = document.getElementById('gRuptLoja')?.value || '';
+
+  const baseLoja = fLoja ? baseRede.filter(function(r){return r.loja===fLoja;}) : baseRede;
+  setOpts('gRuptProduto', baseLoja.map(function(r){return r.produto;}));
 }
 
 function limparFiltrosGraficoRuptura() {
-  ['gRuptRede','gRuptVendedor','gRuptUF','gRuptLoja','gRuptPromotor','gRuptProduto'].forEach(function(id){
+  ['gRuptFabrica','gRuptVendedor','gRuptUF','gRuptRede','gRuptLoja','gRuptProduto'].forEach(function(id){
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['gRuptDataIni','gRuptDataFim'].forEach(function(id){
@@ -15881,11 +15929,11 @@ function renderGraficoRuptura() {
   const todasRupturas = _calcularRupturas();
   _gRuptPopularSelects(todasRupturas);
 
-  const fRede   = document.getElementById('gRuptRede')?.value || '';
+  const fFab    = document.getElementById('gRuptFabrica')?.value || '';
   const fVend   = document.getElementById('gRuptVendedor')?.value || '';
   const fUF     = document.getElementById('gRuptUF')?.value || '';
+  const fRede   = document.getElementById('gRuptRede')?.value || '';
   const fLoja   = document.getElementById('gRuptLoja')?.value || '';
-  const fProm   = document.getElementById('gRuptPromotor')?.value || '';
   const fProd   = document.getElementById('gRuptProduto')?.value || '';
   const fIniStr = document.getElementById('gRuptDataIni')?.value || '';
   const fFimStr = document.getElementById('gRuptDataFim')?.value || '';
@@ -15899,11 +15947,11 @@ function renderGraficoRuptura() {
   const fFim = parseDataBR(fFimStr);
 
   let lista = todasRupturas.filter(function(r) {
-    if (fRede  && r.rede     !== fRede)   return false;
+    if (fFab   && r.fabrica  !== fFab)    return false;
     if (fVend  && r.vendedor !== fVend)   return false;
     if (fUF    && r.uf       !== fUF)     return false;
+    if (fRede  && r.rede     !== fRede)   return false;
     if (fLoja  && r.loja     !== fLoja)   return false;
-    if (fProm  && r.promotor !== fProm)   return false;
     if (fProd  && r.produto  !== fProd)   return false;
     if (fIni   && r.dataSaida < fIni)     return false;
     if (fFim) { const fim = new Date(fFim); fim.setHours(23,59,59); if (r.dataSaida > fim) return false; }
