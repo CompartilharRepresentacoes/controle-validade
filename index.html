@@ -16226,23 +16226,61 @@ function renderGraficoRuptura() {
     '</tr>';
   }).join('');
 
-  // Itens nunca lançados entram na mesma tabela, com uma linha resumo se passar do limite exibido
-  const CAP_NUNCA = 20;
-  const nuncaExibir = nuncaLancados.slice(0, CAP_NUNCA);
-  const nuncaRestantes = nuncaLancados.length - nuncaExibir.length;
-  tbHtml += nuncaExibir.map(function(r) {
-    return '<tr>' +
-      '<td style="font-weight:600;color:#94a3b8">' + esc(r.produto) + '</td>' +
-      '<td style="color:#94a3b8">' + esc(r.loja) + '</td>' +
-      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
-      '<td style="color:#94a3b8">' + esc(r.rede||'—') + '</td>' +
-      '<td colspan="2" style="font-size:11px;color:#94a3b8">— nenhum lançamento registrado</td>' +
-      '<td style="color:#94a3b8">—</td>' +
-      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">○ Nunca lançado</span></td>' +
-    '</tr>';
-  }).join('');
-  if (nuncaRestantes > 0) {
-    tbHtml += '<tr><td colspan="8" style="text-align:center;font-size:11px;color:#cbd5e1;padding:8px">+ ' + nuncaRestantes + ' itens da rede sem nenhum lançamento — ver todos no Excel exportado</td></tr>';
+  // Itens nunca lançados entram na mesma tabela.
+  // Sem loja filtrada: agrupa por produto (senão repetiria a mesma linha em cada loja da rede) —
+  // clique no produto expande a lista de lojas. Com loja filtrada: já vem escopado a 1 loja, direto.
+  if (fLoja) {
+    const CAP_NUNCA = 20;
+    const nuncaExibir = nuncaLancados.slice(0, CAP_NUNCA);
+    const nuncaRestantes = nuncaLancados.length - nuncaExibir.length;
+    tbHtml += nuncaExibir.map(function(r) {
+      return '<tr>' +
+        '<td style="font-weight:600;color:#94a3b8">' + esc(r.produto) + '</td>' +
+        '<td style="color:#94a3b8">' + esc(r.loja) + '</td>' +
+        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
+        '<td style="color:#94a3b8">' + esc(r.rede||'—') + '</td>' +
+        '<td colspan="2" style="font-size:11px;color:#94a3b8">— nenhum lançamento registrado</td>' +
+        '<td style="color:#94a3b8">—</td>' +
+        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">○ Nunca lançado</span></td>' +
+      '</tr>';
+    }).join('');
+    if (nuncaRestantes > 0) {
+      tbHtml += '<tr><td colspan="8" style="text-align:center;font-size:11px;color:#cbd5e1;padding:8px">+ ' + nuncaRestantes + ' itens da rede sem nenhum lançamento — ver todos no Excel exportado</td></tr>';
+    }
+  } else {
+    const gruposMap = {};
+    nuncaLancados.forEach(function(r) {
+      const key = r.produto;
+      if (!gruposMap[key]) gruposMap[key] = { produto: r.produto, fabrica: r.fabrica, rede: r.rede, lojas: [] };
+      gruposMap[key].lojas.push({ nome: r.loja, uf: r.uf });
+    });
+    const grupos = Object.values(gruposMap).sort(function(a,b){ return b.lojas.length - a.lojas.length; });
+    const CAP_CHIPS = 30;
+    window._gRuptToggleNuncaGrupo = function(idx) {
+      const det = document.getElementById('gRuptNuncaDet' + idx);
+      const chev = document.getElementById('gRuptNuncaChev' + idx);
+      if (!det) return;
+      const abrir = det.style.display === 'none';
+      det.style.display = abrir ? '' : 'none';
+      if (chev) chev.className = abrir ? 'ti ti-chevron-down' : 'ti ti-chevron-right';
+    };
+    tbHtml += grupos.map(function(g, idx) {
+      const chips = g.lojas.slice(0, CAP_CHIPS).map(function(l) {
+        return '<span style="font-size:11px;background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:6px">' + esc(l.uf||'—') + ' · ' + esc(l.nome) + '</span>';
+      }).join('');
+      const restoChips = g.lojas.length - CAP_CHIPS;
+      const linhaPrincipal = '<tr onclick="_gRuptToggleNuncaGrupo(' + idx + ')" style="cursor:pointer' + (idx%2 ? ';background:#fafbfc' : '') + '">' +
+        '<td style="font-weight:600;color:#1e293b" colspan="7"><i id="gRuptNuncaChev' + idx + '" class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-right:6px" aria-hidden="true"></i>' + esc(g.produto) + '</td>' +
+        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap">○ Nunca lançado em ' + g.lojas.length + (g.lojas.length===1?' loja':' lojas') + '</span></td>' +
+      '</tr>';
+      const linhaDetalhe = '<tr id="gRuptNuncaDet' + idx + '" style="display:none">' +
+        '<td colspan="8" style="background:#fafbfc;padding:10px 14px">' +
+          '<div style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">Lojas da ' + esc(g.rede||'rede') + ' sem nenhum lançamento deste produto:</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chips + (restoChips>0 ? '<span style="font-size:11px;color:#cbd5e1;padding:3px 9px">+ ' + restoChips + ' lojas</span>' : '') + '</div>' +
+        '</td>' +
+      '</tr>';
+      return linhaPrincipal + linhaDetalhe;
+    }).join('');
   }
 
   if (cont) cont.innerHTML =
