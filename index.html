@@ -2105,6 +2105,9 @@
             <i class="ti ti-alert-triangle" style="font-size:16px;color:#93c5fd" aria-hidden="true"></i>
             <span style="font-size:13px;font-weight:700;color:#fff">Ruptura de Gôndola</span>
             <span style="font-size:11px;color:#93c5fd;margin-left:4px">— calculado automaticamente pelo Histórico</span>
+            <button onclick="exportarExcelRuptura()" style="margin-left:auto;background:#fff;color:#1e3a5f;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap">
+              <i class="ti ti-file-spreadsheet" style="font-size:13px" aria-hidden="true"></i> Exportar Excel
+            </button>
           </div>
           <!-- Filtrar por data -->
           <div class="flex flex-wrap items-end gap-3" style="margin-bottom:12px">
@@ -15820,11 +15823,18 @@ async function carregarDados() {
 // ── RUPTURA DE GÔNDOLA (calculada do histórico) ──
 // ══════════════════════════════════════════════
 
+// Vendedor não é gravado no histórico — deriva-se pela UF (mesma lógica usada nos relatórios Excel)
+function _vendedorPorUF(uf) {
+  if (!uf) return '';
+  const v = usuarios.find(function(u){ return u.role === 'vendedor' && Array.isArray(u.ufs) && u.ufs.includes(uf); });
+  return v ? v.nome : '';
+}
+
 function _calcularRupturas() {
   const grupos = {};
   historico.forEach(function(m) {
     const key = (m.produto || m.prod || '') + '|||' + (m.lojaId || m.loja || '');
-    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.promotor || '', fabrica: m.fabrica || '', movs: [] };
+    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', promotor: m.promotor || '', fabrica: m.fabrica || '', movs: [] };
     grupos[key].movs.push(m);
   });
 
@@ -15865,7 +15875,7 @@ function _calcularRupturas() {
         lojaId: g.lojaId,
         rede: g.rede,
         uf: g.uf,
-        vendedor: g.vendedor,
+        vendedor: _vendedorPorUF(g.uf),
         promotor: g.promotor,
         fabrica: g.fabrica,
         dataSaida: dataSaida,
@@ -15879,7 +15889,26 @@ function _calcularRupturas() {
   return rupturas;
 }
 
-function _gRuptPopularSelects(todasRupturas) {
+// Universo completo para popular os filtros: TODAS as combinações já lançadas no
+// Histórico, independente de terem gerado uma ruptura calculada ou não — assim uma
+// fábrica/rede/vendedor sem ruptura no momento continua aparecendo pra seleção
+// (só a lista de resultados fica vazia, o que é o comportamento esperado).
+function _gRuptUniverso() {
+  return historico.map(function(m) {
+    const uf = m.uf || '';
+    return {
+      fabrica:  m.fabrica || '',
+      vendedor: _vendedorPorUF(uf),
+      uf:       uf,
+      rede:     m.rede || '',
+      loja:     m.loja || '',
+      produto:  m.produto || m.prod || '',
+    };
+  });
+}
+
+function _gRuptPopularSelects() {
+  const universo = _gRuptUniverso();
   const setOpts = function(id, vals) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -15891,10 +15920,10 @@ function _gRuptPopularSelects(todasRupturas) {
   };
 
   // ── Cascata: Fábrica → Vendedor → UF → Rede → Loja → Produto ──
-  setOpts('gRuptFabrica', todasRupturas.map(function(r){return r.fabrica;}));
+  setOpts('gRuptFabrica', universo.map(function(r){return r.fabrica;}));
   const fFab = document.getElementById('gRuptFabrica')?.value || '';
 
-  const baseFab = fFab ? todasRupturas.filter(function(r){return r.fabrica===fFab;}) : todasRupturas;
+  const baseFab = fFab ? universo.filter(function(r){return r.fabrica===fFab;}) : universo;
   setOpts('gRuptVendedor', baseFab.map(function(r){return r.vendedor;}));
   const fVend = document.getElementById('gRuptVendedor')?.value || '';
 
@@ -15924,10 +15953,12 @@ function limparFiltrosGraficoRuptura() {
   renderGraficoRuptura();
 }
 
+let _gRuptListaAtual = [];
+
 function renderGraficoRuptura() {
   if (document.getElementById('viewGraficos')?.style.display === 'none') return;
   const todasRupturas = _calcularRupturas();
-  _gRuptPopularSelects(todasRupturas);
+  _gRuptPopularSelects();
 
   const fFab    = document.getElementById('gRuptFabrica')?.value || '';
   const fVend   = document.getElementById('gRuptVendedor')?.value || '';
@@ -15957,6 +15988,7 @@ function renderGraficoRuptura() {
     if (fFim) { const fim = new Date(fFim); fim.setHours(23,59,59); if (r.dataSaida > fim) return false; }
     return true;
   });
+  _gRuptListaAtual = lista;
 
   const cont = document.getElementById('gRuptConteudo');
   const statsEl = document.getElementById('gRuptStats');
@@ -16044,6 +16076,85 @@ function renderGraficoRuptura() {
     '</div>';
 }
 
+// ── Exportar Excel — Ruptura de Gôndola ──────
+async function exportarExcelRuptura() {
+  if (typeof ExcelJS === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca...','#92400e'); return; }
+  const lista = [..._gRuptListaAtual].sort(function(a,b){ return b.dias - a.dias; });
+  if (!lista.length) { showToast('Nenhuma ruptura para exportar com esses filtros.','#92400e'); return; }
+
+  showToast('⏳ Gerando planilha...','#1e3a5f');
+  try {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Controle de Validade'; wb.created = new Date();
+    const ws = wb.addWorksheet('Ruptura de Gôndola');
+    ws.pageSetup = { paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0,
+      margins:{left:.25,right:.25,top:.5,bottom:.5,header:.2,footer:.2} };
+
+    const AZUL = 'FF0E2841';
+    const cols = ['PRODUTO','LOJA','UF','REDE','FÁBRICA','VENDEDOR','ÚLTIMO REGISTRO (SAÍDA)','PRÓXIMA ENTRADA','DIAS RUPTURA','SITUAÇÃO'];
+    ws.columns = [{width:34},{width:34},{width:7},{width:18},{width:16},{width:18},{width:20},{width:18},{width:14},{width:14}];
+
+    const logoB64 = await getLogoBase64();
+    ws.mergeCells('A1:J1');
+    const c1 = ws.getCell('A1');
+    c1.value = 'Compartilhar Vendas e Promo';
+    c1.font  = {name:'Arial',size:15,bold:true,color:{argb:AZUL}};
+    c1.alignment = {horizontal:'left',vertical:'middle'};
+    ws.getRow(1).height = 24;
+    ws.mergeCells('A2:J2');
+    const c2 = ws.getCell('A2');
+    c2.value = 'Relatório de Ruptura de Gôndola';
+    c2.font  = {name:'Arial',size:11,color:{argb:'FF1B6B7A'}};
+    c2.alignment = {horizontal:'left',vertical:'middle'};
+    ws.getRow(2).height = 18;
+    ws.mergeCells('A3:J3');
+    const c3 = ws.getCell('A3');
+    c3.value = `Emitido em: ${new Date().toLocaleDateString('pt-BR')}`;
+    c3.font  = {name:'Arial',size:10,color:{argb:'FF64748B'}};
+    c3.alignment = {horizontal:'left',vertical:'middle'};
+    ws.getRow(3).height = 16;
+    [4,5].forEach(r => ws.getRow(r).height = 8);
+    if (logoB64) {
+      try {
+        const imgId = wb.addImage({base64:logoB64,extension:'png'});
+        ws.addImage(imgId,{tl:{col:7,row:0},ext:{width:220,height:57},editAs:'oneCell'});
+      } catch(e){}
+    }
+
+    const hr = ws.getRow(6); hr.height = 18;
+    cols.forEach((h,i) => {
+      const c = hr.getCell(i+1);
+      c.value = h;
+      c.font  = {name:'Arial',size:11,bold:true,color:{argb:'FFFFFFFF'}};
+      c.fill  = {type:'pattern',pattern:'solid',fgColor:{argb:AZUL}};
+      c.alignment = {horizontal:'center',vertical:'middle'};
+    });
+    ws.autoFilter = {from:'A6', to:'J6'};
+
+    lista.forEach((r,i) => {
+      const rn  = i+7;
+      const row = ws.getRow(rn); row.height = 15;
+      const situacao = r.ativa ? 'Ativa' : 'Resolvida';
+      const fg = r.ativa ? 'FF991B1B' : 'FF166534';
+      const bg = r.ativa ? 'FFFEF2F2' : 'FFF0FDF4';
+      const vals = [
+        r.produto, r.loja, r.uf||'—', r.rede||'—', r.fabrica||'—', r.vendedor||'—',
+        r.dataSaida||null, r.ativa ? null : (r.dataFim||null), r.dias, situacao
+      ];
+      vals.forEach((v,ci) => {
+        const c = row.getCell(ci+1);
+        c.value = v;
+        c.font  = {name:'Arial',size:10,bold:ci===8||ci===9,color:{argb:ci===9?fg:'FF1E293B'}};
+        c.alignment = {horizontal:(ci===2||ci===8||ci===9)?'center':'left',vertical:'middle'};
+        if (ci===9) c.fill = {type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+        if ((ci===6||ci===7) && v) c.numFmt = 'dd/mm/yyyy';
+        if (ci===7 && r.ativa) { c.value = '— em aberto'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
+      });
+    });
+
+    await _downloadExcel(wb, 'Ruptura de Gôndola.xlsx');
+  } catch(e) { console.error(e); showToast('⚠️ Erro ao gerar planilha: '+e.message,'#92400e'); }
+}
 
 carregarDados();
 </script>
