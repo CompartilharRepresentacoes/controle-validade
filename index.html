@@ -16086,40 +16086,61 @@ function _gRuptPopularSelects() {
   };
 
   // ── Cascata: Fábrica → Vendedor → UF → Rede → Loja → Produto ──
-  setOpts('gRuptFabrica', universo.map(function(r){return r.fabrica;}));
+  // Fábrica: lista cadastral completa (todas as fábricas cadastradas), não só as que já têm lançamento.
+  setOpts('gRuptFabrica', fabricas.map(function(f){return f.nome;}).concat(universo.map(function(r){return r.fabrica;})));
   const fFab = document.getElementById('gRuptFabrica')?.value || '';
 
-  const baseFab = fFab ? universo.filter(function(r){return r.fabrica===fFab;}) : universo;
-  setOpts('gRuptVendedor', baseFab.map(function(r){return r.vendedor;}));
+  // Vendedor: lista cadastral completa de vendedores, independente da Fábrica (vendedor não é amarrado a fábrica).
+  const vendedores = usuarios.filter(function(u){return u.role==='vendedor';});
+  setOpts('gRuptVendedor', vendedores.map(function(u){return u.nome;}).concat(universo.map(function(r){return r.vendedor;})));
   const fVend = document.getElementById('gRuptVendedor')?.value || '';
+  const vendSel = fVend ? vendedores.find(function(u){return u.nome===fVend;}) : null;
 
-  const baseVend = fVend ? baseFab.filter(function(r){return r.vendedor===fVend;}) : baseFab;
-  setOpts('gRuptUF', baseVend.map(function(r){return r.uf;}));
+  // UF: se há Vendedor selecionado, mostra as UFs dele; senão, união das UFs de todos os vendedores + de todas as lojas cadastradas.
+  let ufsOpts;
+  if (vendSel) {
+    ufsOpts = vendSel.ufs || [];
+  } else {
+    const ufsVendedores = vendedores.reduce(function(acc,u){ return acc.concat(u.ufs||[]); }, []);
+    const ufsLojas = lojas.map(function(l){return l.uf;});
+    ufsOpts = ufsVendedores.concat(ufsLojas).concat(universo.map(function(r){return r.uf;}));
+  }
+  setOpts('gRuptUF', ufsOpts);
   const fUF = document.getElementById('gRuptUF')?.value || '';
 
-  const baseUF = fUF ? baseVend.filter(function(r){return r.uf===fUF;}) : baseVend;
-  setOpts('gRuptRede', baseUF.map(function(r){return r.rede;}));
+  // Rede: redes das lojas cadastradas na UF/vendedor filtrados, cruzando com o catálogo
+  // para só listar redes que de fato compram produtos da fábrica filtrada (quando houver).
+  let lojasParaRede = lojas.slice();
+  if (fUF)   lojasParaRede = lojasParaRede.filter(function(l){return l.uf===fUF;});
+  if (vendSel) lojasParaRede = lojasParaRede.filter(function(l){return (vendSel.ufs||[]).includes(l.uf);});
+  let redesCandidatas = [...new Set(lojasParaRede.map(function(l){return l.rede;}).filter(Boolean))];
+  if (fFab) {
+    redesCandidatas = redesCandidatas.filter(function(r){
+      return catalogo.some(function(c){ return c.fabrica===fFab && _gRuptCodRede(c, r); });
+    });
+  }
+  const baseUFhist = fUF ? universo.filter(function(r){return r.uf===fUF;}) : universo;
+  setOpts('gRuptRede', redesCandidatas.concat(baseUFhist.map(function(r){return r.rede;})));
   const fRede = document.getElementById('gRuptRede')?.value || '';
 
-  const baseRede = fRede ? baseUF.filter(function(r){return r.rede===fRede;}) : baseUF;
-  let lojaOpts = baseRede.map(function(r){return r.loja;});
+  // Loja: além das lojas com lançamento, inclui todas as lojas da rede (via catálogo/codigosRedes)
+  // que carregam produtos da fábrica filtrada, mesmo sem nenhum lançamento ainda.
+  const baseRedeHist = fRede ? baseUFhist.filter(function(r){return r.rede===fRede;}) : baseUFhist;
+  let lojaOpts = baseRedeHist.map(function(r){return r.loja;});
   if (fRede) {
-    // Universo completo: além das lojas que já têm lançamento, inclui todas as lojas
-    // da rede (via catálogo/codigosRedes) que carregam produtos da fábrica filtrada,
-    // mesmo sem nenhum lançamento ainda — mesma lógica usada em "nunca lançado".
     let itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, fRede); });
     if (fFab) itensCatalogo = itensCatalogo.filter(function(c){ return c.fabrica === fFab; });
     if (itensCatalogo.length) {
       let lojasDaRede = lojas.filter(function(l){ return l.rede === fRede; });
       if (fUF)   lojasDaRede = lojasDaRede.filter(function(l){ return l.uf === fUF; });
-      if (fVend) lojasDaRede = lojasDaRede.filter(function(l){ return _vendedorPorUF(l.uf) === fVend; });
+      if (vendSel) lojasDaRede = lojasDaRede.filter(function(l){ return (vendSel.ufs||[]).includes(l.uf); });
       lojaOpts = lojaOpts.concat(lojasDaRede.map(function(l){ return l.nome; }));
     }
   }
   setOpts('gRuptLoja', lojaOpts);
   const fLoja = document.getElementById('gRuptLoja')?.value || '';
 
-  const baseLoja = fLoja ? baseRede.filter(function(r){return r.loja===fLoja;}) : baseRede;
+  const baseLoja = fLoja ? baseRedeHist.filter(function(r){return r.loja===fLoja;}) : baseRedeHist;
   setOpts('gRuptProduto', baseLoja.map(function(r){return r.produto;}));
 }
 
