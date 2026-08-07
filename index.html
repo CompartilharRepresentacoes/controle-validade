@@ -1756,11 +1756,11 @@
 
       <!-- ── Barra de abas dos gráficos ── -->
       <div style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;margin-bottom:14px">
-        <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s">Distribuição</button>
-        <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ranking</button>
-        <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Movimentações</button>
-        <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ruptura</button>
-        <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Concorrência</button>
+        <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-chart-bar" style="font-size:14px" aria-hidden="true"></i>Distribuição</button>
+        <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-trophy" style="font-size:14px" aria-hidden="true"></i>Ranking</button>
+        <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-arrows-exchange" style="font-size:14px" aria-hidden="true"></i>Movimentações</button>
+        <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-alert-triangle" style="font-size:14px" aria-hidden="true"></i>Ruptura</button>
+        <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-scale" style="font-size:14px" aria-hidden="true"></i>Concorrência</button>
       </div>
 
       <!-- ── Painel 1: Distribuição ── -->
@@ -1773,48 +1773,58 @@
             <h2 class="text-base font-semibold text-blue-700">Filtros — Gráficos</h2>
             <i id="graficosCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
           </div>
-          <div class="flex items-center gap-2 flex-wrap" onclick="event.stopPropagation()">
-            <span class="text-xs font-medium text-slate-500">De</span>
-            <input id="gDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:110px" />
-            <span class="text-xs font-medium text-slate-500">até</span>
-            <input id="gDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:110px" />
-            <button onclick="document.getElementById('gDataIni').value='';document.getElementById('gDataFim').value='';renderGraficos()" title="Limpar datas" style="display:none;background:none;border:0.5px solid #cbd5e1;border-radius:8px;padding:4px 8px;font-size:12px;color:#64748b;cursor:pointer;line-height:1" id="gBtnLimparDatas">✕</button>
-          </div>
         </div>
-        <div id="filtrosGraficosBody" class="flex flex-wrap items-end gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500">Fábrica</label>
-            <select id="gFabrica" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-              <option value="">Todas as Fábricas</option>
-            </select>
+        <div id="filtrosGraficosBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
+          <div class="flex flex-wrap items-end gap-3 mb-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Data inicial</label>
+              <input id="gDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Data final</label>
+              <input id="gDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
+            </div>
+            <button type="button" onclick="document.getElementById('gDataIni').value='';document.getElementById('gDataFim').value='';renderGraficos()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px" id="gBtnLimparDatas">
+              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
+            </button>
           </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500">Rede</label>
-            <select id="gRede" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-              <option value="">Todas as Redes</option>
-            </select>
-          </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="gChevronVend"></i>
-          <div class="flex flex-col gap-1" id="gVendedorWrap">
-            <label class="text-xs text-slate-500">Vendedor</label>
-            <select id="gVendedor" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-              <option value="">Todos os Vendedores</option>
-            </select>
-          </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500" id="gUFlabel">UF</label>
-            <select id="gUF" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-              <option value="">Todas as UFs</option>
-            </select>
-          </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500">Loja</label>
-            <select id="gLoja" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-              <option value="">Todas as Lojas</option>
-            </select>
+          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Fábrica</label>
+              <select id="gFabrica" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="">Todas as Fábricas</option>
+              </select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" id="gChevronVend"></i>
+            <div class="flex flex-col gap-1" id="gVendedorWrap">
+              <label class="text-xs text-slate-500">Vendedor</label>
+              <select id="gVendedor" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="">Todos os Vendedores</option>
+              </select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500" id="gUFlabel">UF</label>
+              <select id="gUF" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="">Todas as UFs</option>
+              </select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Rede</label>
+              <select id="gRede" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="">Todas as Redes</option>
+              </select>
+            </div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Loja</label>
+              <select id="gLoja" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="">Todas as Lojas</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -1861,34 +1871,62 @@
       <!-- ── Painel Ranking de Lojas ── -->
       <div id="tabPanelRank" style="display:none">
 
-        <!-- Filtro horizontal -->
-        <div style="background:#e8edf2;padding:10px 14px;border-radius:10px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-            <i class="ti ti-adjustments-horizontal" style="font-size:15px;color:#1e3a5f" aria-hidden="true"></i>
-            <span style="font-size:12px;font-weight:600;color:#1e3a5f;white-space:nowrap">Filtros — Ranking</span>
+        <!-- Card filtros Ranking -->
+        <div id="cardFiltrosRank" class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+          <div class="flex flex-wrap items-center justify-between gap-3 cursor-pointer" onclick="toggleFiltrosRankCard()">
+            <div style="display:flex;align-items:center;gap:8px">
+              <i class="ti ti-list-search" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
+              <h2 class="text-base font-semibold text-blue-700">Filtros — Ranking</h2>
+              <i id="rankCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
+            </div>
+            <div style="display:flex;background:#f1f5f9;border-radius:8px;border:0.5px solid #cbd5e1;overflow:hidden" onclick="event.stopPropagation()">
+              <button id="rModoProd" onclick="setRankModo('produto')" style="font-size:12px;font-weight:600;padding:6px 12px;border:none;background:#1e3a5f;color:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;border-radius:7px">
+                <i class="ti ti-building-store" style="font-size:13px" aria-hidden="true"></i> Por produto
+              </button>
+              <button id="rModoLoja" onclick="setRankModo('loja')" style="font-size:12px;font-weight:600;padding:6px 12px;border:none;background:transparent;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
+                <i class="ti ti-package" style="font-size:13px" aria-hidden="true"></i> Por loja
+              </button>
+            </div>
           </div>
-          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
-          <select id="rFab" onchange="onRankChangeFab()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
-          <select id="rRede" onchange="onRankChangeRede()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
-          <select id="rVend" onchange="onRankChangeVend()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
-          <select id="rUF" onchange="onRankChangeUF()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:80px;flex-shrink:0"></select>
-          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
-          <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-            <input type="text" id="rDtIni" placeholder="DD/MM/AAAA" oninput="renderRankingLojas()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:106px">
-            <span style="font-size:12px;color:#64748b;flex-shrink:0">até</span>
-            <input type="text" id="rDtFim" placeholder="DD/MM/AAAA" oninput="renderRankingLojas()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:106px">
-          </div>
-          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
-          <div style="display:flex;background:#fff;border-radius:8px;border:0.5px solid #b0bac8;overflow:hidden;flex-shrink:0">
-            <button id="rModoProd" onclick="setRankModo('produto')" style="font-size:12px;font-weight:600;padding:4px 11px;border:none;background:#1e3a5f;color:#fff;cursor:pointer;height:30px;display:flex;align-items:center;gap:4px;border-radius:7px">
-              <i class="ti ti-building-store" style="font-size:13px" aria-hidden="true"></i> Por produto
-            </button>
-            <button id="rModoLoja" onclick="setRankModo('loja')" style="font-size:12px;font-weight:600;padding:4px 11px;border:none;background:transparent;color:#64748b;cursor:pointer;height:30px;display:flex;align-items:center;gap:4px">
-              <i class="ti ti-package" style="font-size:13px" aria-hidden="true"></i> Por loja
-            </button>
+          <div id="filtrosRankBody" style="display:none">
+            <div class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe">
+              <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
+              <div class="flex flex-wrap items-end gap-3 mb-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Data inicial</label>
+                  <input type="text" id="rDtIni" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderRankingLojas()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Data final</label>
+                  <input type="text" id="rDtFim" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderRankingLojas()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+                </div>
+                <button type="button" onclick="limparRankFiltros()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
+                  <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
+                </button>
+              </div>
+              <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
+              <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Fábrica</label>
+                  <select id="rFab" onchange="onRankChangeFab()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Vendedor</label>
+                  <select id="rVend" onchange="onRankChangeVend()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">UF</label>
+                  <select id="rUF" onchange="onRankChangeUF()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Rede</label>
+                  <select id="rRede" onchange="onRankChangeRede()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1934,27 +1972,39 @@
                 Diário
               </button>
             </div>
-            <span class="text-xs font-medium text-slate-500">De</span>
-            <input id="mDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataIni');renderMovChart()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:100px" />
-            <span class="text-xs font-medium text-slate-500">até</span>
-            <input id="mDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataFim');renderMovChart()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:100px" />
-            <button onclick="document.getElementById('mDataIni').value='';document.getElementById('mDataFim').value='';renderMovChart()" title="Limpar datas" style="display:none;background:none;border:0.5px solid #cbd5e1;border-radius:8px;padding:4px 8px;font-size:12px;color:#64748b;cursor:pointer;line-height:1" id="mBtnLimparDatas">✕</button>
           </div>
         </div>
-        <div id="filtrosMovBody" class="flex flex-wrap items-end gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Fábrica</label><select id="mFabrica" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Rede</label><select id="mRede" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div id="mVendedorWrap" style="display:flex;align-items:flex-end;gap:8px">
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Vendedor</label><select id="mVendedor" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+        <div id="filtrosMovBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
+          <div class="flex flex-wrap items-end gap-3 mb-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Mês/ano inicial</label>
+              <input id="mDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataIni');renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:110px" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-slate-500">Mês/ano final</label>
+              <input id="mDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataFim');renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:110px" />
+            </div>
+            <button type="button" onclick="document.getElementById('mDataIni').value='';document.getElementById('mDataFim').value='';renderMovChart()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px" id="mBtnLimparDatas">
+              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
+            </button>
           </div>
-          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500" id="mUFnum">UF</label><select id="mUF" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Loja</label><select id="mLoja" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Produto</label><select id="mProduto" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
+          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Fábrica</label><select id="mFabrica" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div id="mVendedorWrap" style="display:flex;align-items:flex-end;gap:8px">
+              <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Vendedor</label><select id="mVendedor" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
+              <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            </div>
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500" id="mUFnum">UF</label><select id="mUF" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Rede</label><select id="mRede" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Loja</label><select id="mLoja" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Produto</label><select id="mProduto" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
+          </div>
         </div>
       </div>
 
@@ -2018,32 +2068,26 @@
             <i id="concCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
           </div>
         </div>
-        <div id="filtrosConcBody" class="flex flex-col gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <!-- Período -->
-          <div class="flex flex-wrap items-end gap-2">
+        <div id="filtrosConcBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
+          <div class="flex flex-wrap items-end gap-3 mb-3">
             <div class="flex flex-col gap-1">
               <label class="text-xs text-slate-500">Data inicial</label>
-              <input type="date" id="cDtI" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" />
+              <input id="cDtI" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
             </div>
-            <span style="font-size:12px;color:#94a3b8;padding-bottom:10px">até</span>
             <div class="flex flex-col gap-1">
               <label class="text-xs text-slate-500">Data final</label>
-              <input type="date" id="cDtF" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" />
+              <input id="cDtF" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
             </div>
-            <button type="button" onclick="limparPeriodoConc()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px;align-self:flex-end">
+            <button type="button" onclick="limparPeriodoConc()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
               <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
             </button>
           </div>
-          <!-- Cascata -->
+          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
           <div class="flex flex-wrap items-end gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-xs text-slate-500">Fábrica</label>
             <select id="cFabrica" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-          </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500">Rede</label>
-            <select id="cRede" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
           </div>
           <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" id="cChevronVend"></i>
           <div id="cVendedorWrap" class="flex flex-col gap-1">
@@ -2054,6 +2098,11 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs text-slate-500">UF</label>
             <select id="cUF" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Rede</label>
+            <select id="cRede" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
           </div>
           <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
           <div class="flex flex-col gap-1">
@@ -2118,50 +2167,62 @@
               <i class="ti ti-file-spreadsheet" style="font-size:13px" aria-hidden="true"></i> Exportar Excel
             </button>
           </div>
-          <!-- Filtrar por data -->
-          <div class="flex flex-wrap items-end gap-3" style="margin-bottom:12px">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Data inicial</label>
-              <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+          <!-- Filtros (accordion, fechado por padrão) -->
+          <div style="margin-bottom:14px">
+            <div class="flex flex-wrap items-center justify-between gap-3 cursor-pointer" onclick="toggleFiltrosRuptCard()">
+              <div style="display:flex;align-items:center;gap:8px">
+                <i class="ti ti-list-search" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
+                <h2 class="text-base font-semibold text-blue-700">Filtros — Ruptura</h2>
+                <i id="ruptCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
+              </div>
             </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Data final</label>
-              <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-            </div>
-            <button type="button" onclick="limparFiltrosGraficoRuptura()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
-              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
-            </button>
-          </div>
-          <!-- Cascata -->
-          <div class="flex flex-wrap items-end gap-3" style="margin-bottom:14px">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Fábrica</label>
-              <select id="gRuptFabrica" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Vendedor</label>
-              <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">UF</label>
-              <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Rede</label>
-              <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Loja</label>
-              <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Produto</label>
-              <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
+            <div id="filtrosRuptBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+              <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
+              <div class="flex flex-wrap items-end gap-3 mb-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Data inicial</label>
+                  <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Data final</label>
+                  <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+                </div>
+                <button type="button" onclick="limparFiltrosGraficoRuptura()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
+                  <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
+                </button>
+              </div>
+              <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
+              <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Fábrica</label>
+                  <select id="gRuptFabrica" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Vendedor</label>
+                  <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">UF</label>
+                  <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Rede</label>
+                  <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Loja</label>
+                  <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+                </div>
+                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-500">Produto</label>
+                  <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
+                </div>
+              </div>
             </div>
           </div>
           <!-- Taxa de Ruptura Diária -->
@@ -9163,28 +9224,29 @@ function _rankPopSecundario() {
   }
 }
 
+// Cascata: Fábrica → Vendedor → UF → Rede
 function onRankChangeFab() { _rankDrillIdx = -1;
   const { base, _getRede, _getVend } = _rankBase();
+  _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
+  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
   _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
-  _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
-  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
-  _rankPopSecundario();
-  renderRankingLojas();
-}
-function onRankChangeRede() { _rankDrillIdx = -1;
-  const { base, _getVend } = _rankBase();
-  _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
-  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
   _rankPopSecundario();
   renderRankingLojas();
 }
 function onRankChangeVend() { _rankDrillIdx = -1;
-  const { base } = _rankBase();
-  _rankPopSel('rUF', [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
+  const { base, _getRede } = _rankBase();
+  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
+  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSecundario();
   renderRankingLojas();
 }
 function onRankChangeUF() { _rankDrillIdx = -1;
+  const { base, _getRede } = _rankBase();
+  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
+  _rankPopSecundario();
+  renderRankingLojas();
+}
+function onRankChangeRede() { _rankDrillIdx = -1;
   _rankPopSecundario();
   renderRankingLojas();
 }
@@ -9198,9 +9260,9 @@ function limparRankFiltros() {
 function initRankingLojas() {
   const { base, _getFab, _getVend, _getRede } = _rankBase();
   _rankPopSel('rFab',  [...new Set(base.map(_getFab).filter(Boolean))].sort(), 'Todas as fábricas');
-  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
   _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
+  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSecundario();
   renderRankingLojas();
 }
@@ -9310,6 +9372,14 @@ function toggleFiltrosGraficosCard() {
   chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
+function toggleFiltrosRankCard() {
+  const body = document.getElementById('filtrosRankBody');
+  const chev = document.getElementById('rankCardChevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+
 function setGUnd(u) {
   _gUnd = u;
   const styles = {
@@ -9343,19 +9413,9 @@ function _popularFiltrosGraficos() {
     const fabs = [...new Set(produtos.map(p=>p.fabrica).filter(Boolean))].sort();
     selFab.innerHTML = '<option value="">Todas as Fábricas</option>' + fabs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');
   }
-
-  // Rede (cascata: baseada na Fábrica selecionada)
   const fFab = selFab?.value || '';
-  const selRede = document.getElementById('gRede');
-  if (selRede) {
-    const cur = selRede.value;
-    const base = fFab ? produtos.filter(p=>p.fabrica===fFab) : produtos;
-    const lojasBase = new Set(base.map(p=>normTxt(p.loja)));
-    const redes = [...new Set(lojas.filter(l=>lojasBase.has(normTxt(l.nome))).map(l=>l.rede).filter(Boolean))].sort();
-    selRede.innerHTML = '<option value="">Todas as Redes</option>' + redes.map(r=>`<option ${r===cur?'selected':''}>${r}</option>`).join('');
-  }
 
-  // Vendedor
+  // Vendedor (cascata: baseada na Fábrica selecionada)
   if (!isVend) {
     const selVend = document.getElementById('gVendedor');
     if (selVend) {
@@ -9368,8 +9428,7 @@ function _popularFiltrosGraficos() {
     }
   }
 
-  // UF (cascata)
-  const fRede  = selRede?.value  || '';
+  // UF (cascata: Fábrica + Vendedor)
   const fVend  = isVend ? '' : (document.getElementById('gVendedor')?.value||'');
   const vendSel= fVend ? usuarios.find(u=>u.role==='vendedor'&&u.nome===fVend) : null;
   const ufsVend= isVend ? (sessao.ufs||[]) : (vendSel?.ufs||[]);
@@ -9377,24 +9436,37 @@ function _popularFiltrosGraficos() {
   if (selUF) {
     const cur = selUF.value;
     let base = produtos;
-    if (fFab)  base = base.filter(p=>p.fabrica===fFab);
-    if (fRede) base = base.filter(p=>{ const l=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); return l?.rede===fRede; });
+    if (fFab) base = base.filter(p=>p.fabrica===fFab);
     if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
     const ufs = [...new Set(base.map(p=>p.uf).filter(Boolean))].sort();
     selUF.innerHTML = '<option value="">Todas as UFs</option>' + ufs.map(u=>`<option ${u===cur?'selected':''}>${u}</option>`).join('');
     if (lblUF) lblUF.textContent = 'UF';
   }
 
-  // Loja (cascata: baseada em Fábrica + Rede + UF)
-  const fUFpop = selUF?.value || '';
+  // Rede (cascata: Fábrica + Vendedor + UF)
+  const fUF = selUF?.value || '';
+  const selRede = document.getElementById('gRede');
+  if (selRede) {
+    const cur = selRede.value;
+    let base = produtos;
+    if (fFab) base = base.filter(p=>p.fabrica===fFab);
+    if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
+    if (fUF) base = base.filter(p=>p.uf===fUF);
+    const lojasBase = new Set(base.map(p=>normTxt(p.loja)));
+    const redes = [...new Set(lojas.filter(l=>lojasBase.has(normTxt(l.nome))).map(l=>l.rede).filter(Boolean))].sort();
+    selRede.innerHTML = '<option value="">Todas as Redes</option>' + redes.map(r=>`<option ${r===cur?'selected':''}>${r}</option>`).join('');
+  }
+
+  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
+  const fRede = selRede?.value || '';
   const selLoja = document.getElementById('gLoja');
   if (selLoja) {
     const cur = selLoja.value;
     let base = produtos;
     if (fFab)    base = base.filter(p=>p.fabrica===fFab);
-    if (fRede)   base = base.filter(p=>{ const l=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); return l?.rede===fRede; });
     if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
-    if (fUFpop)  base = base.filter(p=>p.uf===fUFpop);
+    if (fUF)     base = base.filter(p=>p.uf===fUF);
+    if (fRede)   base = base.filter(p=>{ const l=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); return l?.rede===fRede; });
     const lojasOpts = [...new Set(base.map(p=>p.loja).filter(Boolean))].sort();
     selLoja.innerHTML = '<option value="">Todas as Lojas</option>' + lojasOpts.map(l=>`<option ${l===cur?'selected':''}>${l}</option>`).join('');
   }
@@ -9415,9 +9487,9 @@ function renderGraficos() {
   // Cabeçalho dinâmico Distribuição
   const _gFiltrosAtivos = [
     fFab  ? { label: 'Fábrica',  val: fFab  } : null,
-    fRede ? { label: 'Rede',     val: fRede } : null,
     fVend ? { label: 'Vendedor', val: fVend } : null,
     fUF   ? { label: 'UF',       val: fUF   } : null,
+    fRede ? { label: 'Rede',     val: fRede } : null,
     fLoja ? { label: 'Loja',     val: fLoja } : null,
   ].filter(Boolean);
   const gFL = document.getElementById('gFiltroLabel');
@@ -9431,17 +9503,15 @@ function renderGraficos() {
   }
   _headerFiltros('headerFiltrosDist', [
     { label: 'Fábrica',  id: 'gFabrica'  },
-    { label: 'Rede',     id: 'gRede'     },
     { label: 'Vendedor', id: 'gVendedor' },
     { label: 'UF',       id: 'gUF'       },
+    { label: 'Rede',     id: 'gRede'     },
     { label: 'Loja',     id: 'gLoja'     },
   ]);
 
   // Datas do gráfico de distribuição
   const gDtI = dataParaISO(document.getElementById('gDataIni')?.value||'');
   const gDtF = dataParaISO(document.getElementById('gDataFim')?.value||'');
-  const gBtnLimp = document.getElementById('gBtnLimparDatas');
-  if (gBtnLimp) gBtnLimp.style.display = (gDtI||gDtF) ? '' : 'none';
   // Filtrar produtos (sem vencidos)
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   let base = produtos.filter(p=>{ const d=diasRestantes(p.validade); return d>=0; });
@@ -9541,6 +9611,14 @@ function toggleFiltrosConcCard() {
   chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
+function toggleFiltrosRuptCard() {
+  const body = document.getElementById('filtrosRuptBody');
+  const chev = document.getElementById('ruptCardChevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+
 function _popularFiltrosConc() {
   const isVend = sessao?.role === 'vendedor';
   const isAdmDir = sessao?.role === 'admin' || sessao?.role === 'diretor';
@@ -9554,15 +9632,6 @@ function _popularFiltrosConc() {
   // Base: apenas produtos com concorrência
   const base = produtos.filter(p => p.concorrencia);
 
-  const fFab  = document.getElementById('cFabrica')?.value || '';
-  const fRede = document.getElementById('cRede')?.value    || '';
-  const fVend = isAdmDir ? (document.getElementById('cVendedor')?.value || '') : '';
-  const fUF   = document.getElementById('cUF')?.value      || '';
-  const fLoja = document.getElementById('cLoja')?.value    || '';
-
-  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
-  const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
-
   // Fábrica
   const selFab = document.getElementById('cFabrica');
   if (selFab) {
@@ -9570,18 +9639,9 @@ function _popularFiltrosConc() {
     const opts = [...new Set(base.map(p => p.fabrica).filter(Boolean))].sort();
     selFab.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
+  const fFab = selFab?.value || '';
 
-  // Rede
-  const selRede = document.getElementById('cRede');
-  if (selRede) {
-    const cur = selRede.value;
-    const b2 = fFab ? base.filter(p => p.fabrica === fFab) : base;
-    const lojasBase = new Set(b2.map(p => normTxt(p.loja)));
-    const redes = [...new Set(lojas.filter(l => lojasBase.has(normTxt(l.nome))).map(l => l.rede).filter(Boolean))].sort();
-    selRede.innerHTML = '<option value="">Todas</option>' + redes.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
-  }
-
-  // Vendedor (só admin/diretor)
+  // Vendedor (só admin/diretor; cascata: Fábrica)
   if (isAdmDir) {
     const selVend = document.getElementById('cVendedor');
     if (selVend) {
@@ -9593,42 +9653,53 @@ function _popularFiltrosConc() {
       }).join('');
     }
   }
+  const fVend = isAdmDir ? (document.getElementById('cVendedor')?.value || '') : '';
+  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
+  const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
 
-  // Base filtrada para UF/Loja/Produto
-  let bf = [...base];
-  if (fFab)  bf = bf.filter(p => p.fabrica === fFab);
-  if (fRede) bf = bf.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
-  if (ufsVend.length) bf = bf.filter(p => ufsVend.includes(p.uf));
-  if (fUF)   bf = bf.filter(p => p.uf === fUF);
-  if (fLoja) bf = bf.filter(p => normTxt(p.loja) === normTxt(fLoja));
-
-  // UF
+  // UF (cascata: Fábrica + Vendedor)
   const selUF = document.getElementById('cUF');
   if (selUF) {
     const cur = selUF.value;
-    const bUF = [...base];
-    let bUFf = bUF;
-    if (fFab)  bUFf = bUFf.filter(p => p.fabrica === fFab);
-    if (fRede) bUFf = bUFf.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
+    let bUFf = [...base];
+    if (fFab) bUFf = bUFf.filter(p => p.fabrica === fFab);
     if (ufsVend.length) bUFf = bUFf.filter(p => ufsVend.includes(p.uf));
     const opts = [...new Set(bUFf.map(p => p.uf).filter(Boolean))].sort();
     selUF.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
+  const fUF = selUF?.value || '';
 
-  // Loja
+  // Rede (cascata: Fábrica + Vendedor + UF)
+  const selRede = document.getElementById('cRede');
+  if (selRede) {
+    const cur = selRede.value;
+    let b2 = [...base];
+    if (fFab) b2 = b2.filter(p => p.fabrica === fFab);
+    if (ufsVend.length) b2 = b2.filter(p => ufsVend.includes(p.uf));
+    if (fUF) b2 = b2.filter(p => p.uf === fUF);
+    const lojasBase = new Set(b2.map(p => normTxt(p.loja)));
+    const redes = [...new Set(lojas.filter(l => lojasBase.has(normTxt(l.nome))).map(l => l.rede).filter(Boolean))].sort();
+    selRede.innerHTML = '<option value="">Todas</option>' + redes.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
+  }
+  const fRede = selRede?.value || '';
+
+  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
+  let bL = [...base];
+  if (fFab)  bL = bL.filter(p => p.fabrica === fFab);
+  if (ufsVend.length) bL = bL.filter(p => ufsVend.includes(p.uf));
+  if (fUF)   bL = bL.filter(p => p.uf === fUF);
+  if (fRede) bL = bL.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
   const selLoja = document.getElementById('cLoja');
   if (selLoja) {
     const cur = selLoja.value;
-    let bL = [...base];
-    if (fFab)  bL = bL.filter(p => p.fabrica === fFab);
-    if (fRede) bL = bL.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
-    if (ufsVend.length) bL = bL.filter(p => ufsVend.includes(p.uf));
-    if (fUF)   bL = bL.filter(p => p.uf === fUF);
     const opts = [...new Set(bL.map(p => p.loja).filter(Boolean))].sort();
     selLoja.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
+  const fLoja = selLoja?.value || '';
 
-  // Produto
+  // Produto (cascata completa)
+  let bf = [...bL];
+  if (fLoja) bf = bf.filter(p => normTxt(p.loja) === normTxt(fLoja));
   const selProd = document.getElementById('cProduto');
   if (selProd) {
     const cur = selProd.value;
@@ -9661,19 +9732,17 @@ function renderConcChart() {
   const _cDtI = document.getElementById('cDtI')?.value || '';
   const _cDtF = document.getElementById('cDtF')?.value || '';
   const _periodoLabel = (() => {
-    const fmt = s => s ? s.split('-').reverse().join('/') : null;
-    const di = fmt(_cDtI), df = fmt(_cDtF);
-    if (di && df) return `${di} até ${df}`;
-    if (di)       return `a partir de ${di}`;
-    if (df)       return `até ${df}`;
+    if (_cDtI && _cDtF) return `${_cDtI} até ${_cDtF}`;
+    if (_cDtI)          return `a partir de ${_cDtI}`;
+    if (_cDtF)          return `até ${_cDtF}`;
     return null;
   })();
   const _headerEl = document.getElementById('headerFiltrosConc');
   _headerFiltros('headerFiltrosConc', [
     { label: 'Fábrica',  id: 'cFabrica'  },
-    { label: 'Rede',     id: 'cRede'     },
     { label: 'Vendedor', id: 'cVendedor' },
     { label: 'UF',       id: 'cUF'       },
+    { label: 'Rede',     id: 'cRede'     },
     { label: 'Loja',     id: 'cLoja'     },
     { label: 'Produto',  id: 'cProduto'  },
   ]);
@@ -9693,8 +9762,8 @@ function renderConcChart() {
   const fUF   = document.getElementById('cUF')?.value       || '';
   const fLoja = document.getElementById('cLoja')?.value     || '';
   const fProd = document.getElementById('cProduto')?.value  || '';
-  const fDtI  = document.getElementById('cDtI')?.value      || '';
-  const fDtF  = document.getElementById('cDtF')?.value      || '';
+  const fDtI  = dataParaISO(document.getElementById('cDtI')?.value||'');
+  const fDtF  = dataParaISO(document.getElementById('cDtF')?.value||'');
 
   const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
   const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
@@ -13563,6 +13632,72 @@ function _popularMovSelects(prefixo, callback) {
   if (prodSel) { const cur=prodSel.value; const opts=[...new Set(base.map(m=>m.produto).filter(Boolean))].sort(); prodSel.innerHTML='<option value="">Todos</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
 }
 
+// Função dedicada de Movimentações (cascata padronizada: Fábrica → Vendedor → UF → Rede → Loja → Produto).
+// Não reaproveita _popularMovSelects para não alterar o comportamento do Histórico (prefixo 'h'), que continua igual.
+function _popularMovSelectsM() {
+  const isVendMov = sessao?.role === 'vendedor';
+  const wrapVend = document.getElementById('mVendedorWrap');
+  if (wrapVend) wrapVend.style.display = isVendMov ? 'none' : 'flex';
+  const mUFnum = document.getElementById('mUFnum');
+  if (mUFnum) mUFnum.textContent = 'UF';
+
+  // Fábrica
+  const fabSel = document.getElementById('mFabrica');
+  if (fabSel) { const cur=fabSel.value; const opts=[...new Set(historico.map(m=>m.fabrica).filter(Boolean))].sort(); fabSel.innerHTML='<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
+  const fFab = fabSel?.value || '';
+
+  // Vendedor (cascata: Fábrica)
+  const vendSel2 = document.getElementById('mVendedor');
+  if (!isVendMov && vendSel2) {
+    const cur = vendSel2.value;
+    const vends = usuarios.filter(u=>u.role==='vendedor').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    vendSel2.innerHTML = '<option value="">Todos</option>'+vends.map(v=>`<option value="${v.nome}" ${v.nome===cur?'selected':''}>${v.nome} (${(v.ufs||[]).join('·')})</option>`).join('');
+  }
+  const fVend = isVendMov ? '' : (vendSel2?.value || '');
+  const vendObj = fVend ? usuarios.find(u=>u.role==='vendedor'&&u.nome===fVend) : null;
+  const ufsVend = vendObj?.ufs || [];
+
+  // UF (cascata: Fábrica + Vendedor)
+  const ufSel = document.getElementById('mUF');
+  if (ufSel) {
+    const cur = ufSel.value;
+    let base = [...historico];
+    if (fFab) base = base.filter(m=>m.fabrica===fFab);
+    if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
+    const opts = [...new Set(base.map(m=>m.uf).filter(Boolean))].sort();
+    ufSel.innerHTML = '<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('');
+  }
+  const fUF = ufSel?.value || '';
+
+  // Rede (cascata: Fábrica + Vendedor + UF)
+  const redeSel = document.getElementById('mRede');
+  if (redeSel) {
+    const cur = redeSel.value;
+    let base = [...historico];
+    if (fFab) base = base.filter(m=>m.fabrica===fFab);
+    if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
+    if (fUF) base = base.filter(m=>m.uf===fUF);
+    const opts = [...new Set(base.map(m=>m.rede).filter(Boolean))].sort();
+    redeSel.innerHTML = '<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('');
+  }
+  const fRede = redeSel?.value || '';
+
+  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
+  let base = [...historico];
+  if (fFab) base = base.filter(m=>m.fabrica===fFab);
+  if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
+  if (fUF) base = base.filter(m=>m.uf===fUF);
+  if (fRede) base = base.filter(m=>m.rede===fRede);
+  const lojaSel = document.getElementById('mLoja');
+  if (lojaSel) { const cur=lojaSel.value; const opts=[...new Set(base.map(m=>m.loja).filter(Boolean))].sort(); lojaSel.innerHTML='<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
+  const fLoja = lojaSel?.value || '';
+  if (fLoja) base = base.filter(m=>m.loja===fLoja);
+
+  // Produto (cascata completa)
+  const prodSel = document.getElementById('mProduto');
+  if (prodSel) { const cur=prodSel.value; const opts=[...new Set(base.map(m=>m.produto).filter(Boolean))].sort(); prodSel.innerHTML='<option value="">Todos</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
+}
+
 function _filtrarHistorico(prefixo) {
   const p=prefixo;
   const fFab  = document.getElementById(p+'Fabrica')?.value  || '';
@@ -13578,9 +13713,6 @@ function _filtrarHistorico(prefixo) {
   const parseFn = p==='m' ? _parseMovData : dataParaISO;
   const fDtI  = parseFn(document.getElementById(p+'DataIni')?.value||'');
   const fDtF  = parseFn(document.getElementById(p+'DataFim')?.value||'');
-  // Botão limpar datas
-  const bLimp = document.getElementById(p+'BtnLimparDatas');
-  if (bLimp) bLimp.style.display = (fDtI||fDtF) ? '' : 'none';
   // Para modo mensal, comparar apenas os 7 primeiros chars (AAAA-MM)
   const cmpI = (p==='m' && _movMode==='mensal' && fDtI) ? fDtI.slice(0,7) : fDtI;
   const cmpF = (p==='m' && _movMode==='mensal' && fDtF) ? fDtF.slice(0,7) : fDtF;
@@ -13677,7 +13809,7 @@ function toggleMovLeg(id) {
 }
 
 function renderMovChart() {
-  _popularMovSelects('m');
+  _popularMovSelectsM();
   const dados = _filtrarHistorico('m');
   const header = document.getElementById('movChartHeader');
   const semEl  = document.getElementById('movSemDados');
@@ -13703,9 +13835,9 @@ function renderMovChart() {
   // Cabeçalho dinâmico Movimentações
   const _mFiltrosAtivos = [
     _mFab  ? { label: 'Fábrica',  val: _mFab  } : null,
-    _mRede ? { label: 'Rede',     val: _mRede } : null,
     _mVend ? { label: 'Vendedor', val: _mVend } : null,
     _mUF   ? { label: 'UF',       val: _mUF   } : null,
+    _mRede ? { label: 'Rede',     val: _mRede } : null,
     fLoja  ? { label: 'Loja',     val: fLoja  } : null,
     fProd  ? { label: 'Produto',  val: fProd  } : null,
   ].filter(Boolean);
