@@ -16345,18 +16345,71 @@ function renderGraficoRuptura() {
     '</div>';
   }).join('');
 
-  let tbHtml = lista.map(function(r) {
-    return '<tr>' +
-      '<td style="font-weight:600">' + esc(r.produto) + '</td>' +
-      '<td>' + esc(r.loja) + '</td>' +
-      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
-      '<td>' + esc(r.rede||'—') + '</td>' +
-      '<td>' + fmtData(r.dataSaida) + '</td>' +
-      '<td>' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
-      '<td><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
-      '<td><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
-    '</tr>';
-  }).join('');
+  // Linhas de ruptura real (Ativa/Resolvida).
+  // Sem loja filtrada: agrupa por produto (senão repetiria a mesma linha em cada loja) —
+  // clique no produto expande a lista de lojas afetadas. Com loja filtrada: já vem escopado a 1 loja, direto.
+  let tbHtml;
+  if (fLoja) {
+    tbHtml = lista.map(function(r) {
+      return '<tr>' +
+        '<td style="font-weight:600">' + esc(r.produto) + '</td>' +
+        '<td>' + esc(r.loja) + '</td>' +
+        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
+        '<td>' + esc(r.rede||'—') + '</td>' +
+        '<td>' + fmtData(r.dataSaida) + '</td>' +
+        '<td>' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
+        '<td><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
+        '<td><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
+      '</tr>';
+    }).join('');
+  } else {
+    const gruposAtivaMap = {};
+    lista.forEach(function(r) {
+      const key = r.produto;
+      if (!gruposAtivaMap[key]) gruposAtivaMap[key] = { produto: r.produto, fabrica: r.fabrica, rede: r.rede, itens: [] };
+      gruposAtivaMap[key].itens.push(r);
+    });
+    const gruposAtiva = Object.values(gruposAtivaMap).sort(function(a,b) {
+      const maxA = Math.max.apply(null, a.itens.map(function(i){return i.dias;}));
+      const maxB = Math.max.apply(null, b.itens.map(function(i){return i.dias;}));
+      return maxB - maxA;
+    });
+    window._gRuptToggleAtivaGrupo = function(idx) {
+      const det = document.getElementById('gRuptAtivaDet' + idx);
+      const chev = document.getElementById('gRuptAtivaChev' + idx);
+      if (!det) return;
+      const abrir = det.style.display === 'none';
+      det.style.display = abrir ? '' : 'none';
+      if (chev) chev.className = abrir ? 'ti ti-chevron-down' : 'ti ti-chevron-right';
+    };
+    tbHtml = gruposAtiva.map(function(g, idx) {
+      const temAtiva = g.itens.some(function(i){return i.ativa;});
+      const maxDias  = Math.max.apply(null, g.itens.map(function(i){return i.dias;}));
+      const nLojas   = g.itens.length;
+      const corBg  = temAtiva ? '#fee2e2' : '#d1fae5';
+      const corTxt = temAtiva ? '#991b1b' : '#065f46';
+      const label = (temAtiva ? '● Em ruptura em ' : '✓ Resolvida em ') + nLojas + (nLojas===1?' loja':' lojas') + ' (até ' + maxDias + 'd)';
+      const chips = g.itens.slice().sort(function(a,b){return b.dias-a.dias;}).map(function(i) {
+        const corC = i.ativa ? '#991b1b' : '#065f46';
+        const bgC  = i.ativa ? '#fee2e2' : '#d1fae5';
+        return '<span style="font-size:11px;background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:5px">' +
+          esc(i.uf||'—') + ' · ' + esc(i.loja) +
+          '<span style="background:' + bgC + ';color:' + corC + ';padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600">' + i.dias + 'd ' + (i.ativa?'● Ativa':'✓ Resolvida') + '</span>' +
+        '</span>';
+      }).join('');
+      const linhaPrincipal = '<tr onclick="_gRuptToggleAtivaGrupo(' + idx + ')" style="cursor:pointer' + (idx%2 ? ';background:#fafbfc' : '') + '">' +
+        '<td style="font-weight:600;color:#1e293b" colspan="7"><i id="gRuptAtivaChev' + idx + '" class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-right:6px" aria-hidden="true"></i>' + esc(g.produto) + '</td>' +
+        '<td><span style="background:' + corBg + ';color:' + corTxt + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap">' + label + '</span></td>' +
+      '</tr>';
+      const linhaDetalhe = '<tr id="gRuptAtivaDet' + idx + '" style="display:none">' +
+        '<td colspan="8" style="background:#fafbfc;padding:10px 14px">' +
+          '<div style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">Lojas da ' + esc(g.rede||'rede') + ' com este produto em ruptura ou já resolvida:</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chips + '</div>' +
+        '</td>' +
+      '</tr>';
+      return linhaPrincipal + linhaDetalhe;
+    }).join('');
+  }
 
   // Itens nunca lançados entram na mesma tabela.
   // Sem loja filtrada: agrupa por produto (senão repetiria a mesma linha em cada loja da rede) —
