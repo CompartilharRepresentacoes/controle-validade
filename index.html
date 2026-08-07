@@ -15991,7 +15991,7 @@ let _gRuptListaAtual = [];
 let _gRuptChart = null;
 
 // ── Taxa de Ruptura Diária (%) — últimos 14 dias ────────────
-function _gRuptRenderTaxaDiaria(listaBase, fLoja, fRede) {
+function _gRuptRenderTaxaDiaria(listaBase, fLoja, fRede, fFab, fProd) {
   const canvas = document.getElementById('gRuptTaxaChart');
   const legendaEl = document.getElementById('gRuptTaxaLegenda');
   if (!canvas || typeof Chart === 'undefined') return;
@@ -16003,12 +16003,16 @@ function _gRuptRenderTaxaDiaria(listaBase, fLoja, fRede) {
   // Denominador: se há loja (ou rede) filtrada, usa o nº de itens que a rede
   // compra (catalogo x codigosRedes) — é o universo real. Sem isso, usa o nº
   // de produtos distintos que apareceram nas rupturas filtradas (aproximação).
+  // Respeita também o filtro de Fábrica/Produto, se estiverem ativos.
   let denom = null;
   let baseLabel = '';
   const redeRef = fRede || (fLoja ? (lojas.find(function(l){return normTxt(l.nome)===normTxt(fLoja);})||{}).rede : '');
   if (redeRef) {
-    denom = catalogo.filter(function(c){ return _gRuptCodRede(c, redeRef); }).length;
-    baseLabel = 'base: itens que a ' + redeRef + ' compra (' + denom + ' SKUs)';
+    let itensRede = catalogo.filter(function(c){ return _gRuptCodRede(c, redeRef); });
+    if (fFab)  itensRede = itensRede.filter(function(c){ return c.fabrica === fFab; });
+    if (fProd) itensRede = itensRede.filter(function(c){ return c.nome === fProd; });
+    denom = itensRede.length;
+    baseLabel = 'base: itens' + (fFab ? (' da ' + fFab) : '') + ' que a ' + redeRef + ' compra (' + denom + ' SKUs)';
   }
   if (!denom) {
     denom = new Set(listaBase.map(function(r){ return normTxt(r.produto); })).size;
@@ -16155,7 +16159,7 @@ function renderGraficoRuptura() {
   const nuncaLancados = _gRuptItensNuncaLancados(fFab, fVend, fUF, fRede, fLoja, fProd);
   _gRuptListaAtual = lista.concat(nuncaLancados);
 
-  _gRuptRenderTaxaDiaria(listaSemFiltroData, fLoja, fRede);
+  _gRuptRenderTaxaDiaria(listaSemFiltroData, fLoja, fRede, fFab, fProd);
   _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd);
 
   const cont = document.getElementById('gRuptConteudo');
