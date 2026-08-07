@@ -2155,6 +2155,25 @@
               <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
             </div>
           </div>
+          <!-- Taxa de Ruptura Diária -->
+          <div id="gRuptTaxaWrap" style="margin-bottom:18px">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Taxa de Ruptura Diária (%)</div>
+            <div id="gRuptTaxaLegenda" style="font-size:10.5px;color:#94a3b8;margin-bottom:4px"></div>
+            <div style="position:relative;height:140px">
+              <canvas id="gRuptTaxaChart"></canvas>
+            </div>
+          </div>
+          <!-- Ruptura Prevista -->
+          <div id="gRuptPrevistaWrap" style="margin-bottom:18px;display:none">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Ruptura Prevista — próximos 7 dias <span style="font-size:10.5px;color:#94a3b8;font-weight:400">(produtos que vão vencer e sair da gôndola)</span></div>
+            <div id="gRuptPrevistaLista" style="border:1px solid #fde68a;border-radius:10px;overflow:hidden"></div>
+          </div>
+          <!-- Itens que a rede compra -->
+          <div id="gRuptItensRedeWrap" style="margin-bottom:18px;display:none">
+            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Itens que a rede <span id="gRuptItensRedeNome"></span> compra</div>
+            <div id="gRuptItensRedeLista" style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden"></div>
+            <div style="font-size:10.5px;color:#94a3b8;margin-top:6px">"nunca registrado" = a rede tem código próprio pra esse item, mas ele nunca foi lançado nessa loja.</div>
+          </div>
           <!-- Cards de resumo -->
           <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- Legenda -->
@@ -15830,6 +15849,25 @@ function _vendedorPorUF(uf) {
   return v ? v.nome : '';
 }
 
+// Código de um item do catálogo numa rede específica (comparação sem acento/maiúscula)
+function _gRuptCodRede(item, rede) {
+  if (!rede) return '';
+  const codes = item.codigosRedes || {};
+  const redeNorm = normTxt(rede);
+  const key = Object.keys(codes).find(function(k){ return normTxt(k) === redeNorm; });
+  return key ? (codes[key] || '') : '';
+}
+
+// Converte qualquer formato de data usado no histórico (Firestore Timestamp,
+// segundos, ou string 'YYYY-MM-DD') para Date
+function _gRuptToDate(v) {
+  if (!v) return null;
+  if (v.toDate) return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  if (typeof v === 'string' && v.length === 10) return new Date(v+'T00:00:00');
+  return new Date(v);
+}
+
 function _calcularRupturas() {
   const grupos = {};
   historico.forEach(function(m) {
@@ -15842,11 +15880,7 @@ function _calcularRupturas() {
   const hoje = new Date(); hoje.setHours(23,59,59,0);
 
   Object.values(grupos).forEach(function(g) {
-    g.movs.sort(function(a, b) {
-      const da = a.data && a.data.toDate ? a.data.toDate() : new Date(a.data && a.data.seconds ? a.data.seconds*1000 : a.data);
-      const db = b.data && b.data.toDate ? b.data.toDate() : new Date(b.data && b.data.seconds ? b.data.seconds*1000 : b.data);
-      return da - db;
-    });
+    g.movs.sort(function(a, b) { return _gRuptToDate(a.data) - _gRuptToDate(b.data); });
 
     for (let i = 0; i < g.movs.length; i++) {
       const m = g.movs[i];
@@ -15854,13 +15888,18 @@ function _calcularRupturas() {
       const isSaida = tipo.includes('saida') || tipo.includes('saída') || tipo === 'vencimento' || tipo.includes('venciment');
       if (!isSaida) continue;
 
-      const dataSaida = m.data && m.data.toDate ? m.data.toDate() : new Date(m.data && m.data.seconds ? m.data.seconds*1000 : m.data);
+      // Início real da ruptura: se foi saída por vencimento, usa a validade do produto
+      // (data real em que ficou indisponível), não a data em que o promotor registrou —
+      // evita distorção quando o lançamento é feito com atraso.
+      const dataSaida = (tipo.includes('venciment') && m.validade) ? _gRuptToDate(m.validade) : _gRuptToDate(m.data);
 
       let proxEntrada = null;
       for (let j = i+1; j < g.movs.length; j++) {
         const tipo2 = (g.movs[j].tipo || '').toLowerCase();
         if (tipo2.includes('entrada') || tipo2 === 'entrada' || tipo2.includes('reposic')) {
-          proxEntrada = g.movs[j].data && g.movs[j].data.toDate ? g.movs[j].data.toDate() : new Date(g.movs[j].data && g.movs[j].data.seconds ? g.movs[j].data.seconds*1000 : g.movs[j].data);
+          // Fim real da ruptura: prioriza a Data de Entrega (chegada física na loja)
+          // sobre a data de lançamento no sistema, quando preenchida.
+          proxEntrada = g.movs[j].dataEntrega ? _gRuptToDate(g.movs[j].dataEntrega) : _gRuptToDate(g.movs[j].data);
           break;
         }
       }
@@ -15954,6 +15993,145 @@ function limparFiltrosGraficoRuptura() {
 }
 
 let _gRuptListaAtual = [];
+let _gRuptChart = null;
+
+// ── Taxa de Ruptura Diária (%) — últimos 14 dias ────────────
+function _gRuptRenderTaxaDiaria(listaBase, fLoja, fRede) {
+  const canvas = document.getElementById('gRuptTaxaChart');
+  const legendaEl = document.getElementById('gRuptTaxaLegenda');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const NDIAS = 14;
+  const inicio = new Date(hoje); inicio.setDate(inicio.getDate() - (NDIAS - 1));
+
+  // Denominador: se há loja (ou rede) filtrada, usa o nº de itens que a rede
+  // compra (catalogo x codigosRedes) — é o universo real. Sem isso, usa o nº
+  // de produtos distintos que apareceram nas rupturas filtradas (aproximação).
+  let denom = null;
+  let baseLabel = '';
+  const redeRef = fRede || (fLoja ? (lojas.find(function(l){return normTxt(l.nome)===normTxt(fLoja);})||{}).rede : '');
+  if (redeRef) {
+    denom = catalogo.filter(function(c){ return _gRuptCodRede(c, redeRef); }).length;
+    baseLabel = 'base: itens que a ' + redeRef + ' compra (' + denom + ' SKUs)';
+  }
+  if (!denom) {
+    denom = new Set(listaBase.map(function(r){ return normTxt(r.produto); })).size;
+    baseLabel = denom ? ('base: ' + denom + ' produto(s) com ocorrência no período') : '';
+  }
+  if (legendaEl) legendaEl.textContent = baseLabel;
+  if (!denom) denom = 1;
+
+  const labels = [];
+  const dados = [];
+  for (let i = 0; i < NDIAS; i++) {
+    const d = new Date(inicio); d.setDate(d.getDate() + i);
+    const diaIni = new Date(d); diaIni.setHours(0,0,0,0);
+    const diaFim = new Date(d); diaFim.setHours(23,59,59,999);
+    const skus = new Set();
+    listaBase.forEach(function(r) {
+      const fimPeriodo = r.ativa ? new Date() : r.dataFim;
+      if (r.dataSaida <= diaFim && fimPeriodo >= diaIni) skus.add(normTxt(r.produto) + '|' + normTxt(r.loja));
+    });
+    labels.push(String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'));
+    dados.push(Math.round(Math.min(100, (skus.size / denom) * 100) * 10) / 10);
+  }
+
+  if (_gRuptChart) { _gRuptChart.destroy(); _gRuptChart = null; }
+  _gRuptChart = new Chart(canvas, {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Taxa de Ruptura (%)', data: dados, backgroundColor: '#dc2626', borderRadius: 3 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
+    }
+  });
+}
+
+// ── Ruptura Prevista — próximos 7 dias ──────────────────────
+function _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd) {
+  const wrap = document.getElementById('gRuptPrevistaWrap');
+  const listaEl = document.getElementById('gRuptPrevistaLista');
+  if (!wrap || !listaEl) return;
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const limite = new Date(hoje); limite.setDate(limite.getDate() + 7);
+
+  const itens = produtos.filter(function(p) {
+    if (!p.validade || !(Number(p.quantidade) > 0)) return false;
+    const v = new Date(p.validade + 'T00:00:00');
+    if (v < hoje || v > limite) return false;
+    if (fFab  && p.fabrica !== fFab)  return false;
+    if (fUF   && p.uf      !== fUF)   return false;
+    if (fLoja && p.loja    !== fLoja) return false;
+    if (fProd && p.produto !== fProd) return false;
+    if (fVend && _vendedorPorUF(p.uf) !== fVend) return false;
+    if (fRede) {
+      const lj = lojas.find(function(l){ return normTxt(l.nome)===normTxt(p.loja); });
+      if (!lj || lj.rede !== fRede) return false;
+    }
+    return true;
+  }).map(function(p) {
+    const v = new Date(p.validade + 'T00:00:00');
+    return { produto: p.produto, loja: p.loja, dias: Math.round((v-hoje)/86400000) };
+  }).sort(function(a,b){ return a.dias - b.dias; });
+
+  if (!itens.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  listaEl.innerHTML = itens.map(function(it, i) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;' + (i < itens.length-1 ? 'border-bottom:1px solid #fef3c7' : '') + '">' +
+      '<div><div style="font-size:12px;font-weight:600;color:#1e293b">' + esc(it.produto) + '</div><div style="font-size:10.5px;color:#64748b">' + esc(it.loja) + '</div></div>' +
+      '<span style="font-size:10.5px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px">vence em ' + it.dias + (it.dias===1?' dia':' dias') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Itens que a rede compra (só quando há uma loja específica filtrada) ──
+function _gRuptRenderItensRede(fLoja, todasRupturas) {
+  const wrap = document.getElementById('gRuptItensRedeWrap');
+  const listaEl = document.getElementById('gRuptItensRedeLista');
+  const nomeEl = document.getElementById('gRuptItensRedeNome');
+  if (!wrap || !listaEl) return;
+
+  if (!fLoja) { wrap.style.display = 'none'; return; }
+  const lojaObj = lojas.find(function(l){ return normTxt(l.nome) === normTxt(fLoja); });
+  const rede = lojaObj?.rede || '';
+  if (!rede) { wrap.style.display = 'none'; return; }
+
+  const itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, rede); });
+  if (!itensCatalogo.length) { wrap.style.display = 'none'; return; }
+
+  const itens = itensCatalogo.map(function(c) {
+    const cod = _gRuptCodRede(c, rede);
+    const ativo = produtos.find(function(p){ return normTxt(p.produto)===normTxt(c.nome) && normTxt(p.loja)===normTxt(fLoja) && Number(p.quantidade)>0; });
+    const rupturaAtiva = todasRupturas.find(function(r){ return r.ativa && normTxt(r.produto)===normTxt(c.nome) && normTxt(r.loja)===normTxt(fLoja); });
+    const temHistorico = historico.some(function(m){ return normTxt(m.produto||'')===normTxt(c.nome) && normTxt(m.loja||'')===normTxt(fLoja); });
+    let status;
+    if (ativo) status = 'gondola';
+    else if (rupturaAtiva) status = 'ruptura';
+    else if (temHistorico) status = 'semregistro';
+    else status = 'nunca';
+    return { codigo: cod, nome: c.nome, status: status };
+  }).sort(function(a,b){ return a.nome.localeCompare(b.nome,'pt-BR'); });
+
+  const badges = {
+    gondola:     { txt: '✓ na gôndola',       bg: '#d1fae5', fg: '#065f46' },
+    ruptura:     { txt: '● em ruptura',       bg: '#fee2e2', fg: '#991b1b' },
+    semregistro: { txt: '— sem registro atual', bg: '#f1f5f9', fg: '#64748b' },
+    nunca:       { txt: '⚠ nunca registrado', bg: '#f1f5f9', fg: '#475569' },
+  };
+
+  wrap.style.display = '';
+  if (nomeEl) nomeEl.textContent = rede;
+  listaEl.innerHTML = itens.map(function(it, i) {
+    const b = badges[it.status];
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;' + (i < itens.length-1 ? 'border-bottom:1px solid #f1f5f9' : '') + '">' +
+      '<div>' + (it.codigo ? '<span style="font-size:11px;color:#94a3b8;margin-right:6px">' + esc(it.codigo) + '</span>' : '') + '<span style="font-size:12px;color:#1e293b">' + esc(it.nome) + '</span></div>' +
+      '<span style="font-size:10px;font-weight:700;background:' + b.bg + ';color:' + b.fg + ';padding:2px 8px;border-radius:20px;white-space:nowrap">' + b.txt + '</span>' +
+    '</div>';
+  }).join('');
+}
 
 function renderGraficoRuptura() {
   if (document.getElementById('viewGraficos')?.style.display === 'none') return;
@@ -15977,18 +16155,26 @@ function renderGraficoRuptura() {
   const fIni = parseDataBR(fIniStr);
   const fFim = parseDataBR(fFimStr);
 
-  let lista = todasRupturas.filter(function(r) {
+  const listaSemFiltroData = todasRupturas.filter(function(r) {
     if (fFab   && r.fabrica  !== fFab)    return false;
     if (fVend  && r.vendedor !== fVend)   return false;
     if (fUF    && r.uf       !== fUF)     return false;
     if (fRede  && r.rede     !== fRede)   return false;
     if (fLoja  && r.loja     !== fLoja)   return false;
     if (fProd  && r.produto  !== fProd)   return false;
+    return true;
+  });
+
+  let lista = listaSemFiltroData.filter(function(r) {
     if (fIni   && r.dataSaida < fIni)     return false;
     if (fFim) { const fim = new Date(fFim); fim.setHours(23,59,59); if (r.dataSaida > fim) return false; }
     return true;
   });
   _gRuptListaAtual = lista;
+
+  _gRuptRenderTaxaDiaria(listaSemFiltroData, fLoja, fRede);
+  _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd);
+  _gRuptRenderItensRede(fLoja, todasRupturas);
 
   const cont = document.getElementById('gRuptConteudo');
   const statsEl = document.getElementById('gRuptStats');
