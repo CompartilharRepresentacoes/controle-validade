@@ -2239,7 +2239,7 @@
             <div id="gRuptPrevistaLista" style="border:1px solid #fde68a;border-radius:10px;overflow:hidden"></div>
           </div>
           <!-- Cards de resumo -->
-          <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- Legenda -->
           <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></span>Na gôndola</span>
@@ -16102,7 +16102,21 @@ function _gRuptPopularSelects() {
   const fRede = document.getElementById('gRuptRede')?.value || '';
 
   const baseRede = fRede ? baseUF.filter(function(r){return r.rede===fRede;}) : baseUF;
-  setOpts('gRuptLoja', baseRede.map(function(r){return r.loja;}));
+  let lojaOpts = baseRede.map(function(r){return r.loja;});
+  if (fRede) {
+    // Universo completo: além das lojas que já têm lançamento, inclui todas as lojas
+    // da rede (via catálogo/codigosRedes) que carregam produtos da fábrica filtrada,
+    // mesmo sem nenhum lançamento ainda — mesma lógica usada em "nunca lançado".
+    let itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, fRede); });
+    if (fFab) itensCatalogo = itensCatalogo.filter(function(c){ return c.fabrica === fFab; });
+    if (itensCatalogo.length) {
+      let lojasDaRede = lojas.filter(function(l){ return l.rede === fRede; });
+      if (fUF)   lojasDaRede = lojasDaRede.filter(function(l){ return l.uf === fUF; });
+      if (fVend) lojasDaRede = lojasDaRede.filter(function(l){ return _vendedorPorUF(l.uf) === fVend; });
+      lojaOpts = lojaOpts.concat(lojasDaRede.map(function(l){ return l.nome; }));
+    }
+  }
+  setOpts('gRuptLoja', lojaOpts);
   const fLoja = document.getElementById('gRuptLoja')?.value || '';
 
   const baseLoja = fLoja ? baseRede.filter(function(r){return r.loja===fLoja;}) : baseRede;
@@ -16306,8 +16320,8 @@ function renderGraficoRuptura() {
     '<div style="background:#fef2f2;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#dc2626">' + ativas + '</div><div style="font-size:10px;color:#dc2626;margin-top:3px">Em ruptura agora</div></div>' +
     '<div style="background:#fef3c7;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#d97706">' + mediaDias + 'd</div><div style="font-size:10px;color:#d97706;margin-top:3px">Média de dias</div></div>' +
     '<div style="background:#fef2f2;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#dc2626">' + maiorDias + 'd</div><div style="font-size:10px;color:#dc2626;margin-top:3px">Maior ruptura</div></div>' +
-    '<div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#059669">' + resolvidas + '</div><div style="font-size:10px;color:#059669;margin-top:3px">Resolvidas</div></div>' +
-    '<div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#475569">' + nuncaLancados.length + '</div><div style="font-size:10px;color:#475569;margin-top:3px">Nunca lançados</div></div>';
+    '<div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#059669">' + resolvidas + '</div><div style="font-size:10px;color:#059669;margin-top:3px">Resolvidas</div></div>';
+  // Card "Nunca lançados" ocultado por pedido do Marcos (não será usado por ora) — nuncaLancados.length ainda calculado e usado no restante da função (tabela/Excel).
 
   if (!lista.length && !nuncaLancados.length) {
     if (cont) cont.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Nenhuma ruptura encontrada no período</div>';
