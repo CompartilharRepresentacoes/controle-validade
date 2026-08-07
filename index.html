@@ -2168,19 +2168,14 @@
             <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Ruptura Prevista — próximos 7 dias <span style="font-size:10.5px;color:#94a3b8;font-weight:400">(produtos que vão vencer e sair da gôndola)</span></div>
             <div id="gRuptPrevistaLista" style="border:1px solid #fde68a;border-radius:10px;overflow:hidden"></div>
           </div>
-          <!-- Itens que a rede compra -->
-          <div id="gRuptItensRedeWrap" style="margin-bottom:18px;display:none">
-            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Itens que a rede <span id="gRuptItensRedeNome"></span> compra</div>
-            <div id="gRuptItensRedeLista" style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden"></div>
-            <div style="font-size:10.5px;color:#94a3b8;margin-top:6px">"nunca registrado" = a rede tem código próprio pra esse item, mas ele nunca foi lançado nessa loja.</div>
-          </div>
           <!-- Cards de resumo -->
-          <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+          <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- Legenda -->
           <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></span>Na gôndola</span>
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#dc2626;display:inline-block"></span>Ruptura ativa</span>
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#f97316;display:inline-block"></span>Ruptura resolvida</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#94a3b8;display:inline-block"></span>Nunca lançado</span>
           </div>
           <!-- Timeline e tabela -->
           <div id="gRuptConteudo"><div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Carregando dados...</div></div>
@@ -16087,50 +16082,36 @@ function _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd) {
   }).join('');
 }
 
-// ── Itens que a rede compra (só quando há uma loja específica filtrada) ──
-function _gRuptRenderItensRede(fLoja, todasRupturas) {
-  const wrap = document.getElementById('gRuptItensRedeWrap');
-  const listaEl = document.getElementById('gRuptItensRedeLista');
-  const nomeEl = document.getElementById('gRuptItensRedeNome');
-  if (!wrap || !listaEl) return;
+// ── Itens da rede sem nenhum lançamento (entram na mesma tabela de ruptura) ──
+// Só calcula quando há uma Rede ativa (selecionada direto, ou derivada da Loja escolhida).
+function _gRuptItensNuncaLancados(fFab, fVend, fUF, fRede, fLoja, fProd) {
+  const redeAtiva = fRede || (fLoja ? (lojas.find(function(l){return normTxt(l.nome)===normTxt(fLoja);})||{}).rede : '');
+  if (!redeAtiva) return [];
 
-  if (!fLoja) { wrap.style.display = 'none'; return; }
-  const lojaObj = lojas.find(function(l){ return normTxt(l.nome) === normTxt(fLoja); });
-  const rede = lojaObj?.rede || '';
-  if (!rede) { wrap.style.display = 'none'; return; }
+  let lojasDaRede = lojas.filter(function(l){ return l.rede === redeAtiva; });
+  if (fLoja) lojasDaRede = lojasDaRede.filter(function(l){ return normTxt(l.nome)===normTxt(fLoja); });
+  if (fUF)   lojasDaRede = lojasDaRede.filter(function(l){ return l.uf===fUF; });
+  if (fVend) lojasDaRede = lojasDaRede.filter(function(l){ return _vendedorPorUF(l.uf)===fVend; });
+  if (!lojasDaRede.length) return [];
 
-  const itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, rede); });
-  if (!itensCatalogo.length) { wrap.style.display = 'none'; return; }
+  let itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, redeAtiva); });
+  if (fFab)  itensCatalogo = itensCatalogo.filter(function(c){ return c.fabrica===fFab; });
+  if (fProd) itensCatalogo = itensCatalogo.filter(function(c){ return c.nome===fProd; });
+  if (!itensCatalogo.length) return [];
 
-  const itens = itensCatalogo.map(function(c) {
-    const cod = _gRuptCodRede(c, rede);
-    const ativo = produtos.find(function(p){ return normTxt(p.produto)===normTxt(c.nome) && normTxt(p.loja)===normTxt(fLoja) && Number(p.quantidade)>0; });
-    const rupturaAtiva = todasRupturas.find(function(r){ return r.ativa && normTxt(r.produto)===normTxt(c.nome) && normTxt(r.loja)===normTxt(fLoja); });
-    const temHistorico = historico.some(function(m){ return normTxt(m.produto||'')===normTxt(c.nome) && normTxt(m.loja||'')===normTxt(fLoja); });
-    let status;
-    if (ativo) status = 'gondola';
-    else if (rupturaAtiva) status = 'ruptura';
-    else if (temHistorico) status = 'semregistro';
-    else status = 'nunca';
-    return { codigo: cod, nome: c.nome, status: status };
-  }).sort(function(a,b){ return a.nome.localeCompare(b.nome,'pt-BR'); });
-
-  const badges = {
-    gondola:     { txt: '✓ na gôndola',       bg: '#d1fae5', fg: '#065f46' },
-    ruptura:     { txt: '● em ruptura',       bg: '#fee2e2', fg: '#991b1b' },
-    semregistro: { txt: '— sem registro atual', bg: '#f1f5f9', fg: '#64748b' },
-    nunca:       { txt: '⚠ nunca registrado', bg: '#f1f5f9', fg: '#475569' },
-  };
-
-  wrap.style.display = '';
-  if (nomeEl) nomeEl.textContent = rede;
-  listaEl.innerHTML = itens.map(function(it, i) {
-    const b = badges[it.status];
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;' + (i < itens.length-1 ? 'border-bottom:1px solid #f1f5f9' : '') + '">' +
-      '<div>' + (it.codigo ? '<span style="font-size:11px;color:#94a3b8;margin-right:6px">' + esc(it.codigo) + '</span>' : '') + '<span style="font-size:12px;color:#1e293b">' + esc(it.nome) + '</span></div>' +
-      '<span style="font-size:10px;font-weight:700;background:' + b.bg + ';color:' + b.fg + ';padding:2px 8px;border-radius:20px;white-space:nowrap">' + b.txt + '</span>' +
-    '</div>';
-  }).join('');
+  const out = [];
+  lojasDaRede.forEach(function(loja) {
+    itensCatalogo.forEach(function(c) {
+      const temHistorico = historico.some(function(m){ return normTxt(m.produto||'')===normTxt(c.nome) && normTxt(m.loja||'')===normTxt(loja.nome); });
+      if (temHistorico) return;
+      out.push({
+        produto: c.nome, loja: loja.nome, lojaId: loja.id || '', rede: redeAtiva, uf: loja.uf || '',
+        vendedor: _vendedorPorUF(loja.uf), promotor: '', fabrica: c.fabrica || '',
+        dataSaida: null, dataFim: null, dias: null, ativa: false, nuncaLancado: true,
+      });
+    });
+  });
+  return out;
 }
 
 function renderGraficoRuptura() {
@@ -16170,11 +16151,12 @@ function renderGraficoRuptura() {
     if (fFim) { const fim = new Date(fFim); fim.setHours(23,59,59); if (r.dataSaida > fim) return false; }
     return true;
   });
-  _gRuptListaAtual = lista;
+
+  const nuncaLancados = _gRuptItensNuncaLancados(fFab, fVend, fUF, fRede, fLoja, fProd);
+  _gRuptListaAtual = lista.concat(nuncaLancados);
 
   _gRuptRenderTaxaDiaria(listaSemFiltroData, fLoja, fRede);
   _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd);
-  _gRuptRenderItensRede(fLoja, todasRupturas);
 
   const cont = document.getElementById('gRuptConteudo');
   const statsEl = document.getElementById('gRuptStats');
@@ -16188,9 +16170,10 @@ function renderGraficoRuptura() {
     '<div style="background:#fef2f2;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#dc2626">' + ativas + '</div><div style="font-size:10px;color:#dc2626;margin-top:3px">Em ruptura agora</div></div>' +
     '<div style="background:#fef3c7;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#d97706">' + mediaDias + 'd</div><div style="font-size:10px;color:#d97706;margin-top:3px">Média de dias</div></div>' +
     '<div style="background:#fef2f2;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#dc2626">' + maiorDias + 'd</div><div style="font-size:10px;color:#dc2626;margin-top:3px">Maior ruptura</div></div>' +
-    '<div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#059669">' + resolvidas + '</div><div style="font-size:10px;color:#059669;margin-top:3px">Resolvidas</div></div>';
+    '<div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#059669">' + resolvidas + '</div><div style="font-size:10px;color:#059669;margin-top:3px">Resolvidas</div></div>' +
+    '<div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#475569">' + nuncaLancados.length + '</div><div style="font-size:10px;color:#475569;margin-top:3px">Nunca lançados</div></div>';
 
-  if (!lista.length) {
+  if (!lista.length && !nuncaLancados.length) {
     if (cont) cont.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Nenhuma ruptura encontrada no período</div>';
     return;
   }
@@ -16239,12 +16222,32 @@ function renderGraficoRuptura() {
     '</tr>';
   }).join('');
 
+  // Itens nunca lançados entram na mesma tabela, com uma linha resumo se passar do limite exibido
+  const CAP_NUNCA = 20;
+  const nuncaExibir = nuncaLancados.slice(0, CAP_NUNCA);
+  const nuncaRestantes = nuncaLancados.length - nuncaExibir.length;
+  tbHtml += nuncaExibir.map(function(r) {
+    return '<tr>' +
+      '<td style="font-weight:600;color:#94a3b8">' + esc(r.produto) + '</td>' +
+      '<td style="color:#94a3b8">' + esc(r.loja) + '</td>' +
+      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
+      '<td style="color:#94a3b8">' + esc(r.rede||'—') + '</td>' +
+      '<td colspan="2" style="font-size:11px;color:#94a3b8">— nenhum lançamento registrado</td>' +
+      '<td style="color:#94a3b8">—</td>' +
+      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">○ Nunca lançado</span></td>' +
+    '</tr>';
+  }).join('');
+  if (nuncaRestantes > 0) {
+    tbHtml += '<tr><td colspan="8" style="text-align:center;font-size:11px;color:#cbd5e1;padding:8px">+ ' + nuncaRestantes + ' itens da rede sem nenhum lançamento — ver todos no Excel exportado</td></tr>';
+  }
+
   if (cont) cont.innerHTML =
+    (lista.length ?
     '<div style="margin-bottom:14px">' +
       '<div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:5px;padding:0 2px"><span>Produto / Loja</span><span style="margin-right:58px">Últimos 60 dias</span><span>Total</span></div>' +
       tlHtml +
       (lista.length>10 ? '<div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:4px">+ ' + (lista.length-10) + ' ocorrências adicionais na tabela abaixo</div>' : '') +
-    '</div>' +
+    '</div>' : '') +
     '<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">' +
       '<table style="width:100%;border-collapse:collapse">' +
         '<thead><tr style="background:#f8fafc">' +
@@ -16265,7 +16268,7 @@ function renderGraficoRuptura() {
 // ── Exportar Excel — Ruptura de Gôndola ──────
 async function exportarExcelRuptura() {
   if (typeof ExcelJS === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca...','#92400e'); return; }
-  const lista = [..._gRuptListaAtual].sort(function(a,b){ return b.dias - a.dias; });
+  const lista = [..._gRuptListaAtual].sort(function(a,b){ return (b.dias||-1) - (a.dias||-1); });
   if (!lista.length) { showToast('Nenhuma ruptura para exportar com esses filtros.','#92400e'); return; }
 
   showToast('⏳ Gerando planilha...','#1e3a5f');
@@ -16320,12 +16323,15 @@ async function exportarExcelRuptura() {
     lista.forEach((r,i) => {
       const rn  = i+7;
       const row = ws.getRow(rn); row.height = 15;
-      const situacao = r.ativa ? 'Ativa' : 'Resolvida';
-      const fg = r.ativa ? 'FF991B1B' : 'FF166534';
-      const bg = r.ativa ? 'FFFEF2F2' : 'FFF0FDF4';
+      const situacao = r.nuncaLancado ? 'Nunca lançado' : (r.ativa ? 'Ativa' : 'Resolvida');
+      const fg = r.nuncaLancado ? 'FF475569' : (r.ativa ? 'FF991B1B' : 'FF166534');
+      const bg = r.nuncaLancado ? 'FFF1F5F9' : (r.ativa ? 'FFFEF2F2' : 'FFF0FDF4');
       const vals = [
         r.produto, r.loja, r.uf||'—', r.rede||'—', r.fabrica||'—', r.vendedor||'—',
-        r.dataSaida||null, r.ativa ? null : (r.dataFim||null), r.dias, situacao
+        r.nuncaLancado ? null : (r.dataSaida||null),
+        r.nuncaLancado ? null : (r.ativa ? null : (r.dataFim||null)),
+        r.nuncaLancado ? null : r.dias,
+        situacao
       ];
       vals.forEach((v,ci) => {
         const c = row.getCell(ci+1);
@@ -16334,7 +16340,8 @@ async function exportarExcelRuptura() {
         c.alignment = {horizontal:(ci===2||ci===8||ci===9)?'center':'left',vertical:'middle'};
         if (ci===9) c.fill = {type:'pattern',pattern:'solid',fgColor:{argb:bg}};
         if ((ci===6||ci===7) && v) c.numFmt = 'dd/mm/yyyy';
-        if (ci===7 && r.ativa) { c.value = '— em aberto'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
+        if (ci===7 && !r.nuncaLancado && r.ativa) { c.value = '— em aberto'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
+        if (ci===6 && r.nuncaLancado) { c.value = '— nenhum lançamento'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
       });
     });
 
