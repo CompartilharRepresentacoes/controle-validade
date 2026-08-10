@@ -4383,6 +4383,10 @@ function mostrarLogin() {
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('mainApp').classList.add('hidden');
   document.getElementById('adminPanel').classList.add('hidden');
+  // Fecha qualquer modal (ex.: "Me Ajuda") que possa ter ficado aberto de uma sessão
+  // anterior — acontece quando o navegador restaura a aba com o app no meio de um
+  // fluxo (crash recovery / "reabrir abas fechadas") e a sessão salva não é mais válida.
+  document.querySelectorAll('.fixed.inset-0:not(.hidden)').forEach(el => el.classList.add('hidden'));
   // Pré-preencher se "Lembrar meu login" estava ativo
   const savedUser = localStorage.getItem('cv_saved_user');
   const savedPass = localStorage.getItem('cv_saved_pass');
