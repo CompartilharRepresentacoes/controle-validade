@@ -6762,6 +6762,18 @@ function fmtData(iso) {
   const [y,m,d]=iso.split('-');
   return `${d}/${m}/${y}`;
 }
+// Converte a data de um registro de histórico (Timestamp do Firestore, {seconds}, ou string 'AAAA-MM-DD')
+// para um Date local, SEM o deslocamento de fuso horário que `new Date('AAAA-MM-DD')` causa
+// (essa forma é interpretada como UTC meia-noite, o que "volta" um dia em fusos negativos como o do Brasil).
+function _movDataToDate(md) {
+  if (md?.toDate) return md.toDate();
+  if (md?.seconds) return new Date(md.seconds*1000);
+  if (typeof md === 'string' && /^\d{4}-\d{2}-\d{2}/.test(md)) {
+    const [y,mo,da] = md.slice(0,10).split('-').map(Number);
+    return new Date(y, mo-1, da);
+  }
+  return new Date(md);
+}
 const today = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
 const diasRestantes = (v) => Math.round((new Date(v+'T00:00:00')-today())/86400000);
 const statusDe = (d) => d<0?'expired':d<=20?'warning':'ok';
@@ -11670,14 +11682,14 @@ async function renderFreqVisita() {
       const diasAgendados = _freqGetDatasDoMes(mes, r.dias || []);
       const movs = historico.filter(m => {
         if (normTxt(m.promotor) !== normTxt(promotorNome)) return false;
-        const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
+        const d = _movDataToDate(m.data);
         if (d.getFullYear() !== ano || d.getMonth()+1 !== mesNum) return false;
         return loja ? (String(m.lojaId) === String(loja.id) || normTxt(m.loja) === normTxt(loja.nome)) : false;
       });
       const diasComVisita = new Set();
       const gpsPerDia = new Map(); // dia → { distancia, presenca } (melhor leitura do dia)
       movs.forEach(m => {
-        const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
+        const d = _movDataToDate(m.data);
         const dia = d.getDate();
         diasComVisita.add(dia);
         const dist = m.distanciaLoja ?? null;
@@ -11697,7 +11709,7 @@ async function renderFreqVisita() {
     );
     const movsForaDoRoteiro = historico.filter(m => {
       if (normTxt(m.promotor) !== normTxt(promotorNome)) return false;
-      const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
+      const d = _movDataToDate(m.data);
       if (d.getFullYear() !== ano || d.getMonth()+1 !== mesNum) return false;
       return m.loja && !lojasRoteiroNorm.has(normTxt(m.loja));
     });
@@ -11709,7 +11721,7 @@ async function renderFreqVisita() {
         extraPorLoja.set(key, { loja: lojaObj, diasComVisita: new Set(), gpsPerDia: new Map() });
       }
       const e = extraPorLoja.get(key);
-      const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
+      const d = _movDataToDate(m.data);
       const dia = d.getDate();
       e.diasComVisita.add(dia);
       const dist = m.distanciaLoja ?? null;
