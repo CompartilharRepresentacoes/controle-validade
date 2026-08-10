@@ -4486,6 +4486,7 @@ function entrarNoApp(user, novoLogin) {
   verificarSaidasPorVencimento();
   // Alerta de datas de entrega pendentes (somente admin)
   if (user.role === 'admin') setTimeout(verificarAlertaDataEntrega, 800);
+  if (user.role === 'admin') setTimeout(_rodarMigracaoUnicaRoteiros, 1500);
 }
 function abrirAdmin() {
   document.getElementById('mainApp').classList.add('hidden');
@@ -5803,10 +5804,18 @@ function salvarEdicaoUsuario() {
   }
   const idx = usuarios.findIndex(u => u.id === id);
   if (idx === -1) { showToast('⚠️ Usuário não encontrado.','#92400e'); return; }
+  const nomeAntigo = usuarios[idx].nome;
+  const roleAntigo = usuarios[idx].role;
   usuarios[idx] = { ...usuarios[idx], nome, usuario, senha, role, uf, ufs, vendedorResponsavel, telefone, perfilEscritorio };
   salvarUsuarios(); renderUsuarios();
   document.getElementById('editUsuarioModal').classList.add('hidden');
   showToast('✅ Usuário atualizado!','#166534');
+  // Renomeou? Propaga o novo nome para todos os registros que ainda usam o antigo,
+  // pra nunca mais "perder" lançamentos, lojas ou roteiro depois de uma edição de nome.
+  if (nome !== nomeAntigo) {
+    if (roleAntigo === 'promotor') _cascadeRenamePromotor(nomeAntigo, nome);
+    else if (roleAntigo === 'vendedor') _cascadeRenameVendedor(nomeAntigo, nome);
+  }
 }
 function toggleUFField() {
   const role = document.getElementById('u_role').value;
@@ -10728,9 +10737,130 @@ function _renderMeuRoteiro() {
     </div>`).join('')}
   </div>`;
 }
-function _rotDocKey(promotorNome, mes) {
-  return promotorNome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + mes;
+function _slug(str) {
+  return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
 }
+// Chave legada (baseada no nome de exibição — pode ficar órfã se o nome for alterado)
+function _rotDocKey(promotorNome, mes) {
+  return _slug(promotorNome) + '_' + mes;
+}
+// Chave estável (baseada no login, que não muda) — usada a partir de agora
+function _rotDocKeyUsuario(usuarioLogin, mes) {
+  return 'u_' + _slug(usuarioLogin) + '_' + mes;
+}
+// Resolve a melhor chave disponível: login se o promotor existir no cadastro, senão cai no esquema antigo
+function _rotResolveDocKey(promotorNome, mes) {
+  const u = usuarios.find(x => x.nome === promotorNome && x.role === 'promotor');
+  if (u && u.usuario) return _rotDocKeyUsuario(u.usuario, mes);
+  return _rotDocKey(promotorNome, mes);
+}
+// ── Cascata de renomeação: mantém lançamentos, lojas e roteiros
+//    ligados ao promotor/vendedor mesmo depois de o nome mudar no cadastro.
+async function _cascadeRenamePromotor(oldNome, newNome) {
+  if (!oldNome || !newNome || oldNome === newNome) return;
+  try {
+    // 1) Lançamentos (produtos)
+    const prodSnap = await FS_PRODUTOS.where('promotor', '==', oldNome).get();
+    if (!prodSnap.empty) {
+      const batch = db.batch();
+      prodSnap.docs.forEach(d => batch.update(d.ref, { promotor: newNome }));
+      await batch.commit();
+      produtos.forEach(p => { if (p.promotor === oldNome) p.promotor = newNome; });
+    }
+    // 2) Histórico de movimentações (dois campos possíveis)
+    const histSnap = await FS_HISTORICO.where('promotor', '==', oldNome).get();
+    if (!histSnap.empty) {
+      const batch = db.batch();
+      histSnap.docs.forEach(d => batch.update(d.ref, { promotor: newNome }));
+      await batch.commit();
+    }
+    const histSnap2 = await FS_HISTORICO.where('usuarioAcao', '==', oldNome).get();
+    if (!histSnap2.empty) {
+      const batch = db.batch();
+      histSnap2.docs.forEach(d => batch.update(d.ref, { usuarioAcao: newNome }));
+      await batch.commit();
+    }
+    (historico || []).forEach(m => {
+      if (m.promotor === oldNome) m.promotor = newNome;
+      if (m.usuarioAcao === oldNome) m.usuarioAcao = newNome;
+    });
+    // 3) Lojas vinculadas
+    const lojaSnap = await FS_LOJAS.where('promotorResponsavel', '==', oldNome).get();
+    if (!lojaSnap.empty) {
+      const batch = db.batch();
+      lojaSnap.docs.forEach(d => batch.update(d.ref, { promotorResponsavel: newNome }));
+      await batch.commit();
+      lojas.forEach(l => { if (l.promotorResponsavel === oldNome) l.promotorResponsavel = newNome; });
+    }
+    // 4) Roteiros salvos — atualiza o nome e já rechaveia para o login (chave estável)
+    const rotSnap = await FS_ROTEIROS.where('promotor', '==', oldNome).get();
+    if (!rotSnap.empty) {
+      const uNovo = usuarios.find(x => x.nome === newNome && x.role === 'promotor');
+      const batch = db.batch();
+      rotSnap.docs.forEach(d => {
+        const data = d.data();
+        const novaChave = uNovo?.usuario ? _rotDocKeyUsuario(uNovo.usuario, data.mes) : _rotDocKey(newNome, data.mes);
+        batch.set(FS_ROTEIROS.doc(novaChave), { ...data, promotor: newNome });
+        if (novaChave !== d.id) batch.delete(d.ref);
+      });
+      await batch.commit();
+    }
+    console.log(`✓ Cascata de renomeação aplicada: "${oldNome}" → "${newNome}"`);
+  } catch (e) {
+    console.error('Erro na cascata de renomeação de promotor:', e);
+  }
+}
+
+async function _cascadeRenameVendedor(oldNome, newNome) {
+  if (!oldNome || !newNome || oldNome === newNome) return;
+  let mudou = false;
+  usuarios.forEach(u => {
+    if (u.role === 'promotor' && u.vendedorResponsavel === oldNome) {
+      u.vendedorResponsavel = newNome;
+      mudou = true;
+    }
+  });
+  if (mudou) {
+    try { await FS_CFG_USUARIOS.set({ lista: usuarios }); }
+    catch (e) { console.error('Erro na cascata de renomeação de vendedor:', e); }
+  }
+}
+
+// Migração única e retroativa: corrige nomes já defasados (ex.: Leandro) e
+// rechaveia os roteiros existentes do esquema antigo (nome) para o novo (login).
+async function _rodarMigracaoUnicaRoteiros() {
+  if (sessao?.role !== 'admin') return;
+  try {
+    const cfgRef = db.collection('config').doc('migracoes');
+    const cfgSnap = await cfgRef.get();
+    if (cfgSnap.exists && cfgSnap.data().roteirosChaveUsuario) return;
+
+    // Correção pontual de uma renomeação antiga que já ficou órfã
+    await _cascadeRenamePromotor('Leandro', 'Leandro Silva de Almeida');
+
+    // Rechaveamento geral dos roteiros restantes (nome-slug → login-slug)
+    const snap = await FS_ROTEIROS.get();
+    let batch = db.batch(), ops = 0;
+    for (const d of snap.docs) {
+      const data = d.data();
+      const u = usuarios.find(x => x.nome === data.promotor && x.role === 'promotor');
+      if (!u || !u.usuario) continue;
+      const novaChave = _rotDocKeyUsuario(u.usuario, data.mes);
+      if (novaChave === d.id) continue;
+      batch.set(FS_ROTEIROS.doc(novaChave), data);
+      batch.delete(d.ref);
+      ops++;
+      if (ops >= 400) { await batch.commit(); batch = db.batch(); ops = 0; }
+    }
+    if (ops > 0) await batch.commit();
+
+    await cfgRef.set({ roteirosChaveUsuario: true, executadoEm: new Date().toISOString() }, { merge: true });
+    console.log('✓ Migração de chaves de roteiro concluída.');
+  } catch (e) {
+    console.error('Erro na migração única de roteiros:', e);
+  }
+}
+
 function _rotPopularSelMes() {
   const sel = document.getElementById('rotSelMes');
   if (!sel) return;
@@ -10758,7 +10888,7 @@ async function rotCopiarMesAnterior() {
   if (!promotorNome) return;
   const [ano, m] = mes.split('-').map(Number);
   const prevMes = m === 1 ? `${ano-1}-12` : `${ano}-${String(m-1).padStart(2,'0')}`;
-  const prevKey = _rotDocKey(promotorNome, prevMes);
+  const prevKey = _rotResolveDocKey(promotorNome, prevMes);
   try {
     const doc = await FS_ROTEIROS.doc(prevKey).get();
     if (!doc.exists) { showToast(`⚠️ Nenhum roteiro encontrado em ${_rotMesLabel(prevMes)}.`,'#92400e'); return; }
@@ -10942,7 +11072,7 @@ async function _rotCarregarLojas(promotorNome) {
   }
 
   // Carregar roteiro do mês do Firestore
-  const docKey = _rotDocKey(promotorNome, mes);
+  const docKey = _rotResolveDocKey(promotorNome, mes);
   let roteiroLojas = [];
   let roteiroExiste = false;
   try {
@@ -11385,7 +11515,7 @@ async function salvarRoteirizacao() {
 
   try {
     const mes = document.getElementById('rotSelMes')?.value || _rotGetMesAtual();
-    const docKey = _rotDocKey(promotorNome, mes);
+    const docKey = _rotResolveDocKey(promotorNome, mes);
     const mesSelecionado = mes;
     const mesAtual = _rotGetMesAtual();
 
@@ -11462,7 +11592,7 @@ async function excluirRoteirizacao() {
   const mes = document.getElementById('rotSelMes')?.value || _rotGetMesAtual();
   const mesLabel = document.getElementById('rotSelMes')?.options[document.getElementById('rotSelMes').selectedIndex]?.text || mes;
   if (!confirm(`Excluir o roteiro de "${promotorNome}" em ${mesLabel}?\n\nAs lojas vinculadas serão desvinculadas e os dias de visita removidos.`)) return;
-  const docKey = _rotDocKey(promotorNome, mes);
+  const docKey = _rotResolveDocKey(promotorNome, mes);
   try {
     await FS_ROTEIROS.doc(docKey).delete();
     // Se for mês atual, limpar promotorResponsavel e diasVisita nas lojas
@@ -11663,7 +11793,7 @@ async function renderFreqVisita() {
     }
     if (semWrap) semWrap.style.display = '';
 
-    const docKey = _rotDocKey(promotorNome, mes);
+    const docKey = _rotResolveDocKey(promotorNome, mes);
     const doc = await FS_ROTEIROS.doc(docKey).get();
     const roteiroLojas = doc.exists ? (doc.data().lojas || []) : [];
 
