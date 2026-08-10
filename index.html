@@ -26,6 +26,9 @@
     .badge-expired { background:#ef4444; color:#fff; }
     .badge-warning { background:#eab308; color:#fff; }
     .badge-ok      { background:#22c55e; color:#fff; }
+    .rmap-dia, .rmap-modo { background:#f1f5f9; color:#475569; }
+    .rmap-dia.sel, .rmap-modo.sel { background:#1e3a5f; color:#fff; }
+    .rmap-modo.sel { background:#dbeafe; color:#1e40af; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #e2e8f0; padding: 8px 10px; font-size: 0.85rem; white-space: nowrap; }
     th { background: #1e40af; color: #fff; text-align: left; cursor: pointer; user-select: none; }
@@ -2440,7 +2443,7 @@
 
       <!-- Painel: Cadastrar Roteirização -->
       <div id="rotPanelCadastrar">
-      <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+      <div id="rotCadastroForm" class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
           <div style="width:36px;height:36px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center">
             <i class="ti ti-route" style="font-size:18px;color:#1e40af"></i>
@@ -3222,8 +3225,51 @@
   </div>
 </div>
 
+<!-- Modal Roteiro no Mapa -->
+<div id="modalRoteiroMapa" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-3" style="z-index:9999">
+  <div class="bg-white rounded-2xl shadow-2xl" style="width:100%;max-width:920px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div id="rmapAvatar" style="width:32px;height:32px;border-radius:50%;background:#dbeafe;color:#1e40af;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0"></div>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:700;color:#0e2841;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            <i class="ti ti-map-2" style="font-size:14px;vertical-align:-1px" aria-hidden="true"></i>
+            Roteiro no mapa — <span id="rmapNome"></span>
+          </div>
+          <div id="rmapSub" style="font-size:11px;color:#64748b"></div>
+        </div>
+      </div>
+      <button onclick="fecharRoteiroMapa()" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;line-height:1;flex-shrink:0">×</button>
+    </div>
+
+    <div style="padding:10px 18px 0;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0" id="rmapDiasTabs">
+      <span class="rmap-dia" data-dia="Seg" onclick="_rmapSelecionarDia('Seg')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Seg</span>
+      <span class="rmap-dia" data-dia="Ter" onclick="_rmapSelecionarDia('Ter')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Ter</span>
+      <span class="rmap-dia" data-dia="Qua" onclick="_rmapSelecionarDia('Qua')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Qua</span>
+      <span class="rmap-dia" data-dia="Qui" onclick="_rmapSelecionarDia('Qui')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Qui</span>
+      <span class="rmap-dia" data-dia="Sex" onclick="_rmapSelecionarDia('Sex')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Sex</span>
+      <span class="rmap-dia" data-dia="Sáb" onclick="_rmapSelecionarDia('Sáb')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Sáb</span>
+    </div>
+    <div style="padding:8px 18px 10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #f1f5f9;flex-shrink:0" id="rmapModoTabs">
+      <span class="rmap-modo" data-modo="DRIVE" onclick="_rmapSelecionarModo('DRIVE')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-car" style="font-size:14px" aria-hidden="true"></i>Carro</span>
+      <span class="rmap-modo" data-modo="TWO_WHEELER" onclick="_rmapSelecionarModo('TWO_WHEELER')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-motorbike" style="font-size:14px" aria-hidden="true"></i>Moto</span>
+      <span class="rmap-modo" data-modo="TRANSIT" onclick="_rmapSelecionarModo('TRANSIT')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-bus" style="font-size:14px" aria-hidden="true"></i>Ônibus</span>
+    </div>
+
+    <div id="rmapAvisoCoords" style="display:none;margin:10px 18px 0;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:11.5px;border-radius:8px;padding:8px 12px;flex-shrink:0"></div>
+
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;flex:1;min-height:340px;overflow:hidden">
+      <div id="rmapMapa" style="background:#eef2f6;position:relative;min-height:360px"></div>
+      <div style="border-left:1px solid #e2e8f0;overflow-y:auto;padding:12px 14px">
+        <div id="rmapLista"></div>
+        <div id="rmapTotal" style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:none;justify-content:space-between;align-items:center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Me Ajuda — Fluxo Guiado -->
-<div id="meAjudaModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-3">
+<div id="meAjudaModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-3"
   <div class="bg-white rounded-2xl w-full shadow-2xl" style="max-width:420px;max-height:94vh;display:flex;flex-direction:column">
 
     <!-- Cabeçalho azul -->
@@ -4170,6 +4216,31 @@ const FS_CONCORRENTES_DB = db.collection('concorrentes_db');
 const FS_ROTEIROS        = db.collection('roteiros');
 const FS_COMUNICADOS     = db.collection('comunicados');
 
+// ── Google Maps (Roteiro no Mapa) ────────────
+// ATENÇÃO: chave de demonstração (Maps Demo Key) — sem cobrança, mas só para teste/protótipo,
+// sem garantia de disponibilidade. Trocar pela chave de produção quando aprovado.
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBr2eCxgYBHSrb42yk6EqSTElRkjSnsw-s';
+let _gmapsCarregando = null;
+function _rmapCarregarGoogleMaps() {
+  if (window.google && window.google.maps) return Promise.resolve();
+  if (_gmapsCarregando) return _gmapsCarregando;
+  _gmapsCarregando = new Promise((resolve, reject) => {
+    window._gmapsReady = () => resolve();
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&loading=async&callback=_gmapsReady`;
+    s.onerror = () => reject(new Error('Falha ao carregar o Google Maps.'));
+    document.head.appendChild(s);
+  });
+  return _gmapsCarregando;
+}
+// Extrai {lat,lng} do campo "localizacao" da loja (string "lat, lng"). Retorna null se ausente/inválido.
+function _parseLocLoja(loja) {
+  const loc = (loja?.localizacao || '').trim();
+  if (!loc || !loc.includes(',')) return null;
+  const [la, lo] = loc.split(',').map(s => parseFloat(s.trim()));
+  return (isNaN(la) || isNaN(lo)) ? null : { lat: la, lng: lo };
+}
+
 // ── Logos das fábricas na tela de login ─────
 (function _carregarLogosLogin() {
   FS_CFG_FABRICAS.get().then(snap => {
@@ -4451,7 +4522,7 @@ function entrarNoApp(user, novoLogin) {
   if (btnProd3) btnProd3.style.display = 'inline-flex';
   // Botão Roteirização: visível para admin e vendedor
   const btnRoteir2 = document.getElementById('btnViewRoteirizacao');
-  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor','promotor'].includes(user.role)) ? 'inline-flex' : 'none';
+  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor','promotor','diretor'].includes(user.role)) ? 'inline-flex' : 'none';
   // Botão Ranking: visível para todos os perfis
   const btnRank2 = document.getElementById('btnViewRanking');
   if (btnRank2) btnRank2.style.display = 'inline-flex';
@@ -10697,6 +10768,7 @@ function setView(v) {
 let _rotState      = {}; // { lojaId: { vinculada: bool, dias: ['Seg','Ter',...] } }
 let _rotLojasTodas = []; // lista completa antes do filtro de rede
 let _rotRelDrillIdx = -1;
+let _rotRelPromsNomesCache = [];
 const _DIAS_SEMANA = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
 const _MESES_PT    = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
@@ -10925,6 +10997,18 @@ function initRoteirizacao() {
     document.getElementById('rotPanelFrequencia').style.display = 'none';
     if (pProm) pProm.style.display = '';
     _renderMeuRoteiro();
+    return;
+  }
+  if (sessao?.role === 'diretor') {
+    // Diretor: somente leitura — vê só "Roteiros cadastrados" (com o botão de mapa), sem editar
+    if (subTabs) subTabs.style.display = 'none';
+    if (pProm) pProm.style.display = 'none';
+    document.getElementById('rotPanelFrequencia').style.display = 'none';
+    document.getElementById('rotPanelCadastrar').style.display  = '';
+    const cadForm = document.getElementById('rotCadastroForm');
+    if (cadForm) cadForm.style.display = 'none';
+    _rotRelDrillIdx = -1;
+    renderRotRelatorio();
     return;
   }
   if (subTabs) subTabs.style.display = '';
@@ -11300,6 +11384,7 @@ function renderRotRelatorio() {
   const promsNomes = _rotRelGetProms();
   if (!promsNomes.length) { painel.style.display = 'none'; return; }
   painel.style.display = '';
+  _rotRelPromsNomesCache = promsNomes;
 
   body.innerHTML = promsNomes.map((nome, idx) => {
     const isOpen = _rotRelDrillIdx === idx;
@@ -11354,7 +11439,8 @@ function renderRotRelatorio() {
         </div>
         ${!totalVinc
           ? `<span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-weight:600">Pendente</span>`
-          : `<i class="ti ti-chevron-down" style="font-size:15px;color:#94a3b8;transform:rotate(${isOpen?'180':'0'}deg);transition:transform .2s"></i>`
+          : `<button onclick="event.stopPropagation();abrirRoteiroMapa(${idx})" title="Ver roteiro no mapa" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><i class="ti ti-map-2" style="font-size:15px" aria-hidden="true"></i></button>
+             <i class="ti ti-chevron-down" style="font-size:15px;color:#94a3b8;transform:rotate(${isOpen?'180':'0'}deg);transition:transform .2s"></i>`
         }
       </div>
       ${drillHTML}
@@ -11367,11 +11453,212 @@ function _rotRelToggle(idx) {
   renderRotRelatorio();
 }
 
+// ── Roteiro no Mapa ───────────────────────────
+let _rmapPromotorNome = null;
+let _rmapDiaAtual     = null;
+let _rmapModoAtual    = 'DRIVE';
+let _rmapMap          = null;
+let _rmapMarkers      = [];
+let _rmapPolyline     = null;
+let _rmapCarregando   = false;
+
+function abrirRoteiroMapa(idx) {
+  const nome = _rotRelPromsNomesCache[idx];
+  if (!nome) return;
+  _rmapPromotorNome = nome;
+  const partes = nome.trim().split(' ');
+  const iniciais = (partes[0][0] + (partes[1]?.[0] || '')).toUpperCase();
+  document.getElementById('rmapAvatar').textContent = iniciais;
+  document.getElementById('rmapNome').textContent = nome;
+  const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel || '') === normTxt(nome));
+  const ufsStr = [...new Set(lojasVinc.map(l => l.uf).filter(Boolean))].sort().join(', ');
+  document.getElementById('rmapSub').textContent =
+    `${lojasVinc.length} loja${lojasVinc.length>1?'s':''} vinculada${lojasVinc.length>1?'s':''}${ufsStr?' · '+ufsStr:''}`;
+  _rmapModoAtual = 'DRIVE';
+  document.querySelectorAll('.rmap-modo').forEach(el => el.classList.toggle('sel', el.dataset.modo === 'DRIVE'));
+  document.getElementById('modalRoteiroMapa').classList.remove('hidden');
+  const hoje = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][new Date().getDay()];
+  _rmapSelecionarDia(_DIAS_SEMANA.includes(hoje) ? hoje : 'Seg');
+}
+
+function fecharRoteiroMapa() {
+  document.getElementById('modalRoteiroMapa').classList.add('hidden');
+}
+
+function _rmapSelecionarDia(dia) {
+  _rmapDiaAtual = dia;
+  document.querySelectorAll('.rmap-dia').forEach(el => el.classList.toggle('sel', el.dataset.dia === dia));
+  _rmapAtualizar();
+}
+
+function _rmapSelecionarModo(modo) {
+  _rmapModoAtual = modo;
+  document.querySelectorAll('.rmap-modo').forEach(el => el.classList.toggle('sel', el.dataset.modo === modo));
+  _rmapAtualizar();
+}
+
+function _rmapIconeModo() {
+  return _rmapModoAtual === 'TWO_WHEELER' ? 'ti-motorbike' : _rmapModoAtual === 'TRANSIT' ? 'ti-bus' : 'ti-car';
+}
+
+function _rmapFormatarDuracao(segundosStr) {
+  const s = parseInt(segundosStr, 10) || 0;
+  const h = Math.floor(s / 3600);
+  const m = Math.round((s % 3600) / 60);
+  return h > 0 ? `${h}h ${m}min` : `${m} min`;
+}
+
+async function _rmapAtualizar() {
+  if (_rmapCarregando) return;
+  _rmapCarregando = true;
+  const listaEl = document.getElementById('rmapLista');
+  const totalEl = document.getElementById('rmapTotal');
+  const avisoEl = document.getElementById('rmapAvisoCoords');
+  const mapaEl  = document.getElementById('rmapMapa');
+  totalEl.style.display = 'none';
+  avisoEl.style.display = 'none';
+  listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px"><i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:6px" aria-hidden="true"></i>Calculando rota…</div>';
+
+  try {
+    await _rmapCarregarGoogleMaps();
+  } catch (e) {
+    listaEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#dc2626;font-size:12px">Não foi possível carregar o Google Maps.</div>';
+    _rmapCarregando = false;
+    return;
+  }
+
+  if (!_rmapMap) {
+    _rmapMap = new google.maps.Map(mapaEl, { zoom: 11, center: { lat: -8.05, lng: -34.9 } });
+  }
+  _rmapMarkers.forEach(m => m.setMap(null)); _rmapMarkers = [];
+  if (_rmapPolyline) { _rmapPolyline.setMap(null); _rmapPolyline = null; }
+
+  const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel || '') === normTxt(_rmapPromotorNome));
+  const doDia = lojasVinc.filter(l => (l.diasVisita || []).includes(_rmapDiaAtual));
+
+  if (!doDia.length) {
+    listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px"><i class="ti ti-route-off" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>Nenhuma loja agendada para este dia</div>';
+    _rmapCarregando = false;
+    return;
+  }
+
+  const comCoord = [];
+  const semCoord = [];
+  doDia.forEach(l => { const c = _parseLocLoja(l); if (c) comCoord.push({ loja: l, coord: c }); else semCoord.push(l); });
+
+  if (semCoord.length) {
+    avisoEl.style.display = '';
+    avisoEl.innerHTML = `<i class="ti ti-alert-triangle" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> ${semCoord.length} loja${semCoord.length>1?'s':''} sem coordenada cadastrada (não aparece${semCoord.length>1?'m':''} no mapa): ${semCoord.map(l=>esc(l.nome)).join(', ')}`;
+  }
+
+  comCoord.forEach((p, i) => {
+    const marker = new google.maps.Marker({
+      position: p.coord, map: _rmapMap,
+      label: { text: String(i+1), color: '#fff', fontSize: '11px', fontWeight: '700' },
+      title: p.loja.nome || ''
+    });
+    _rmapMarkers.push(marker);
+  });
+
+  if (!comCoord.length) {
+    listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px">Nenhuma loja deste dia tem coordenada cadastrada.</div>';
+    _rmapCarregando = false;
+    return;
+  }
+
+  if (comCoord.length === 1) {
+    _rmapMap.setCenter(comCoord[0].coord);
+    _rmapMap.setZoom(14);
+    listaEl.innerHTML = `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
+      <div style="width:20px;height:20px;border-radius:50%;background:#1e3a5f;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
+      <div style="font-size:12px;color:#1e293b">${esc(comCoord[0].loja.nome||'')}</div>
+    </div>
+    <p style="font-size:11px;color:#94a3b8;margin:8px 0 0">Só uma loja neste dia — sem trajeto para calcular.</p>`;
+    _rmapCarregando = false;
+    return;
+  }
+
+  const bounds = new google.maps.LatLngBounds();
+  comCoord.forEach(p => bounds.extend(p.coord));
+  _rmapMap.fitBounds(bounds);
+
+  try {
+    const resultado = await _rmapCalcularRota(comCoord.map(p => p.coord), _rmapModoAtual);
+    _rmapRenderResultado(comCoord, resultado);
+  } catch (e) {
+    console.error('Erro ao calcular rota:', e);
+    listaEl.innerHTML = `<div style="text-align:center;padding:16px 0;color:#dc2626;font-size:12px">Não foi possível calcular a rota${_rmapModoAtual==='TRANSIT'?' de ônibus para esta região':''}.<br><span style="color:#94a3b8;font-size:11px">${esc(e.message||'')}</span></div>` +
+      comCoord.map((p,i) => `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
+        <div style="width:20px;height:20px;border-radius:50%;background:#1e3a5f;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+        <div style="font-size:12px;color:#1e293b">${esc(p.loja.nome||'')}</div>
+      </div>`).join('');
+  }
+  _rmapCarregando = false;
+}
+
+async function _rmapCalcularRota(coords, modo) {
+  const body = {
+    origin:      { location: { latLng: { latitude: coords[0].lat, longitude: coords[0].lng } } },
+    destination: { location: { latLng: { latitude: coords[coords.length-1].lat, longitude: coords[coords.length-1].lng } } },
+    intermediates: coords.slice(1, -1).map(c => ({ location: { latLng: { latitude: c.lat, longitude: c.lng } } })),
+    travelMode: modo,
+  };
+  if (modo === 'DRIVE' || modo === 'TWO_WHEELER') body.routingPreference = 'TRAFFIC_AWARE';
+
+  const resp = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+      'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters',
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  if (!resp.ok || !data.routes || !data.routes.length) {
+    throw new Error(data?.error?.message || 'Rota não encontrada.');
+  }
+  return data.routes[0];
+}
+
+function _rmapRenderResultado(comCoord, rota) {
+  const listaEl = document.getElementById('rmapLista');
+  const totalEl = document.getElementById('rmapTotal');
+
+  if (rota.polyline?.encodedPolyline && google.maps.geometry) {
+    const path = google.maps.geometry.encoding.decodePath(rota.polyline.encodedPolyline);
+    _rmapPolyline = new google.maps.Polyline({ path, map: _rmapMap, strokeColor: '#1d4ed8', strokeWeight: 4, strokeOpacity: 0.8 });
+  }
+
+  const legs = rota.legs || [];
+  let html = '';
+  comCoord.forEach((p, i) => {
+    html += `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
+      <div style="width:20px;height:20px;border-radius:50%;background:${i===comCoord.length-1?'#15803d':'#1e3a5f'};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+      <div style="font-size:12px;color:#1e293b">${esc(p.loja.nome||'')}</div>
+    </div>`;
+    const leg = legs[i];
+    if (leg) {
+      const km = ((leg.distanceMeters||0)/1000).toFixed(1);
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:2px 0 2px 30px;font-size:11px;color:#1d4ed8">
+        <i class="ti ${_rmapIconeModo()}" style="font-size:13px" aria-hidden="true"></i> ${_rmapFormatarDuracao(leg.duration)} · ${km} km
+      </div>`;
+    }
+  });
+  listaEl.innerHTML = html;
+
+  const totalKm = ((rota.distanceMeters||0)/1000).toFixed(1);
+  totalEl.style.display = 'flex';
+  totalEl.innerHTML = `<span style="font-size:12px;color:#64748b;font-weight:600">Tempo total estimado</span>
+    <span style="font-size:13px;color:#0e2841;font-weight:700">${_rmapFormatarDuracao(rota.duration)} · ${totalKm} km</span>`;
+}
+
 function _rotRelGetProms() {
-  const isAdmin = sessao?.role === 'admin';
-  const isVend  = sessao?.role === 'vendedor';
+  const isAdmin   = sessao?.role === 'admin';
+  const isVend    = sessao?.role === 'vendedor';
+  const isDiretor = sessao?.role === 'diretor';
   let promsNomes = [];
-  if (isAdmin) {
+  if (isAdmin || isDiretor) {
     promsNomes = [...new Set([
       ...usuarios.filter(u => u.role === 'promotor').map(u => u.nome),
       ...produtos.map(p => p.promotor).filter(Boolean)
