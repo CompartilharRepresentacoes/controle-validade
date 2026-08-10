@@ -1214,7 +1214,7 @@
             <!-- Quantidade -->
             <div style="flex:1;display:flex;flex-direction:column;gap:3px">
               <label class="text-sm font-semibold" style="color:#272a4a">Quantidade *</label>
-              <input id="f_quantidade" type="number" placeholder="0" min="1" step="1" inputmode="numeric"
+              <input id="f_quantidade" type="number" placeholder="0" min="0" step="1" inputmode="numeric"
                 oninput="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=Math.ceil(v);"
                 class="border border-slate-300 rounded-lg px-3 py-2 text-sm" required />
             </div>
@@ -4031,7 +4031,7 @@
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-slate-600">Quantidade *</label>
-        <input id="edit_quantidade" type="number" min="0.01" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        <input id="edit_quantidade" type="number" min="0" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
       </div>
       <div class="flex flex-col gap-1" data-admin-only>
         <label class="text-xs font-medium text-slate-600">UND</label>
@@ -6804,7 +6804,9 @@ document.getElementById('prodForm').addEventListener('submit', async (e) => {
   camposObrig.forEach(c => {
     const el = document.getElementById(c.id);
     const val = (el.value||'').trim();
-    if (!val || val === '0') {
+    // Quantidade 0 é um valor válido (produto vendido/zerado) — só bloqueia se estiver vazio
+    const vazio = c.id === 'f_quantidade' ? !val : (!val || val === '0');
+    if (vazio) {
       el.style.borderColor = '#ef4444';
       el.style.backgroundColor = '#fef2f2';
       faltam.push(c.label);
@@ -7579,9 +7581,9 @@ async function atualizarCadastroDuplicado() {
   const idx = produtos.findIndex(p => p.id === id);
   if (idx < 0) { fecharModalDuplicado(); return; }
 
-  const novaQtde  = _duplicadoNovaQtde  || 0;
+  const novaQtde  = (_duplicadoNovaQtde === undefined || _duplicadoNovaQtde === null || isNaN(_duplicadoNovaQtde)) ? 0 : _duplicadoNovaQtde;
   const novoPreco = _duplicadoNovoPreco || 0;
-  if (!novaQtde) { showToast('⚠️ Informe a quantidade.', '#92400e'); return; }
+  if (novaQtde < 0) { showToast('⚠️ Informe a quantidade.', '#92400e'); return; }
 
   const antiga = Number(produtos[idx].quantidade) || 0;
   const diff = novaQtde - antiga;
@@ -7747,10 +7749,13 @@ function _msFiltrFab() {
     const btnSellOut = podeSellOut
       ? `<button onclick="solicitarSellOut(${p.id})" style="margin-top:8px;width:100%;background:#fff;border:0.5px solid #d97706;color:#92400e;font-size:12px;font-weight:500;border-radius:8px;padding:6px 0;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer"><i class="ti ti-tag" style="font-size:14px" aria-hidden="true"></i>Solicitar SellOut</button>`
       : (p.selloutSolicitado ? `<p style="margin:8px 0 0;font-size:11px;font-weight:500;color:#dc2626;text-align:center">SellOut solicitado</p>` : '');
+    const vendidoMs = Number(p.quantidade) === 0
+      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#dcfce7;color:#166534;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle">Vendido</span>`
+      : '';
     return `<div style="background:${c.diasBg};border-radius:8px;padding:10px 12px;border:0.5px solid ${c.headBorder}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="flex:1;min-width:0;margin-right:10px">
-          <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}</p>
+          <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}${vendidoMs}</p>
           <p style="font-size:11px;color:#64748b;margin:0 0 1px">${esc(p.loja||'—')} · ${esc(p.uf||'—')}</p>
           <p style="font-size:11px;color:#64748b;margin:0">${esc(p.fabrica||'—')} · ${qtdTxt}</p>
         </div>
@@ -8122,6 +8127,12 @@ function renderTabela() {
       ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#fee2e2;color:#991b1b;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle" title="Solicitado por ${esc(p.selloutSolicitadoPor||'')} em ${fmtData(p.selloutSolicitadoEm||'')}"><i class="ti ti-alert-triangle" style="font-size:11px" aria-hidden="true"></i> SellOut</span>`
       : '';
 
+    // Quantidade zerada = produto vendido por completo
+    const vendidoZerado = Number(p.quantidade) === 0;
+    const vendidoBadge  = vendidoZerado
+      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#dcfce7;color:#166534;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle" title="Quantidade zerada"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> Vendido</span>`
+      : '';
+
     const lojaUF = p.uf ? `<strong>${esc(p.uf)}</strong> · ${esc(p.loja)}` : esc(p.loja);
 
     if (isDiretor) {
@@ -8130,7 +8141,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8144,7 +8155,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8159,7 +8170,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${esc(p.loja)}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8173,7 +8184,7 @@ function renderTabela() {
       <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
       <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
       <td class="font-medium">${lojaUF}</td>
-      <td class="font-medium">${esc(p.produto)}${soBadge}</td>
+      <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
       <td class="text-center">${qtdTxt}</td>
       <td class="font-medium">${fmtData(p.validade)}</td>
       <td class="font-semibold text-center">${diasTxt}</td>
@@ -14742,7 +14753,10 @@ function salvarEdicao() {
   if (idx < 0) return;
   const isAdmin = sessao && sessao.role === 'admin';
   const qtdeAnterior = Number(produtos[idx].quantidade) || 0;
-  const qtdeNova     = Number(document.getElementById('edit_quantidade').value) || qtdeAnterior;
+  const qtdeInputVal = document.getElementById('edit_quantidade').value;
+  const qtdeParsed   = Number(qtdeInputVal);
+  // 0 é um valor válido (produto vendido/zerado) — só cai no valor anterior se o campo estiver vazio ou inválido
+  const qtdeNova     = (qtdeInputVal === '' || isNaN(qtdeParsed) || qtdeParsed < 0) ? qtdeAnterior : qtdeParsed;
   produtos[idx].quantidade = qtdeNova;
   const precoAnterior = Number(produtos[idx].preco) || 0;
   const precoNovo     = Number(document.getElementById('edit_preco').value) || 0;
@@ -15263,7 +15277,8 @@ function salvarEdicao() {
     if (!v || v.length < 10) { showToast('⚠️ Informe a data de validade.','#92400e'); return; }
     const dt = _maParseData(v);
     if (!dt) { showToast('⚠️ Data inválida. Use DD/MM/AAAA.','#92400e'); return; }
-    if (!q || Number(q) <= 0) { showToast('⚠️ Informe a quantidade.','#92400e'); return; }
+    // Quantidade 0 é válida (produto vendido/zerado) — só bloqueia se estiver vazio ou negativo/inválido
+    if (q === '' || isNaN(Number(q)) || Number(q) < 0) { showToast('⚠️ Informe a quantidade.','#92400e'); return; }
     // Verificar antecipadamente duplicata própria e de outro promotor
     if (sessao && sessao.role === 'promotor' && _maLojaObj && _maProdObj) {
       const isoDate = dataParaISO(v);
