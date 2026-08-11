@@ -7666,7 +7666,11 @@ async function atualizarCadastroDuplicado() {
   produtos[idx].preco = novoPreco;
   FS_PRODUTOS.doc(String(id)).update({ quantidade: novaQtde, preco: novoPreco });
   renderTabela();
-  if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
+  if (diff !== 0) {
+    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
+    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
+    _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
+  }
 
   const viaMeAjuda = _duplicadoOrigemMa;
   const lojaMa      = _duplicadoLojaMa;
@@ -15038,7 +15042,7 @@ function abrirEditModal(id, isDuplicate) {
   _atualizarBtnEditConcorrencia();
   document.getElementById('editModal').classList.remove('hidden');
 }
-function salvarEdicao() {
+async function salvarEdicao() {
   const id = Number(document.getElementById('edit_id').value);
   const idx = produtos.findIndex(p => p.id === id);
   if (idx < 0) return;
@@ -15075,7 +15079,11 @@ function salvarEdicao() {
   produtos[idx].dataAtualizacao = new Date().toISOString().slice(0,10);
   // Registrar movimentação se quantidade mudou
   const diff = qtdeNova - qtdeAnterior;
-  if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
+  if (diff !== 0) {
+    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
+    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
+    _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
+  }
   FS_PRODUTOS.doc(String(id)).set(produtos[idx]); renderTabela();
   document.getElementById('editModal').classList.add('hidden');
   showToast('✅ Produto atualizado!','#166534');
@@ -15937,7 +15945,7 @@ function salvarEdicao() {
       `<button type="button" onclick="_maEditarQtde(${prodId})" title="Editar quantidade" style="background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'"><i class="ti ti-pencil" style="font-size:15px" aria-hidden="true"></i></button>`;
   };
 
-  window._maSalvarQtde = function(prodId) {
+  window._maSalvarQtde = async function(prodId) {
     const inp = document.getElementById('maQinput_' + prodId);
     if (!inp) return;
     const novaQtde = parseFloat(inp.value);
@@ -15948,7 +15956,11 @@ function salvarEdicao() {
     const diff = novaQtde - antiga;
     produtos[idx].quantidade = novaQtde;
     FS_PRODUTOS.doc(String(prodId)).update({ quantidade: novaQtde });
-    if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
+    if (diff !== 0) {
+      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
+      const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
+      _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
+    }
     renderTabela();
     // Atualizar visual
     const qtdeEl = document.getElementById('maQqtde_' + prodId);
