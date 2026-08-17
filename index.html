@@ -14494,7 +14494,7 @@ function renderHistorico(resetLimite) {
 
     const vuCell = _htmlVidaUtil(vu);
     const entregaStyle = _estiloEntregaInput(entregaAlerta);
-    const entregaCell = `<input type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value,this)" style="${entregaStyle}" />`;
+    const entregaCell = `<input id="hEntrega_${m.id}" type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value,this)" style="${entregaStyle}" />`;
 
     return `<tr class="${rowCls}">
       <td>${fmtData(m.data)}</td>
@@ -14690,22 +14690,39 @@ function salvarDataEntrega(movId, dataEntrega, inputEl) {
   }
   const idx = historico.findIndex(m => m.id === movId);
   if (idx < 0) return;
-  historico[idx].dataEntrega = dataEntrega || null;
-  const fsId = historico[idx].firestoreId;
-  if (fsId) {
-    FS_HISTORICO.doc(fsId).update({ dataEntrega: dataEntrega || null });
-  } else {
-    FS_HISTORICO.where('id', '==', movId).get().then(snap => {
-      snap.forEach(doc => doc.ref.update({ dataEntrega: dataEntrega || null }));
-    });
-  }
-  showToast('📅 Data de entrega salva!', '#166534');
-  // Atualiza só a célula de Vida Útil e a cor do próprio campo — sem redesenhar a linha
-  // (redesenhar destruiria o <input type="date"> e interromperia a digitação)
-  const m = historico[idx];
-  const vuEl = document.getElementById('hVU_' + movId);
-  if (vuEl) vuEl.innerHTML = _htmlVidaUtil(_calcVidaUtilMov(m));
-  if (inputEl) inputEl.style.cssText = _estiloEntregaInput(_calcEntregaAlerta(m));
+  const base = historico[idx];
+  const valorNovo = dataEntrega || null;
+  // A Data de Entrega é uma característica do ITEM (mesmo produto + loja + validade), não de
+  // uma linha isolada — aplica em todos os registros desse item no histórico (Novo, Alteração,
+  // Vencido automático, Exclusão), assim não precisa informar de novo em cada linha.
+  const irmaos = historico.filter(m =>
+    m.produto === base.produto && m.loja === base.loja && m.validade === base.validade
+  );
+  irmaos.forEach(m => {
+    m.dataEntrega = valorNovo;
+    if (m.firestoreId) {
+      FS_HISTORICO.doc(m.firestoreId).update({ dataEntrega: valorNovo });
+    } else {
+      FS_HISTORICO.where('id', '==', m.id).get().then(snap => {
+        snap.forEach(doc => doc.ref.update({ dataEntrega: valorNovo }));
+      });
+    }
+  });
+  showToast(irmaos.length > 1
+    ? `📅 Data de entrega salva em ${irmaos.length} registros deste item!`
+    : '📅 Data de entrega salva!', '#166534');
+  // Atualiza a célula de Vida Útil + o próprio campo de data em todas as linhas afetadas que
+  // estejam na tela agora — sem redesenhar a linha inteira (redesenhar destruiria o <input
+  // type="date"> e interromperia a digitação de quem estiver editando outra linha).
+  irmaos.forEach(m => {
+    const vuEl = document.getElementById('hVU_' + m.id);
+    if (vuEl) vuEl.innerHTML = _htmlVidaUtil(_calcVidaUtilMov(m));
+    const campo = (m.id === movId && inputEl) ? inputEl : document.getElementById('hEntrega_' + m.id);
+    if (campo) {
+      campo.value = valorNovo || '';
+      campo.style.cssText = _estiloEntregaInput(_calcEntregaAlerta(m));
+    }
+  });
 }
 
 // ── Saídas automáticas por vencimento ────────
@@ -14733,7 +14750,7 @@ function verificarSaidasPorVencimento() {
       firestoreId:   'h_' + Math.round(Date.now() + Math.random()),
       shelfLife:     null,
       dataFabricacao:null,
-      dataEntrega:   null,
+      dataEntrega:   _dataEntregaOrigem(p),
       qtde,
       produto:       p.produto  || '',
       loja:          p.loja     || '',
@@ -14827,7 +14844,7 @@ function _registrarMovimento(tipo, qtde, produto, acao, atualizadoPor, geoInfo) 
     validade:       produto.validade || '',
     shelfLife:      shelfLife,
     dataFabricacao: dataFabricacao,
-    dataEntrega:    acaoFinal === 'alteracao' ? _dataEntregaOrigem(produto) : null,
+    dataEntrega:    (acaoFinal === 'alteracao' || acaoFinal === 'exclusao') ? _dataEntregaOrigem(produto) : null,
     loja:           produto.loja     || '',
     rede:           lojaObj?.rede    || '',
     uf:             produto.uf       || '',
