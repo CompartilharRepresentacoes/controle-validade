@@ -6962,21 +6962,28 @@ document.getElementById('prodForm').addEventListener('submit', async (e) => {
   if (window._maSavingFromHelper) {
     const helperInfo = window._maSavingFromHelper;
     window._maSavingFromHelper = null;
-    const p = novoProduto;
-    produtos.push(p);
-    FS_PRODUTOS.doc(String(p.id)).set(p);
-    renderTabela();
-    const _hc = new Date().toISOString().slice(0,10);
-    if (!p.validade || p.validade >= _hc) {
-      const _lojaObjMa = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
-      const _geoMa = sessao?.role === 'promotor' ? await _capturarPresencaLoja(_lojaObjMa) : null;
-      _registrarMovimento('entrada', p.quantidade, p, 'novo', null, _geoMa);
-    }
-    limparForm();
-    if (helperInfo.addMore && helperInfo.lojaObj) {
-      window._maRestart(helperInfo.lojaObj);
-    } else {
-      showToast('✅ Produto salvo!', '#166534');
+    // Trava contra duplo-clique/duplo-toque (aguarda GPS antes de terminar)
+    if (window._gravandoMovimento) return;
+    window._gravandoMovimento = true;
+    try {
+      const p = novoProduto;
+      produtos.push(p);
+      FS_PRODUTOS.doc(String(p.id)).set(p);
+      renderTabela();
+      const _hc = new Date().toISOString().slice(0,10);
+      if (!p.validade || p.validade >= _hc) {
+        const _lojaObjMa = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+        const _geoMa = sessao?.role === 'promotor' ? await _capturarPresencaLoja(_lojaObjMa) : null;
+        _registrarMovimento('entrada', p.quantidade, p, 'novo', null, _geoMa);
+      }
+      limparForm();
+      if (helperInfo.addMore && helperInfo.lojaObj) {
+        window._maRestart(helperInfo.lojaObj);
+      } else {
+        showToast('✅ Produto salvo!', '#166534');
+      }
+    } finally {
+      window._gravandoMovimento = false;
     }
     return;
   }
@@ -7134,34 +7141,42 @@ function _abrirConfirmacaoLancamento(p) {
 
 async function _confirmarLancamentoSIM() {
   if (!_pendingConfirmacao) return;
-  const p = _pendingConfirmacao;
-  produtos.push(p);
-  FS_PRODUTOS.doc(String(p.id)).set(p);
-  renderTabela();
-  // Produto já vencido no lançamento: não registra no histórico
-  const _hojeConf = new Date().toISOString().slice(0,10);
-  if (!p.validade || p.validade >= _hojeConf) {
-    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
-    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
-    _registrarMovimento('entrada', p.quantidade, p, 'novo', null, geoInfo);
+  // Trava contra duplo-clique/duplo-toque: essa função aguarda o GPS (_capturarPresencaLoja),
+  // e um segundo toque nesse intervalo disparava tudo de novo, duplicando a linha no Histórico.
+  if (window._gravandoMovimento) return;
+  window._gravandoMovimento = true;
+  try {
+    const p = _pendingConfirmacao;
+    produtos.push(p);
+    FS_PRODUTOS.doc(String(p.id)).set(p);
+    renderTabela();
+    // Produto já vencido no lançamento: não registra no histórico
+    const _hojeConf = new Date().toISOString().slice(0,10);
+    if (!p.validade || p.validade >= _hojeConf) {
+      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+      const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
+      _registrarMovimento('entrada', p.quantidade, p, 'novo', null, geoInfo);
+    }
+    document.getElementById('modalConfirmarLancamento').classList.add('hidden');
+    limparForm();
+    if (_lojaSnapshot && _lojaSnapshot.nome) {
+      document.getElementById('f_loja').value = _lojaSnapshot.nome;
+      const busca = document.getElementById('f_loja_busca');
+      if (busca) { busca.value = _lojaSnapshot.buscaVal; busca.readOnly = true; busca.style.borderColor = ''; }
+      document.getElementById('f_loja_input_wrap').style.display = 'none';
+      document.getElementById('f_loja_card_nome').textContent = _lojaSnapshot.cardNome;
+      document.getElementById('f_loja_card_info').textContent = _lojaSnapshot.cardInfo;
+      document.getElementById('f_loja_card').style.display = 'flex';
+      document.getElementById('f_loja_icon').className = 'ti ti-search';
+      _habilitarCampoProduto();
+    }
+    _pendingConfirmacao = null;
+    _lojaSnapshot = null;
+    showToast('✅ Produto salvo!', '#166534');
+    setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
+  } finally {
+    window._gravandoMovimento = false;
   }
-  document.getElementById('modalConfirmarLancamento').classList.add('hidden');
-  limparForm();
-  if (_lojaSnapshot && _lojaSnapshot.nome) {
-    document.getElementById('f_loja').value = _lojaSnapshot.nome;
-    const busca = document.getElementById('f_loja_busca');
-    if (busca) { busca.value = _lojaSnapshot.buscaVal; busca.readOnly = true; busca.style.borderColor = ''; }
-    document.getElementById('f_loja_input_wrap').style.display = 'none';
-    document.getElementById('f_loja_card_nome').textContent = _lojaSnapshot.cardNome;
-    document.getElementById('f_loja_card_info').textContent = _lojaSnapshot.cardInfo;
-    document.getElementById('f_loja_card').style.display = 'flex';
-    document.getElementById('f_loja_icon').className = 'ti ti-search';
-    _habilitarCampoProduto();
-  }
-  _pendingConfirmacao = null;
-  _lojaSnapshot = null;
-  showToast('✅ Produto salvo!', '#166534');
-  setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
 }
 
 function _confirmarLancamentoNAO() {
@@ -7651,6 +7666,10 @@ function abrirModalDuplicado(p, opts) {
 }
 
 async function atualizarCadastroDuplicado() {
+  // Trava contra duplo-clique/duplo-toque (aguarda GPS antes de terminar)
+  if (window._gravandoMovimento) return;
+  window._gravandoMovimento = true;
+  try {
   const id = _duplicadoId;
   if (id === null) { fecharModalDuplicado(); return; }
   const idx = produtos.findIndex(p => p.id === id);
@@ -7684,6 +7703,9 @@ async function atualizarCadastroDuplicado() {
   } else {
     // Fecha e já deixa pronto para lançar o próximo produto na mesma loja (mesmo comportamento do lançamento normal)
     _resetParaProximoItem();
+  }
+  } finally {
+    window._gravandoMovimento = false;
   }
 }
 
@@ -15046,6 +15068,10 @@ async function salvarEdicao() {
   const id = Number(document.getElementById('edit_id').value);
   const idx = produtos.findIndex(p => p.id === id);
   if (idx < 0) return;
+  // Trava contra duplo-clique/duplo-toque no "Salvar" (aguarda GPS antes de terminar)
+  if (window._gravandoMovimento) return;
+  window._gravandoMovimento = true;
+  try {
   const isAdmin = sessao && sessao.role === 'admin';
   const qtdeAnterior = Number(produtos[idx].quantidade) || 0;
   const qtdeInputVal = document.getElementById('edit_quantidade').value;
@@ -15087,6 +15113,9 @@ async function salvarEdicao() {
   FS_PRODUTOS.doc(String(id)).set(produtos[idx]); renderTabela();
   document.getElementById('editModal').classList.add('hidden');
   showToast('✅ Produto atualizado!','#166534');
+  } finally {
+    window._gravandoMovimento = false;
+  }
 }
 
 // ── Editar EAN ───────────────────────────────
@@ -15952,6 +15981,10 @@ async function salvarEdicao() {
     if (isNaN(novaQtde) || novaQtde < 0) { showToast('Quantidade inválida.', '#92400e'); return; }
     const idx = produtos.findIndex(p => p.id === prodId);
     if (idx < 0) return;
+    // Trava contra duplo-clique/duplo-toque no botão de confirmar (aguarda GPS antes de terminar)
+    if (window._gravandoMovimento) return;
+    window._gravandoMovimento = true;
+    try {
     const antiga = Number(produtos[idx].quantidade) || 0;
     const diff = novaQtde - antiga;
     produtos[idx].quantidade = novaQtde;
@@ -15972,6 +16005,9 @@ async function salvarEdicao() {
         `<button type="button" onclick="_maEditarQtde(${prodId})" title="Editar quantidade" style="background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'"><i class="ti ti-pencil" style="font-size:15px" aria-hidden="true"></i></button>`;
     }
     showToast('✅ Quantidade atualizada!', '#166534');
+    } finally {
+      window._gravandoMovimento = false;
+    }
   };
 
   // ── Fim Consulta ────────────────────────────────────────────────────
