@@ -26,9 +26,6 @@
     .badge-expired { background:#ef4444; color:#fff; }
     .badge-warning { background:#eab308; color:#fff; }
     .badge-ok      { background:#22c55e; color:#fff; }
-    .rmap-dia, .rmap-modo { background:#f1f5f9; color:#475569; }
-    .rmap-dia.sel, .rmap-modo.sel { background:#1e3a5f; color:#fff; }
-    .rmap-modo.sel { background:#dbeafe; color:#1e40af; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #e2e8f0; padding: 8px 10px; font-size: 0.85rem; white-space: nowrap; }
     th { background: #1e40af; color: #fff; text-align: left; cursor: pointer; user-select: none; }
@@ -1217,7 +1214,7 @@
             <!-- Quantidade -->
             <div style="flex:1;display:flex;flex-direction:column;gap:3px">
               <label class="text-sm font-semibold" style="color:#272a4a">Quantidade *</label>
-              <input id="f_quantidade" type="number" placeholder="0" min="0" step="1" inputmode="numeric"
+              <input id="f_quantidade" type="number" placeholder="0" min="1" step="1" inputmode="numeric"
                 oninput="const v=parseFloat(this.value);if(!isNaN(v)&&v>0)this.value=Math.ceil(v);"
                 class="border border-slate-300 rounded-lg px-3 py-2 text-sm" required />
             </div>
@@ -1757,15 +1754,6 @@
     <!-- View: Gráficos -->
     <div id="viewGraficos" class="hidden mb-6" style="display:none">
 
-      <!-- ── Barra de abas dos gráficos ── -->
-      <div style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;margin-bottom:14px">
-        <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-chart-bar" style="font-size:14px" aria-hidden="true"></i>Distribuição</button>
-        <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-trophy" style="font-size:14px" aria-hidden="true"></i>Ranking</button>
-        <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-arrows-exchange" style="font-size:14px" aria-hidden="true"></i>Movimentações</button>
-        <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-alert-triangle" style="font-size:14px" aria-hidden="true"></i>Ruptura</button>
-        <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-scale" style="font-size:14px" aria-hidden="true"></i>Concorrência</button>
-      </div>
-
       <!-- ── Painel 1: Distribuição ── -->
       <div id="tabPanelDist">
       <!-- Card filtros Gráficos -->
@@ -1776,58 +1764,48 @@
             <h2 class="text-base font-semibold text-blue-700">Filtros — Gráficos</h2>
             <i id="graficosCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
           </div>
-        </div>
-        <div id="filtrosGraficosBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
-          <div class="flex flex-wrap items-end gap-3 mb-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Data inicial</label>
-              <input id="gDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Data final</label>
-              <input id="gDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
-            </div>
-            <button type="button" onclick="document.getElementById('gDataIni').value='';document.getElementById('gDataFim').value='';renderGraficos()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px" id="gBtnLimparDatas">
-              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
-            </button>
+          <div class="flex items-center gap-2 flex-wrap" onclick="event.stopPropagation()">
+            <span class="text-xs font-medium text-slate-500">De</span>
+            <input id="gDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:110px" />
+            <span class="text-xs font-medium text-slate-500">até</span>
+            <input id="gDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficos()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:110px" />
+            <button onclick="document.getElementById('gDataIni').value='';document.getElementById('gDataFim').value='';renderGraficos()" title="Limpar datas" style="display:none;background:none;border:0.5px solid #cbd5e1;border-radius:8px;padding:4px 8px;font-size:12px;color:#64748b;cursor:pointer;line-height:1" id="gBtnLimparDatas">✕</button>
           </div>
-          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
-          <div class="flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Fábrica</label>
-              <select id="gFabrica" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-                <option value="">Todas as Fábricas</option>
-              </select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" id="gChevronVend"></i>
-            <div class="flex flex-col gap-1" id="gVendedorWrap">
-              <label class="text-xs text-slate-500">Vendedor</label>
-              <select id="gVendedor" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-                <option value="">Todos os Vendedores</option>
-              </select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500" id="gUFlabel">UF</label>
-              <select id="gUF" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-                <option value="">Todas as UFs</option>
-              </select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Rede</label>
-              <select id="gRede" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-                <option value="">Todas as Redes</option>
-              </select>
-            </div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Loja</label>
-              <select id="gLoja" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-                <option value="">Todas as Lojas</option>
-              </select>
-            </div>
+        </div>
+        <div id="filtrosGraficosBody" class="flex flex-wrap items-end gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Fábrica</label>
+            <select id="gFabrica" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as Fábricas</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Rede</label>
+            <select id="gRede" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as Redes</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="gChevronVend"></i>
+          <div class="flex flex-col gap-1" id="gVendedorWrap">
+            <label class="text-xs text-slate-500">Vendedor</label>
+            <select id="gVendedor" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todos os Vendedores</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500" id="gUFlabel">UF</label>
+            <select id="gUF" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as UFs</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Loja</label>
+            <select id="gLoja" onchange="renderGraficos()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as Lojas</option>
+            </select>
           </div>
         </div>
       </div>
@@ -1874,62 +1852,34 @@
       <!-- ── Painel Ranking de Lojas ── -->
       <div id="tabPanelRank" style="display:none">
 
-        <!-- Card filtros Ranking -->
-        <div id="cardFiltrosRank" class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
-          <div class="flex flex-wrap items-center justify-between gap-3 cursor-pointer" onclick="toggleFiltrosRankCard()">
-            <div style="display:flex;align-items:center;gap:8px">
-              <i class="ti ti-list-search" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
-              <h2 class="text-base font-semibold text-blue-700">Filtros — Ranking</h2>
-              <i id="rankCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
-            </div>
-            <div style="display:flex;background:#f1f5f9;border-radius:8px;border:0.5px solid #cbd5e1;overflow:hidden" onclick="event.stopPropagation()">
-              <button id="rModoProd" onclick="setRankModo('produto')" style="font-size:12px;font-weight:600;padding:6px 12px;border:none;background:#1e3a5f;color:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;border-radius:7px">
-                <i class="ti ti-building-store" style="font-size:13px" aria-hidden="true"></i> Por produto
-              </button>
-              <button id="rModoLoja" onclick="setRankModo('loja')" style="font-size:12px;font-weight:600;padding:6px 12px;border:none;background:transparent;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
-                <i class="ti ti-package" style="font-size:13px" aria-hidden="true"></i> Por loja
-              </button>
-            </div>
+        <!-- Filtro horizontal -->
+        <div style="background:#e8edf2;padding:10px 14px;border-radius:10px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <i class="ti ti-adjustments-horizontal" style="font-size:15px;color:#1e3a5f" aria-hidden="true"></i>
+            <span style="font-size:12px;font-weight:600;color:#1e3a5f;white-space:nowrap">Filtros — Ranking</span>
           </div>
-          <div id="filtrosRankBody" style="display:none">
-            <div class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe">
-              <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
-              <div class="flex flex-wrap items-end gap-3 mb-3">
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Data inicial</label>
-                  <input type="text" id="rDtIni" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderRankingLojas()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Data final</label>
-                  <input type="text" id="rDtFim" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderRankingLojas()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-                </div>
-                <button type="button" onclick="limparRankFiltros()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
-                  <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
-                </button>
-              </div>
-              <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
-              <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Fábrica</label>
-                  <select id="rFab" onchange="onRankChangeFab()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Vendedor</label>
-                  <select id="rVend" onchange="onRankChangeVend()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">UF</label>
-                  <select id="rUF" onchange="onRankChangeUF()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Rede</label>
-                  <select id="rRede" onchange="onRankChangeRede()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"></select>
-                </div>
-              </div>
-            </div>
+          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
+          <select id="rFab" onchange="onRankChangeFab()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
+          <select id="rRede" onchange="onRankChangeRede()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
+          <select id="rVend" onchange="onRankChangeVend()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;flex:1;min-width:90px;max-width:140px"></select>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;flex-shrink:0" aria-hidden="true"></i>
+          <select id="rUF" onchange="onRankChangeUF()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:80px;flex-shrink:0"></select>
+          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
+          <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+            <input type="text" id="rDtIni" placeholder="DD/MM/AAAA" oninput="renderRankingLojas()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:106px">
+            <span style="font-size:12px;color:#64748b;flex-shrink:0">até</span>
+            <input type="text" id="rDtFim" placeholder="DD/MM/AAAA" oninput="renderRankingLojas()" style="font-size:12px;padding:4px 8px;border:0.5px solid #b0bac8;border-radius:8px;background:#fff;color:#1e293b;height:30px;width:106px">
+          </div>
+          <div style="width:0.5px;height:22px;background:#b0bac8;flex-shrink:0"></div>
+          <div style="display:flex;background:#fff;border-radius:8px;border:0.5px solid #b0bac8;overflow:hidden;flex-shrink:0">
+            <button id="rModoProd" onclick="setRankModo('produto')" style="font-size:12px;font-weight:600;padding:4px 11px;border:none;background:#1e3a5f;color:#fff;cursor:pointer;height:30px;display:flex;align-items:center;gap:4px;border-radius:7px">
+              <i class="ti ti-building-store" style="font-size:13px" aria-hidden="true"></i> Por produto
+            </button>
+            <button id="rModoLoja" onclick="setRankModo('loja')" style="font-size:12px;font-weight:600;padding:4px 11px;border:none;background:transparent;color:#64748b;cursor:pointer;height:30px;display:flex;align-items:center;gap:4px">
+              <i class="ti ti-package" style="font-size:13px" aria-hidden="true"></i> Por loja
+            </button>
           </div>
         </div>
 
@@ -1975,39 +1925,27 @@
                 Diário
               </button>
             </div>
+            <span class="text-xs font-medium text-slate-500">De</span>
+            <input id="mDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataIni');renderMovChart()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:100px" />
+            <span class="text-xs font-medium text-slate-500">até</span>
+            <input id="mDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataFim');renderMovChart()" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white text-center" style="width:100px" />
+            <button onclick="document.getElementById('mDataIni').value='';document.getElementById('mDataFim').value='';renderMovChart()" title="Limpar datas" style="display:none;background:none;border:0.5px solid #cbd5e1;border-radius:8px;padding:4px 8px;font-size:12px;color:#64748b;cursor:pointer;line-height:1" id="mBtnLimparDatas">✕</button>
           </div>
         </div>
-        <div id="filtrosMovBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
-          <div class="flex flex-wrap items-end gap-3 mb-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Mês/ano inicial</label>
-              <input id="mDataIni" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataIni');renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:110px" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-slate-500">Mês/ano final</label>
-              <input id="mDataFim" type="text" inputmode="numeric" maxlength="10" placeholder="MM/AAAA" oninput="mascaraMovData('mDataFim');renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:110px" />
-            </div>
-            <button type="button" onclick="document.getElementById('mDataIni').value='';document.getElementById('mDataFim').value='';renderMovChart()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px" id="mBtnLimparDatas">
-              <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
-            </button>
+        <div id="filtrosMovBody" class="flex flex-wrap items-end gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Fábrica</label><select id="mFabrica" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Rede</label><select id="mRede" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div id="mVendedorWrap" style="display:flex;align-items:flex-end;gap:8px">
+            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Vendedor</label><select id="mVendedor" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
+            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
           </div>
-          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
-          <div class="flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Fábrica</label><select id="mFabrica" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div id="mVendedorWrap" style="display:flex;align-items:flex-end;gap:8px">
-              <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Vendedor</label><select id="mVendedor" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
-              <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            </div>
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500" id="mUFnum">UF</label><select id="mUF" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Rede</label><select id="mRede" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Loja</label><select id="mLoja" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
-            <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-            <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Produto</label><select id="mProduto" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
-          </div>
+          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500" id="mUFnum">UF</label><select id="mUF" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Loja</label><select id="mLoja" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select></div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Produto</label><select id="mProduto" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
         </div>
       </div>
 
@@ -2071,26 +2009,32 @@
             <i id="concCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
           </div>
         </div>
-        <div id="filtrosConcBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-          <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
-          <div class="flex flex-wrap items-end gap-3 mb-3">
+        <div id="filtrosConcBody" class="flex flex-col gap-3 mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
+          <!-- Período -->
+          <div class="flex flex-wrap items-end gap-2">
             <div class="flex flex-col gap-1">
               <label class="text-xs text-slate-500">Data inicial</label>
-              <input id="cDtI" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
+              <input type="date" id="cDtI" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" />
             </div>
+            <span style="font-size:12px;color:#94a3b8;padding-bottom:10px">até</span>
             <div class="flex flex-col gap-1">
               <label class="text-xs text-slate-500">Data final</label>
-              <input id="cDtF" type="text" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px" />
+              <input type="date" id="cDtF" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" />
             </div>
-            <button type="button" onclick="limparPeriodoConc()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
+            <button type="button" onclick="limparPeriodoConc()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px;align-self:flex-end">
               <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
             </button>
           </div>
-          <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
+          <!-- Cascata -->
           <div class="flex flex-wrap items-end gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-xs text-slate-500">Fábrica</label>
             <select id="cFabrica" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Rede</label>
+            <select id="cRede" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
           </div>
           <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" id="cChevronVend"></i>
           <div id="cVendedorWrap" class="flex flex-col gap-1">
@@ -2101,11 +2045,6 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs text-slate-500">UF</label>
             <select id="cUF" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-          </div>
-          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs text-slate-500">Rede</label>
-            <select id="cRede" onchange="renderConcChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
           </div>
           <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px"></i>
           <div class="flex flex-col gap-1">
@@ -2166,80 +2105,22 @@
             <i class="ti ti-alert-triangle" style="font-size:16px;color:#93c5fd" aria-hidden="true"></i>
             <span style="font-size:13px;font-weight:700;color:#fff">Ruptura de Gôndola</span>
             <span style="font-size:11px;color:#93c5fd;margin-left:4px">— calculado automaticamente pelo Histórico</span>
-            <button onclick="exportarExcelRuptura()" style="margin-left:auto;background:#fff;color:#1e3a5f;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap">
-              <i class="ti ti-file-spreadsheet" style="font-size:13px" aria-hidden="true"></i> Exportar Excel
+          </div>
+          <!-- Filtros -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
+            <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as Redes</option></select>
+            <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Vendedores</option></select>
+            <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as UFs</option></select>
+            <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas as Lojas</option></select>
+            <select id="gRuptPromotor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Promotores</option></select>
+            <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos os Produtos</option></select>
+            <div style="width:1px;height:20px;background:#e2e8f0;align-self:center"></div>
+            <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+            <span style="font-size:12px;color:#94a3b8">até</span>
+            <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
+            <button onclick="limparFiltrosGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-500 hover:bg-slate-50 flex items-center gap-1" style="height:38px;white-space:nowrap">
+              <i class="ti ti-x" style="font-size:13px" aria-hidden="true"></i> Limpar filtro
             </button>
-          </div>
-          <!-- Filtros (accordion, fechado por padrão) -->
-          <div style="margin-bottom:14px">
-            <div class="flex flex-wrap items-center justify-between gap-3 cursor-pointer" onclick="toggleFiltrosRuptCard()">
-              <div style="display:flex;align-items:center;gap:8px">
-                <i class="ti ti-list-search" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
-                <h2 class="text-base font-semibold text-blue-700">Filtros — Ruptura</h2>
-                <i id="ruptCardChevron" class="ti ti-chevron-down" style="font-size:15px;color:#64748b;transition:transform .2s" aria-hidden="true"></i>
-              </div>
-            </div>
-            <div id="filtrosRuptBody" class="mt-3 pt-3" style="border-top:0.5px solid #bfdbfe;display:none">
-              <div class="text-xs text-slate-500 font-semibold mb-1">Filtrar por período</div>
-              <div class="flex flex-wrap items-end gap-3 mb-3">
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Data inicial</label>
-                  <input id="gRuptDataIni" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Data final</label>
-                  <input id="gRuptDataFim" type="text" placeholder="DD/MM/AAAA" oninput="mascaraData(this);renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white" style="width:120px">
-                </div>
-                <button type="button" onclick="limparFiltrosGraficoRuptura()" style="height:38px;padding:0 12px;font-size:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">
-                  <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i> Limpar filtro
-                </button>
-              </div>
-              <div class="text-xs text-slate-500 font-semibold mb-1">Cascata</div>
-              <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Fábrica</label>
-                  <select id="gRuptFabrica" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Vendedor</label>
-                  <select id="gRuptVendedor" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">UF</label>
-                  <select id="gRuptUF" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Rede</label>
-                  <select id="gRuptRede" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Loja</label>
-                  <select id="gRuptLoja" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todas</option></select>
-                </div>
-                <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;padding-bottom:10px" aria-hidden="true"></i>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs text-slate-500">Produto</label>
-                  <select id="gRuptProduto" onchange="renderGraficoRuptura()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Taxa de Ruptura Diária -->
-          <div id="gRuptTaxaWrap" style="margin-bottom:18px">
-            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Taxa de Ruptura Diária (%)</div>
-            <div id="gRuptTaxaLegenda" style="font-size:10.5px;color:#94a3b8;margin-bottom:4px"></div>
-            <div style="position:relative;height:140px">
-              <canvas id="gRuptTaxaChart"></canvas>
-            </div>
-          </div>
-          <!-- Ruptura Prevista -->
-          <div id="gRuptPrevistaWrap" style="margin-bottom:18px;display:none">
-            <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">Ruptura Prevista — próximos 7 dias <span style="font-size:10.5px;color:#94a3b8;font-weight:400">(produtos que vão vencer e sair da gôndola)</span></div>
-            <div id="gRuptPrevistaLista" style="border:1px solid #fde68a;border-radius:10px;overflow:hidden"></div>
           </div>
           <!-- Cards de resumo -->
           <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
@@ -2248,12 +2129,20 @@
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></span>Na gôndola</span>
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#dc2626;display:inline-block"></span>Ruptura ativa</span>
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#f97316;display:inline-block"></span>Ruptura resolvida</span>
-            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#64748b"><span style="width:14px;height:12px;border-radius:3px;background:#94a3b8;display:inline-block"></span>Nunca lançado</span>
           </div>
           <!-- Timeline e tabela -->
           <div id="gRuptConteudo"><div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Carregando dados...</div></div>
         </div>
       </div><!-- /tabPanelRupt -->
+
+      <!-- ── Barra de abas dos gráficos ── -->
+      <div style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;margin-top:12px">
+        <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s">Distribuição</button>
+        <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ranking</button>
+        <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Movimentações</button>
+        <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ruptura</button>
+        <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Concorrência</button>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
@@ -2443,7 +2332,7 @@
 
       <!-- Painel: Cadastrar Roteirização -->
       <div id="rotPanelCadastrar">
-      <div id="rotCadastroForm" class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+      <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
           <div style="width:36px;height:36px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center">
             <i class="ti ti-route" style="font-size:18px;color:#1e40af"></i>
@@ -3221,49 +3110,6 @@
     <div class="flex gap-2">
       <button onclick="fecharModalPdfRoteiro()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg px-4 py-2 text-sm transition">Cancelar</button>
       <button onclick="gerarPdfRoteiros()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg px-4 py-2 text-sm transition">Gerar PDF</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Roteiro no Mapa -->
-<div id="modalRoteiroMapa" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-3" style="z-index:9999">
-  <div class="bg-white rounded-2xl shadow-2xl" style="width:100%;max-width:920px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
-    <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;flex-shrink:0">
-      <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div id="rmapAvatar" style="width:32px;height:32px;border-radius:50%;background:#dbeafe;color:#1e40af;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0"></div>
-        <div style="min-width:0">
-          <div style="font-size:14px;font-weight:700;color:#0e2841;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-            <i class="ti ti-map-2" style="font-size:14px;vertical-align:-1px" aria-hidden="true"></i>
-            Roteiro no mapa — <span id="rmapNome"></span>
-          </div>
-          <div id="rmapSub" style="font-size:11px;color:#64748b"></div>
-        </div>
-      </div>
-      <button onclick="fecharRoteiroMapa()" style="background:none;border:none;font-size:22px;color:#94a3b8;cursor:pointer;line-height:1;flex-shrink:0">×</button>
-    </div>
-
-    <div style="padding:10px 18px 0;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0" id="rmapDiasTabs">
-      <span class="rmap-dia" data-dia="Seg" onclick="_rmapSelecionarDia('Seg')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Seg</span>
-      <span class="rmap-dia" data-dia="Ter" onclick="_rmapSelecionarDia('Ter')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Ter</span>
-      <span class="rmap-dia" data-dia="Qua" onclick="_rmapSelecionarDia('Qua')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Qua</span>
-      <span class="rmap-dia" data-dia="Qui" onclick="_rmapSelecionarDia('Qui')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Qui</span>
-      <span class="rmap-dia" data-dia="Sex" onclick="_rmapSelecionarDia('Sex')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Sex</span>
-      <span class="rmap-dia" data-dia="Sáb" onclick="_rmapSelecionarDia('Sáb')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer">Sáb</span>
-    </div>
-    <div style="padding:8px 18px 10px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #f1f5f9;flex-shrink:0" id="rmapModoTabs">
-      <span class="rmap-modo" data-modo="DRIVE" onclick="_rmapSelecionarModo('DRIVE')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-car" style="font-size:14px" aria-hidden="true"></i>Carro</span>
-      <span class="rmap-modo" data-modo="TWO_WHEELER" onclick="_rmapSelecionarModo('TWO_WHEELER')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-motorbike" style="font-size:14px" aria-hidden="true"></i>Moto</span>
-      <span class="rmap-modo" data-modo="TRANSIT" onclick="_rmapSelecionarModo('TRANSIT')" style="font-size:12px;font-weight:600;border-radius:20px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="ti ti-bus" style="font-size:14px" aria-hidden="true"></i>Ônibus</span>
-    </div>
-
-    <div id="rmapAvisoCoords" style="display:none;margin:10px 18px 0;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:11.5px;border-radius:8px;padding:8px 12px;flex-shrink:0"></div>
-
-    <div style="display:grid;grid-template-columns:1.4fr 1fr;flex:1;min-height:340px;overflow:hidden">
-      <div id="rmapMapa" style="background:#eef2f6;position:relative;min-height:360px"></div>
-      <div style="border-left:1px solid #e2e8f0;overflow-y:auto;padding:12px 14px">
-        <div id="rmapLista"></div>
-        <div id="rmapTotal" style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:none;justify-content:space-between;align-items:center"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -4077,7 +3923,7 @@
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-slate-600">Quantidade *</label>
-        <input id="edit_quantidade" type="number" min="0" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        <input id="edit_quantidade" type="number" min="0.01" step="0.01" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
       </div>
       <div class="flex flex-col gap-1" data-admin-only>
         <label class="text-xs font-medium text-slate-600">UND</label>
@@ -4215,31 +4061,6 @@ const FS_SELLOUT_HIST    = db.collection('sellout_historico');
 const FS_CONCORRENTES_DB = db.collection('concorrentes_db');
 const FS_ROTEIROS        = db.collection('roteiros');
 const FS_COMUNICADOS     = db.collection('comunicados');
-
-// ── Google Maps (Roteiro no Mapa) ────────────
-// ATENÇÃO: chave de demonstração (Maps Demo Key) — sem cobrança, mas só para teste/protótipo,
-// sem garantia de disponibilidade. Trocar pela chave de produção quando aprovado.
-const GOOGLE_MAPS_API_KEY = 'AIzaSyBr2eCxgYBHSrb42yk6EqSTElRkjSnsw-s';
-let _gmapsCarregando = null;
-function _rmapCarregarGoogleMaps() {
-  if (window.google && window.google.maps) return Promise.resolve();
-  if (_gmapsCarregando) return _gmapsCarregando;
-  _gmapsCarregando = new Promise((resolve, reject) => {
-    window._gmapsReady = () => resolve();
-    const s = document.createElement('script');
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&loading=async&callback=_gmapsReady`;
-    s.onerror = () => reject(new Error('Falha ao carregar o Google Maps.'));
-    document.head.appendChild(s);
-  });
-  return _gmapsCarregando;
-}
-// Extrai {lat,lng} do campo "localizacao" da loja (string "lat, lng"). Retorna null se ausente/inválido.
-function _parseLocLoja(loja) {
-  const loc = (loja?.localizacao || '').trim();
-  if (!loc || !loc.includes(',')) return null;
-  const [la, lo] = loc.split(',').map(s => parseFloat(s.trim()));
-  return (isNaN(la) || isNaN(lo)) ? null : { lat: la, lng: lo };
-}
 
 // ── Logos das fábricas na tela de login ─────
 (function _carregarLogosLogin() {
@@ -4383,10 +4204,6 @@ function mostrarLogin() {
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('mainApp').classList.add('hidden');
   document.getElementById('adminPanel').classList.add('hidden');
-  // Fecha qualquer modal (ex.: "Me Ajuda") que possa ter ficado aberto de uma sessão
-  // anterior — acontece quando o navegador restaura a aba com o app no meio de um
-  // fluxo (crash recovery / "reabrir abas fechadas") e a sessão salva não é mais válida.
-  document.querySelectorAll('.fixed.inset-0:not(.hidden)').forEach(el => el.classList.add('hidden'));
   // Pré-preencher se "Lembrar meu login" estava ativo
   const savedUser = localStorage.getItem('cv_saved_user');
   const savedPass = localStorage.getItem('cv_saved_pass');
@@ -4526,7 +4343,7 @@ function entrarNoApp(user, novoLogin) {
   if (btnProd3) btnProd3.style.display = 'inline-flex';
   // Botão Roteirização: visível para admin e vendedor
   const btnRoteir2 = document.getElementById('btnViewRoteirizacao');
-  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor','promotor','diretor'].includes(user.role)) ? 'inline-flex' : 'none';
+  if (btnRoteir2) btnRoteir2.style.display = (['admin','vendedor','promotor'].includes(user.role)) ? 'inline-flex' : 'none';
   // Botão Ranking: visível para todos os perfis
   const btnRank2 = document.getElementById('btnViewRanking');
   if (btnRank2) btnRank2.style.display = 'inline-flex';
@@ -4561,7 +4378,6 @@ function entrarNoApp(user, novoLogin) {
   verificarSaidasPorVencimento();
   // Alerta de datas de entrega pendentes (somente admin)
   if (user.role === 'admin') setTimeout(verificarAlertaDataEntrega, 800);
-  if (user.role === 'admin') setTimeout(_rodarMigracaoUnicaRoteiros, 1500);
 }
 function abrirAdmin() {
   document.getElementById('mainApp').classList.add('hidden');
@@ -5879,18 +5695,10 @@ function salvarEdicaoUsuario() {
   }
   const idx = usuarios.findIndex(u => u.id === id);
   if (idx === -1) { showToast('⚠️ Usuário não encontrado.','#92400e'); return; }
-  const nomeAntigo = usuarios[idx].nome;
-  const roleAntigo = usuarios[idx].role;
   usuarios[idx] = { ...usuarios[idx], nome, usuario, senha, role, uf, ufs, vendedorResponsavel, telefone, perfilEscritorio };
   salvarUsuarios(); renderUsuarios();
   document.getElementById('editUsuarioModal').classList.add('hidden');
   showToast('✅ Usuário atualizado!','#166534');
-  // Renomeou? Propaga o novo nome para todos os registros que ainda usam o antigo,
-  // pra nunca mais "perder" lançamentos, lojas ou roteiro depois de uma edição de nome.
-  if (nome !== nomeAntigo) {
-    if (roleAntigo === 'promotor') _cascadeRenamePromotor(nomeAntigo, nome);
-    else if (roleAntigo === 'vendedor') _cascadeRenameVendedor(nomeAntigo, nome);
-  }
 }
 function toggleUFField() {
   const role = document.getElementById('u_role').value;
@@ -6846,18 +6654,6 @@ function fmtData(iso) {
   const [y,m,d]=iso.split('-');
   return `${d}/${m}/${y}`;
 }
-// Converte a data de um registro de histórico (Timestamp do Firestore, {seconds}, ou string 'AAAA-MM-DD')
-// para um Date local, SEM o deslocamento de fuso horário que `new Date('AAAA-MM-DD')` causa
-// (essa forma é interpretada como UTC meia-noite, o que "volta" um dia em fusos negativos como o do Brasil).
-function _movDataToDate(md) {
-  if (md?.toDate) return md.toDate();
-  if (md?.seconds) return new Date(md.seconds*1000);
-  if (typeof md === 'string' && /^\d{4}-\d{2}-\d{2}/.test(md)) {
-    const [y,mo,da] = md.slice(0,10).split('-').map(Number);
-    return new Date(y, mo-1, da);
-  }
-  return new Date(md);
-}
 const today = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
 const diasRestantes = (v) => Math.round((new Date(v+'T00:00:00')-today())/86400000);
 const statusDe = (d) => d<0?'expired':d<=20?'warning':'ok';
@@ -6879,9 +6675,7 @@ document.getElementById('prodForm').addEventListener('submit', async (e) => {
   camposObrig.forEach(c => {
     const el = document.getElementById(c.id);
     const val = (el.value||'').trim();
-    // Quantidade 0 é um valor válido (produto vendido/zerado) — só bloqueia se estiver vazio
-    const vazio = c.id === 'f_quantidade' ? !val : (!val || val === '0');
-    if (vazio) {
+    if (!val || val === '0') {
       el.style.borderColor = '#ef4444';
       el.style.backgroundColor = '#fef2f2';
       faltam.push(c.label);
@@ -6962,28 +6756,21 @@ document.getElementById('prodForm').addEventListener('submit', async (e) => {
   if (window._maSavingFromHelper) {
     const helperInfo = window._maSavingFromHelper;
     window._maSavingFromHelper = null;
-    // Trava contra duplo-clique/duplo-toque (aguarda GPS antes de terminar)
-    if (window._gravandoMovimento) return;
-    window._gravandoMovimento = true;
-    try {
-      const p = novoProduto;
-      produtos.push(p);
-      FS_PRODUTOS.doc(String(p.id)).set(p);
-      renderTabela();
-      const _hc = new Date().toISOString().slice(0,10);
-      if (!p.validade || p.validade >= _hc) {
-        const _lojaObjMa = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
-        const _geoMa = sessao?.role === 'promotor' ? await _capturarPresencaLoja(_lojaObjMa) : null;
-        _registrarMovimento('entrada', p.quantidade, p, 'novo', null, _geoMa);
-      }
-      limparForm();
-      if (helperInfo.addMore && helperInfo.lojaObj) {
-        window._maRestart(helperInfo.lojaObj);
-      } else {
-        showToast('✅ Produto salvo!', '#166534');
-      }
-    } finally {
-      window._gravandoMovimento = false;
+    const p = novoProduto;
+    produtos.push(p);
+    FS_PRODUTOS.doc(String(p.id)).set(p);
+    renderTabela();
+    const _hc = new Date().toISOString().slice(0,10);
+    if (!p.validade || p.validade >= _hc) {
+      const _lojaObjMa = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+      const _geoMa = sessao?.role === 'promotor' ? await _capturarPresencaLoja(_lojaObjMa) : null;
+      _registrarMovimento('entrada', p.quantidade, p, 'novo', null, _geoMa);
+    }
+    limparForm();
+    if (helperInfo.addMore && helperInfo.lojaObj) {
+      window._maRestart(helperInfo.lojaObj);
+    } else {
+      showToast('✅ Produto salvo!', '#166534');
     }
     return;
   }
@@ -7079,40 +6866,55 @@ function confirmarNovaLoja() {
 
   document.getElementById('modalNovaLojaRede').classList.add('hidden');
   showToast(`✅ Produto adicionado! Loja cadastrada na rede ${rede}.`, '#166534');
-  _resetParaProximoItem();
+  _abrirPopupMesmaLoja();
 
   _pendingProduto   = null;
   _redesSelecionada = null;
 }
 
-// ── Reset da tela para o próximo lançamento (mantém a loja, limpa o produto) ──
+// ── Popup "Mesma Loja" ────────────────────────
 let _lojaSnapshot = null;
 let _sessaoGeoCache = null; // cache de GPS por sessão
 let _hLimite = 10;          // registros visíveis no Histórico
 
-// Fecha/limpa o formulário e já deixa pronto para lançar o próximo produto na mesma loja.
-// Usado tanto no caminho de produto novo quanto no de produto já cadastrado (duplicado).
-function _resetParaProximoItem() {
-  const nome  = document.getElementById('f_loja')?.value || '';
+function _abrirPopupMesmaLoja() {
+  const nome = document.getElementById('f_loja').value || '';
   const busca = document.getElementById('f_loja_busca');
-  const snapshot = {
+  _lojaSnapshot = {
     nome,
-    buscaVal: busca ? busca.value : nome,
-    cardNome: document.getElementById('f_loja_card_nome')?.textContent || '',
-    cardInfo: document.getElementById('f_loja_card_info')?.textContent || '',
+    buscaVal:  busca ? busca.value : nome,
+    cardNome:  document.getElementById('f_loja_card_nome').textContent,
+    cardInfo:  document.getElementById('f_loja_card_info').textContent,
   };
+  document.getElementById('modalMesmaLoja_lojaTexto').textContent = nome || 'Loja selecionada';
+  document.getElementById('modalMesmaLoja').classList.remove('hidden');
+}
+
+function _mesmaLojaSim() {
+  document.getElementById('modalMesmaLoja').classList.add('hidden');
   limparForm();
-  if (snapshot.nome) {
-    document.getElementById('f_loja').value = snapshot.nome;
-    if (busca) { busca.value = snapshot.buscaVal; busca.readOnly = true; busca.style.borderColor = ''; }
+  // Restaurar loja
+  if (_lojaSnapshot && _lojaSnapshot.nome) {
+    document.getElementById('f_loja').value = _lojaSnapshot.nome;
+    const busca = document.getElementById('f_loja_busca');
+    if (busca) { busca.value = _lojaSnapshot.buscaVal; busca.readOnly = true; busca.style.borderColor=''; }
     document.getElementById('f_loja_input_wrap').style.display = 'none';
-    document.getElementById('f_loja_card_nome').textContent = snapshot.cardNome;
-    document.getElementById('f_loja_card_info').textContent = snapshot.cardInfo;
+    document.getElementById('f_loja_card_nome').textContent = _lojaSnapshot.cardNome;
+    document.getElementById('f_loja_card_info').textContent = _lojaSnapshot.cardInfo;
     document.getElementById('f_loja_card').style.display = 'flex';
     document.getElementById('f_loja_icon').className = 'ti ti-search';
     _habilitarCampoProduto();
   }
-  setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
+  _lojaSnapshot = null;
+  showToast('✅ Produto adicionado!','#166534');
+  setTimeout(() => { const b = document.getElementById('f_produto_busca'); if(b) b.focus(); }, 100);
+}
+
+function _mesmaLojaNao() {
+  document.getElementById('modalMesmaLoja')?.classList.add('hidden');
+  limparForm();
+  _lojaSnapshot = null;
+  showToast('✅ Produto adicionado!','#166534');
 }
 
 // ── Confirmação de Lançamento ─────────────────
@@ -7141,42 +6943,34 @@ function _abrirConfirmacaoLancamento(p) {
 
 async function _confirmarLancamentoSIM() {
   if (!_pendingConfirmacao) return;
-  // Trava contra duplo-clique/duplo-toque: essa função aguarda o GPS (_capturarPresencaLoja),
-  // e um segundo toque nesse intervalo disparava tudo de novo, duplicando a linha no Histórico.
-  if (window._gravandoMovimento) return;
-  window._gravandoMovimento = true;
-  try {
-    const p = _pendingConfirmacao;
-    produtos.push(p);
-    FS_PRODUTOS.doc(String(p.id)).set(p);
-    renderTabela();
-    // Produto já vencido no lançamento: não registra no histórico
-    const _hojeConf = new Date().toISOString().slice(0,10);
-    if (!p.validade || p.validade >= _hojeConf) {
-      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
-      const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
-      _registrarMovimento('entrada', p.quantidade, p, 'novo', null, geoInfo);
-    }
-    document.getElementById('modalConfirmarLancamento').classList.add('hidden');
-    limparForm();
-    if (_lojaSnapshot && _lojaSnapshot.nome) {
-      document.getElementById('f_loja').value = _lojaSnapshot.nome;
-      const busca = document.getElementById('f_loja_busca');
-      if (busca) { busca.value = _lojaSnapshot.buscaVal; busca.readOnly = true; busca.style.borderColor = ''; }
-      document.getElementById('f_loja_input_wrap').style.display = 'none';
-      document.getElementById('f_loja_card_nome').textContent = _lojaSnapshot.cardNome;
-      document.getElementById('f_loja_card_info').textContent = _lojaSnapshot.cardInfo;
-      document.getElementById('f_loja_card').style.display = 'flex';
-      document.getElementById('f_loja_icon').className = 'ti ti-search';
-      _habilitarCampoProduto();
-    }
-    _pendingConfirmacao = null;
-    _lojaSnapshot = null;
-    showToast('✅ Produto salvo!', '#166534');
-    setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
-  } finally {
-    window._gravandoMovimento = false;
+  const p = _pendingConfirmacao;
+  produtos.push(p);
+  FS_PRODUTOS.doc(String(p.id)).set(p);
+  renderTabela();
+  // Produto já vencido no lançamento: não registra no histórico
+  const _hojeConf = new Date().toISOString().slice(0,10);
+  if (!p.validade || p.validade >= _hojeConf) {
+    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
+    _registrarMovimento('entrada', p.quantidade, p, 'novo', null, geoInfo);
   }
+  document.getElementById('modalConfirmarLancamento').classList.add('hidden');
+  limparForm();
+  if (_lojaSnapshot && _lojaSnapshot.nome) {
+    document.getElementById('f_loja').value = _lojaSnapshot.nome;
+    const busca = document.getElementById('f_loja_busca');
+    if (busca) { busca.value = _lojaSnapshot.buscaVal; busca.readOnly = true; busca.style.borderColor = ''; }
+    document.getElementById('f_loja_input_wrap').style.display = 'none';
+    document.getElementById('f_loja_card_nome').textContent = _lojaSnapshot.cardNome;
+    document.getElementById('f_loja_card_info').textContent = _lojaSnapshot.cardInfo;
+    document.getElementById('f_loja_card').style.display = 'flex';
+    document.getElementById('f_loja_icon').className = 'ti ti-search';
+    _habilitarCampoProduto();
+  }
+  _pendingConfirmacao = null;
+  _lojaSnapshot = null;
+  showToast('✅ Produto salvo!', '#166534');
+  setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
 }
 
 function _confirmarLancamentoNAO() {
@@ -7666,18 +7460,14 @@ function abrirModalDuplicado(p, opts) {
 }
 
 async function atualizarCadastroDuplicado() {
-  // Trava contra duplo-clique/duplo-toque (aguarda GPS antes de terminar)
-  if (window._gravandoMovimento) return;
-  window._gravandoMovimento = true;
-  try {
   const id = _duplicadoId;
   if (id === null) { fecharModalDuplicado(); return; }
   const idx = produtos.findIndex(p => p.id === id);
   if (idx < 0) { fecharModalDuplicado(); return; }
 
-  const novaQtde  = (_duplicadoNovaQtde === undefined || _duplicadoNovaQtde === null || isNaN(_duplicadoNovaQtde)) ? 0 : _duplicadoNovaQtde;
+  const novaQtde  = _duplicadoNovaQtde  || 0;
   const novoPreco = _duplicadoNovoPreco || 0;
-  if (novaQtde < 0) { showToast('⚠️ Informe a quantidade.', '#92400e'); return; }
+  if (!novaQtde) { showToast('⚠️ Informe a quantidade.', '#92400e'); return; }
 
   const antiga = Number(produtos[idx].quantidade) || 0;
   const diff = novaQtde - antiga;
@@ -7685,11 +7475,7 @@ async function atualizarCadastroDuplicado() {
   produtos[idx].preco = novoPreco;
   FS_PRODUTOS.doc(String(id)).update({ quantidade: novaQtde, preco: novoPreco });
   renderTabela();
-  if (diff !== 0) {
-    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
-    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
-    _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
-  }
+  if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
 
   const viaMeAjuda = _duplicadoOrigemMa;
   const lojaMa      = _duplicadoLojaMa;
@@ -7701,11 +7487,8 @@ async function atualizarCadastroDuplicado() {
     if (typeof fecharMeAjuda === 'function') fecharMeAjuda();
     if (lojaMa && typeof window._maRestart === 'function') window._maRestart(lojaMa);
   } else {
-    // Fecha e já deixa pronto para lançar o próximo produto na mesma loja (mesmo comportamento do lançamento normal)
-    _resetParaProximoItem();
-  }
-  } finally {
-    window._gravandoMovimento = false;
+    // Pergunta se quer continuar lançando outro produto na mesma loja (mesmo fluxo do lançamento normal)
+    _abrirPopupMesmaLoja();
   }
 }
 
@@ -7850,13 +7633,10 @@ function _msFiltrFab() {
     const btnSellOut = podeSellOut
       ? `<button onclick="solicitarSellOut(${p.id})" style="margin-top:8px;width:100%;background:#fff;border:0.5px solid #d97706;color:#92400e;font-size:12px;font-weight:500;border-radius:8px;padding:6px 0;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer"><i class="ti ti-tag" style="font-size:14px" aria-hidden="true"></i>Solicitar SellOut</button>`
       : (p.selloutSolicitado ? `<p style="margin:8px 0 0;font-size:11px;font-weight:500;color:#dc2626;text-align:center">SellOut solicitado</p>` : '');
-    const vendidoMs = Number(p.quantidade) === 0
-      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#dcfce7;color:#166534;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle">Vendido</span>`
-      : '';
     return `<div style="background:${c.diasBg};border-radius:8px;padding:10px 12px;border:0.5px solid ${c.headBorder}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div style="flex:1;min-width:0;margin-right:10px">
-          <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}${vendidoMs}</p>
+          <p style="font-size:13px;font-weight:500;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.produto||'—')}</p>
           <p style="font-size:11px;color:#64748b;margin:0 0 1px">${esc(p.loja||'—')} · ${esc(p.uf||'—')}</p>
           <p style="font-size:11px;color:#64748b;margin:0">${esc(p.fabrica||'—')} · ${qtdTxt}</p>
         </div>
@@ -8228,12 +8008,6 @@ function renderTabela() {
       ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#fee2e2;color:#991b1b;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle" title="Solicitado por ${esc(p.selloutSolicitadoPor||'')} em ${fmtData(p.selloutSolicitadoEm||'')}"><i class="ti ti-alert-triangle" style="font-size:11px" aria-hidden="true"></i> SellOut</span>`
       : '';
 
-    // Quantidade zerada = produto vendido por completo
-    const vendidoZerado = Number(p.quantidade) === 0;
-    const vendidoBadge  = vendidoZerado
-      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;background:#dcfce7;color:#166534;border-radius:5px;padding:2px 6px;font-weight:600;margin-left:4px;vertical-align:middle" title="Quantidade zerada"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> Vendido</span>`
-      : '';
-
     const lojaUF = p.uf ? `<strong>${esc(p.uf)}</strong> · ${esc(p.loja)}` : esc(p.loja);
 
     if (isDiretor) {
@@ -8242,7 +8016,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8256,7 +8030,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${lojaUF}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8271,7 +8045,7 @@ function renderTabela() {
         <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
         <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
         <td class="font-medium">${esc(p.loja)}</td>
-        <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
+        <td class="font-medium">${esc(p.produto)}${soBadge}</td>
         <td class="text-center">${qtdTxt}</td>
         <td class="font-medium">${fmtData(p.validade)}</td>
         <td class="font-semibold text-center">${diasTxt}</td>
@@ -8285,7 +8059,7 @@ function renderTabela() {
       <td class="text-slate-500 text-xs">${fmtData(p.dataRegistro)}</td>
       <td class="text-slate-500 text-xs">${esc(p.fabrica)}</td>
       <td class="font-medium">${lojaUF}</td>
-      <td class="font-medium">${esc(p.produto)}${soBadge}${vendidoBadge}</td>
+      <td class="font-medium">${esc(p.produto)}${soBadge}</td>
       <td class="text-center">${qtdTxt}</td>
       <td class="font-medium">${fmtData(p.validade)}</td>
       <td class="font-semibold text-center">${diasTxt}</td>
@@ -9342,29 +9116,28 @@ function _rankPopSecundario() {
   }
 }
 
-// Cascata: Fábrica → Vendedor → UF → Rede
 function onRankChangeFab() { _rankDrillIdx = -1;
   const { base, _getRede, _getVend } = _rankBase();
+  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
   _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
-  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
-  _rankPopSecundario();
-  renderRankingLojas();
-}
-function onRankChangeVend() { _rankDrillIdx = -1;
-  const { base, _getRede } = _rankBase();
-  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
-  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
-  _rankPopSecundario();
-  renderRankingLojas();
-}
-function onRankChangeUF() { _rankDrillIdx = -1;
-  const { base, _getRede } = _rankBase();
-  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSecundario();
   renderRankingLojas();
 }
 function onRankChangeRede() { _rankDrillIdx = -1;
+  const { base, _getVend } = _rankBase();
+  _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
+  _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
+  _rankPopSecundario();
+  renderRankingLojas();
+}
+function onRankChangeVend() { _rankDrillIdx = -1;
+  const { base } = _rankBase();
+  _rankPopSel('rUF', [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
+  _rankPopSecundario();
+  renderRankingLojas();
+}
+function onRankChangeUF() { _rankDrillIdx = -1;
   _rankPopSecundario();
   renderRankingLojas();
 }
@@ -9378,9 +9151,9 @@ function limparRankFiltros() {
 function initRankingLojas() {
   const { base, _getFab, _getVend, _getRede } = _rankBase();
   _rankPopSel('rFab',  [...new Set(base.map(_getFab).filter(Boolean))].sort(), 'Todas as fábricas');
+  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSel('rVend', [...new Set(base.map(_getVend).filter(Boolean))].sort(), 'Todos os vendedores');
   _rankPopSel('rUF',   [...new Set(base.map(p=>p.uf).filter(Boolean))].sort(), 'Todas as UFs');
-  _rankPopSel('rRede', [...new Set(base.map(_getRede).filter(Boolean))].sort(), 'Todas as redes');
   _rankPopSecundario();
   renderRankingLojas();
 }
@@ -9490,14 +9263,6 @@ function toggleFiltrosGraficosCard() {
   chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
-function toggleFiltrosRankCard() {
-  const body = document.getElementById('filtrosRankBody');
-  const chev = document.getElementById('rankCardChevron');
-  const open = body.style.display !== 'none';
-  body.style.display = open ? 'none' : '';
-  chev.style.transform = open ? 'rotate(180deg)' : '';
-}
-
 function setGUnd(u) {
   _gUnd = u;
   const styles = {
@@ -9531,9 +9296,19 @@ function _popularFiltrosGraficos() {
     const fabs = [...new Set(produtos.map(p=>p.fabrica).filter(Boolean))].sort();
     selFab.innerHTML = '<option value="">Todas as Fábricas</option>' + fabs.map(f=>`<option ${f===cur?'selected':''}>${f}</option>`).join('');
   }
-  const fFab = selFab?.value || '';
 
-  // Vendedor (cascata: baseada na Fábrica selecionada)
+  // Rede (cascata: baseada na Fábrica selecionada)
+  const fFab = selFab?.value || '';
+  const selRede = document.getElementById('gRede');
+  if (selRede) {
+    const cur = selRede.value;
+    const base = fFab ? produtos.filter(p=>p.fabrica===fFab) : produtos;
+    const lojasBase = new Set(base.map(p=>normTxt(p.loja)));
+    const redes = [...new Set(lojas.filter(l=>lojasBase.has(normTxt(l.nome))).map(l=>l.rede).filter(Boolean))].sort();
+    selRede.innerHTML = '<option value="">Todas as Redes</option>' + redes.map(r=>`<option ${r===cur?'selected':''}>${r}</option>`).join('');
+  }
+
+  // Vendedor
   if (!isVend) {
     const selVend = document.getElementById('gVendedor');
     if (selVend) {
@@ -9546,7 +9321,8 @@ function _popularFiltrosGraficos() {
     }
   }
 
-  // UF (cascata: Fábrica + Vendedor)
+  // UF (cascata)
+  const fRede  = selRede?.value  || '';
   const fVend  = isVend ? '' : (document.getElementById('gVendedor')?.value||'');
   const vendSel= fVend ? usuarios.find(u=>u.role==='vendedor'&&u.nome===fVend) : null;
   const ufsVend= isVend ? (sessao.ufs||[]) : (vendSel?.ufs||[]);
@@ -9554,37 +9330,24 @@ function _popularFiltrosGraficos() {
   if (selUF) {
     const cur = selUF.value;
     let base = produtos;
-    if (fFab) base = base.filter(p=>p.fabrica===fFab);
+    if (fFab)  base = base.filter(p=>p.fabrica===fFab);
+    if (fRede) base = base.filter(p=>{ const l=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); return l?.rede===fRede; });
     if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
     const ufs = [...new Set(base.map(p=>p.uf).filter(Boolean))].sort();
     selUF.innerHTML = '<option value="">Todas as UFs</option>' + ufs.map(u=>`<option ${u===cur?'selected':''}>${u}</option>`).join('');
     if (lblUF) lblUF.textContent = 'UF';
   }
 
-  // Rede (cascata: Fábrica + Vendedor + UF)
-  const fUF = selUF?.value || '';
-  const selRede = document.getElementById('gRede');
-  if (selRede) {
-    const cur = selRede.value;
-    let base = produtos;
-    if (fFab) base = base.filter(p=>p.fabrica===fFab);
-    if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
-    if (fUF) base = base.filter(p=>p.uf===fUF);
-    const lojasBase = new Set(base.map(p=>normTxt(p.loja)));
-    const redes = [...new Set(lojas.filter(l=>lojasBase.has(normTxt(l.nome))).map(l=>l.rede).filter(Boolean))].sort();
-    selRede.innerHTML = '<option value="">Todas as Redes</option>' + redes.map(r=>`<option ${r===cur?'selected':''}>${r}</option>`).join('');
-  }
-
-  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
-  const fRede = selRede?.value || '';
+  // Loja (cascata: baseada em Fábrica + Rede + UF)
+  const fUFpop = selUF?.value || '';
   const selLoja = document.getElementById('gLoja');
   if (selLoja) {
     const cur = selLoja.value;
     let base = produtos;
     if (fFab)    base = base.filter(p=>p.fabrica===fFab);
-    if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
-    if (fUF)     base = base.filter(p=>p.uf===fUF);
     if (fRede)   base = base.filter(p=>{ const l=lojas.find(l=>normTxt(l.nome)===normTxt(p.loja)); return l?.rede===fRede; });
+    if (ufsVend.length) base = base.filter(p=>ufsVend.includes(p.uf));
+    if (fUFpop)  base = base.filter(p=>p.uf===fUFpop);
     const lojasOpts = [...new Set(base.map(p=>p.loja).filter(Boolean))].sort();
     selLoja.innerHTML = '<option value="">Todas as Lojas</option>' + lojasOpts.map(l=>`<option ${l===cur?'selected':''}>${l}</option>`).join('');
   }
@@ -9605,9 +9368,9 @@ function renderGraficos() {
   // Cabeçalho dinâmico Distribuição
   const _gFiltrosAtivos = [
     fFab  ? { label: 'Fábrica',  val: fFab  } : null,
+    fRede ? { label: 'Rede',     val: fRede } : null,
     fVend ? { label: 'Vendedor', val: fVend } : null,
     fUF   ? { label: 'UF',       val: fUF   } : null,
-    fRede ? { label: 'Rede',     val: fRede } : null,
     fLoja ? { label: 'Loja',     val: fLoja } : null,
   ].filter(Boolean);
   const gFL = document.getElementById('gFiltroLabel');
@@ -9621,15 +9384,17 @@ function renderGraficos() {
   }
   _headerFiltros('headerFiltrosDist', [
     { label: 'Fábrica',  id: 'gFabrica'  },
+    { label: 'Rede',     id: 'gRede'     },
     { label: 'Vendedor', id: 'gVendedor' },
     { label: 'UF',       id: 'gUF'       },
-    { label: 'Rede',     id: 'gRede'     },
     { label: 'Loja',     id: 'gLoja'     },
   ]);
 
   // Datas do gráfico de distribuição
   const gDtI = dataParaISO(document.getElementById('gDataIni')?.value||'');
   const gDtF = dataParaISO(document.getElementById('gDataFim')?.value||'');
+  const gBtnLimp = document.getElementById('gBtnLimparDatas');
+  if (gBtnLimp) gBtnLimp.style.display = (gDtI||gDtF) ? '' : 'none';
   // Filtrar produtos (sem vencidos)
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   let base = produtos.filter(p=>{ const d=diasRestantes(p.validade); return d>=0; });
@@ -9729,14 +9494,6 @@ function toggleFiltrosConcCard() {
   chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
-function toggleFiltrosRuptCard() {
-  const body = document.getElementById('filtrosRuptBody');
-  const chev = document.getElementById('ruptCardChevron');
-  const open = body.style.display !== 'none';
-  body.style.display = open ? 'none' : '';
-  chev.style.transform = open ? 'rotate(180deg)' : '';
-}
-
 function _popularFiltrosConc() {
   const isVend = sessao?.role === 'vendedor';
   const isAdmDir = sessao?.role === 'admin' || sessao?.role === 'diretor';
@@ -9750,6 +9507,15 @@ function _popularFiltrosConc() {
   // Base: apenas produtos com concorrência
   const base = produtos.filter(p => p.concorrencia);
 
+  const fFab  = document.getElementById('cFabrica')?.value || '';
+  const fRede = document.getElementById('cRede')?.value    || '';
+  const fVend = isAdmDir ? (document.getElementById('cVendedor')?.value || '') : '';
+  const fUF   = document.getElementById('cUF')?.value      || '';
+  const fLoja = document.getElementById('cLoja')?.value    || '';
+
+  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
+  const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
+
   // Fábrica
   const selFab = document.getElementById('cFabrica');
   if (selFab) {
@@ -9757,9 +9523,18 @@ function _popularFiltrosConc() {
     const opts = [...new Set(base.map(p => p.fabrica).filter(Boolean))].sort();
     selFab.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
-  const fFab = selFab?.value || '';
 
-  // Vendedor (só admin/diretor; cascata: Fábrica)
+  // Rede
+  const selRede = document.getElementById('cRede');
+  if (selRede) {
+    const cur = selRede.value;
+    const b2 = fFab ? base.filter(p => p.fabrica === fFab) : base;
+    const lojasBase = new Set(b2.map(p => normTxt(p.loja)));
+    const redes = [...new Set(lojas.filter(l => lojasBase.has(normTxt(l.nome))).map(l => l.rede).filter(Boolean))].sort();
+    selRede.innerHTML = '<option value="">Todas</option>' + redes.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
+  }
+
+  // Vendedor (só admin/diretor)
   if (isAdmDir) {
     const selVend = document.getElementById('cVendedor');
     if (selVend) {
@@ -9771,53 +9546,42 @@ function _popularFiltrosConc() {
       }).join('');
     }
   }
-  const fVend = isAdmDir ? (document.getElementById('cVendedor')?.value || '') : '';
-  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
-  const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
 
-  // UF (cascata: Fábrica + Vendedor)
+  // Base filtrada para UF/Loja/Produto
+  let bf = [...base];
+  if (fFab)  bf = bf.filter(p => p.fabrica === fFab);
+  if (fRede) bf = bf.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
+  if (ufsVend.length) bf = bf.filter(p => ufsVend.includes(p.uf));
+  if (fUF)   bf = bf.filter(p => p.uf === fUF);
+  if (fLoja) bf = bf.filter(p => normTxt(p.loja) === normTxt(fLoja));
+
+  // UF
   const selUF = document.getElementById('cUF');
   if (selUF) {
     const cur = selUF.value;
-    let bUFf = [...base];
-    if (fFab) bUFf = bUFf.filter(p => p.fabrica === fFab);
+    const bUF = [...base];
+    let bUFf = bUF;
+    if (fFab)  bUFf = bUFf.filter(p => p.fabrica === fFab);
+    if (fRede) bUFf = bUFf.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
     if (ufsVend.length) bUFf = bUFf.filter(p => ufsVend.includes(p.uf));
     const opts = [...new Set(bUFf.map(p => p.uf).filter(Boolean))].sort();
     selUF.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
-  const fUF = selUF?.value || '';
 
-  // Rede (cascata: Fábrica + Vendedor + UF)
-  const selRede = document.getElementById('cRede');
-  if (selRede) {
-    const cur = selRede.value;
-    let b2 = [...base];
-    if (fFab) b2 = b2.filter(p => p.fabrica === fFab);
-    if (ufsVend.length) b2 = b2.filter(p => ufsVend.includes(p.uf));
-    if (fUF) b2 = b2.filter(p => p.uf === fUF);
-    const lojasBase = new Set(b2.map(p => normTxt(p.loja)));
-    const redes = [...new Set(lojas.filter(l => lojasBase.has(normTxt(l.nome))).map(l => l.rede).filter(Boolean))].sort();
-    selRede.innerHTML = '<option value="">Todas</option>' + redes.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
-  }
-  const fRede = selRede?.value || '';
-
-  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
-  let bL = [...base];
-  if (fFab)  bL = bL.filter(p => p.fabrica === fFab);
-  if (ufsVend.length) bL = bL.filter(p => ufsVend.includes(p.uf));
-  if (fUF)   bL = bL.filter(p => p.uf === fUF);
-  if (fRede) bL = bL.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
+  // Loja
   const selLoja = document.getElementById('cLoja');
   if (selLoja) {
     const cur = selLoja.value;
+    let bL = [...base];
+    if (fFab)  bL = bL.filter(p => p.fabrica === fFab);
+    if (fRede) bL = bL.filter(p => { const l = lojas.find(l => normTxt(l.nome) === normTxt(p.loja)); return l?.rede === fRede; });
+    if (ufsVend.length) bL = bL.filter(p => ufsVend.includes(p.uf));
+    if (fUF)   bL = bL.filter(p => p.uf === fUF);
     const opts = [...new Set(bL.map(p => p.loja).filter(Boolean))].sort();
     selLoja.innerHTML = '<option value="">Todas</option>' + opts.map(v => `<option ${v===cur?'selected':''}>${v}</option>`).join('');
   }
-  const fLoja = selLoja?.value || '';
 
-  // Produto (cascata completa)
-  let bf = [...bL];
-  if (fLoja) bf = bf.filter(p => normTxt(p.loja) === normTxt(fLoja));
+  // Produto
   const selProd = document.getElementById('cProduto');
   if (selProd) {
     const cur = selProd.value;
@@ -9850,17 +9614,19 @@ function renderConcChart() {
   const _cDtI = document.getElementById('cDtI')?.value || '';
   const _cDtF = document.getElementById('cDtF')?.value || '';
   const _periodoLabel = (() => {
-    if (_cDtI && _cDtF) return `${_cDtI} até ${_cDtF}`;
-    if (_cDtI)          return `a partir de ${_cDtI}`;
-    if (_cDtF)          return `até ${_cDtF}`;
+    const fmt = s => s ? s.split('-').reverse().join('/') : null;
+    const di = fmt(_cDtI), df = fmt(_cDtF);
+    if (di && df) return `${di} até ${df}`;
+    if (di)       return `a partir de ${di}`;
+    if (df)       return `até ${df}`;
     return null;
   })();
   const _headerEl = document.getElementById('headerFiltrosConc');
   _headerFiltros('headerFiltrosConc', [
     { label: 'Fábrica',  id: 'cFabrica'  },
+    { label: 'Rede',     id: 'cRede'     },
     { label: 'Vendedor', id: 'cVendedor' },
     { label: 'UF',       id: 'cUF'       },
-    { label: 'Rede',     id: 'cRede'     },
     { label: 'Loja',     id: 'cLoja'     },
     { label: 'Produto',  id: 'cProduto'  },
   ]);
@@ -9880,8 +9646,8 @@ function renderConcChart() {
   const fUF   = document.getElementById('cUF')?.value       || '';
   const fLoja = document.getElementById('cLoja')?.value     || '';
   const fProd = document.getElementById('cProduto')?.value  || '';
-  const fDtI  = dataParaISO(document.getElementById('cDtI')?.value||'');
-  const fDtF  = dataParaISO(document.getElementById('cDtF')?.value||'');
+  const fDtI  = document.getElementById('cDtI')?.value      || '';
+  const fDtF  = document.getElementById('cDtF')?.value      || '';
 
   const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
   const ufsVend = isVend ? (sessao?.ufs || []) : (vendSel?.ufs || []);
@@ -10714,19 +10480,23 @@ function setView(v) {
       if (btnSO) { btnSO.style.background = '#1e3a5f'; btnSO.style.color = 'white'; btnSO.style.border = 'none'; btnSO.style.borderBottom = '3px solid #0c1f35'; btnSO.style.boxShadow = '0 4px 12px rgba(30,58,95,.45)'; }
       const btnXLS = document.getElementById('btnExportCSV');
       if (btnXLS) { btnXLS.style.display = 'none'; btnXLS.classList.add('hidden'); }
-      const _isAdmin = sessao?.role === 'admin';
+      const _isAdmin  = sessao?.role === 'admin';
+      const _isVendSO = sessao?.role === 'vendedor';
+      const _podeGerarSO = _isAdmin || _isVendSO;
       const _soAdm   = document.getElementById('soAdminOnly');
       const _soVD    = document.getElementById('soFiltroVD');
       const _soAF    = document.getElementById('acompAdminFilters');
       const _soATh   = document.getElementById('acompAcaoTh');
-      if (_soAdm) _soAdm.style.display = _isAdmin ? '' : 'none';
+      if (_soAdm) _soAdm.style.display = _podeGerarSO ? '' : 'none';
       if (_soVD)  _soVD.style.display  = _isAdmin ? 'none' : '';
       if (_soAF)  _soAF.style.display  = _isAdmin ? '' : 'none';
       if (_soATh) _soATh.style.display = _isAdmin ? '' : 'none';
+      if (_isVendSO && !_soVendSOInicializado) { _soUFs = new Set((sessao.ufs||[]).slice()); _soVendSOInicializado = true; }
       if (_isAdmin) {
         renderSellOut();
         renderAcompSellOut();
       } else {
+        if (_isVendSO) renderSellOut();
         renderAcompSellOutVD();
       }
       return;
@@ -10798,7 +10568,6 @@ function setView(v) {
 let _rotState      = {}; // { lojaId: { vinculada: bool, dias: ['Seg','Ter',...] } }
 let _rotLojasTodas = []; // lista completa antes do filtro de rede
 let _rotRelDrillIdx = -1;
-let _rotRelPromsNomesCache = [];
 const _DIAS_SEMANA = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
 const _MESES_PT    = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
@@ -10850,130 +10619,9 @@ function _renderMeuRoteiro() {
     </div>`).join('')}
   </div>`;
 }
-function _slug(str) {
-  return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-}
-// Chave legada (baseada no nome de exibição — pode ficar órfã se o nome for alterado)
 function _rotDocKey(promotorNome, mes) {
-  return _slug(promotorNome) + '_' + mes;
+  return promotorNome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + mes;
 }
-// Chave estável (baseada no login, que não muda) — usada a partir de agora
-function _rotDocKeyUsuario(usuarioLogin, mes) {
-  return 'u_' + _slug(usuarioLogin) + '_' + mes;
-}
-// Resolve a melhor chave disponível: login se o promotor existir no cadastro, senão cai no esquema antigo
-function _rotResolveDocKey(promotorNome, mes) {
-  const u = usuarios.find(x => x.nome === promotorNome && x.role === 'promotor');
-  if (u && u.usuario) return _rotDocKeyUsuario(u.usuario, mes);
-  return _rotDocKey(promotorNome, mes);
-}
-// ── Cascata de renomeação: mantém lançamentos, lojas e roteiros
-//    ligados ao promotor/vendedor mesmo depois de o nome mudar no cadastro.
-async function _cascadeRenamePromotor(oldNome, newNome) {
-  if (!oldNome || !newNome || oldNome === newNome) return;
-  try {
-    // 1) Lançamentos (produtos)
-    const prodSnap = await FS_PRODUTOS.where('promotor', '==', oldNome).get();
-    if (!prodSnap.empty) {
-      const batch = db.batch();
-      prodSnap.docs.forEach(d => batch.update(d.ref, { promotor: newNome }));
-      await batch.commit();
-      produtos.forEach(p => { if (p.promotor === oldNome) p.promotor = newNome; });
-    }
-    // 2) Histórico de movimentações (dois campos possíveis)
-    const histSnap = await FS_HISTORICO.where('promotor', '==', oldNome).get();
-    if (!histSnap.empty) {
-      const batch = db.batch();
-      histSnap.docs.forEach(d => batch.update(d.ref, { promotor: newNome }));
-      await batch.commit();
-    }
-    const histSnap2 = await FS_HISTORICO.where('usuarioAcao', '==', oldNome).get();
-    if (!histSnap2.empty) {
-      const batch = db.batch();
-      histSnap2.docs.forEach(d => batch.update(d.ref, { usuarioAcao: newNome }));
-      await batch.commit();
-    }
-    (historico || []).forEach(m => {
-      if (m.promotor === oldNome) m.promotor = newNome;
-      if (m.usuarioAcao === oldNome) m.usuarioAcao = newNome;
-    });
-    // 3) Lojas vinculadas
-    const lojaSnap = await FS_LOJAS.where('promotorResponsavel', '==', oldNome).get();
-    if (!lojaSnap.empty) {
-      const batch = db.batch();
-      lojaSnap.docs.forEach(d => batch.update(d.ref, { promotorResponsavel: newNome }));
-      await batch.commit();
-      lojas.forEach(l => { if (l.promotorResponsavel === oldNome) l.promotorResponsavel = newNome; });
-    }
-    // 4) Roteiros salvos — atualiza o nome e já rechaveia para o login (chave estável)
-    const rotSnap = await FS_ROTEIROS.where('promotor', '==', oldNome).get();
-    if (!rotSnap.empty) {
-      const uNovo = usuarios.find(x => x.nome === newNome && x.role === 'promotor');
-      const batch = db.batch();
-      rotSnap.docs.forEach(d => {
-        const data = d.data();
-        const novaChave = uNovo?.usuario ? _rotDocKeyUsuario(uNovo.usuario, data.mes) : _rotDocKey(newNome, data.mes);
-        batch.set(FS_ROTEIROS.doc(novaChave), { ...data, promotor: newNome });
-        if (novaChave !== d.id) batch.delete(d.ref);
-      });
-      await batch.commit();
-    }
-    console.log(`✓ Cascata de renomeação aplicada: "${oldNome}" → "${newNome}"`);
-  } catch (e) {
-    console.error('Erro na cascata de renomeação de promotor:', e);
-  }
-}
-
-async function _cascadeRenameVendedor(oldNome, newNome) {
-  if (!oldNome || !newNome || oldNome === newNome) return;
-  let mudou = false;
-  usuarios.forEach(u => {
-    if (u.role === 'promotor' && u.vendedorResponsavel === oldNome) {
-      u.vendedorResponsavel = newNome;
-      mudou = true;
-    }
-  });
-  if (mudou) {
-    try { await FS_CFG_USUARIOS.set({ lista: usuarios }); }
-    catch (e) { console.error('Erro na cascata de renomeação de vendedor:', e); }
-  }
-}
-
-// Migração única e retroativa: corrige nomes já defasados (ex.: Leandro) e
-// rechaveia os roteiros existentes do esquema antigo (nome) para o novo (login).
-async function _rodarMigracaoUnicaRoteiros() {
-  if (sessao?.role !== 'admin') return;
-  try {
-    const cfgRef = db.collection('config').doc('migracoes');
-    const cfgSnap = await cfgRef.get();
-    if (cfgSnap.exists && cfgSnap.data().roteirosChaveUsuario) return;
-
-    // Correção pontual de uma renomeação antiga que já ficou órfã
-    await _cascadeRenamePromotor('Leandro', 'Leandro Silva de Almeida');
-
-    // Rechaveamento geral dos roteiros restantes (nome-slug → login-slug)
-    const snap = await FS_ROTEIROS.get();
-    let batch = db.batch(), ops = 0;
-    for (const d of snap.docs) {
-      const data = d.data();
-      const u = usuarios.find(x => x.nome === data.promotor && x.role === 'promotor');
-      if (!u || !u.usuario) continue;
-      const novaChave = _rotDocKeyUsuario(u.usuario, data.mes);
-      if (novaChave === d.id) continue;
-      batch.set(FS_ROTEIROS.doc(novaChave), data);
-      batch.delete(d.ref);
-      ops++;
-      if (ops >= 400) { await batch.commit(); batch = db.batch(); ops = 0; }
-    }
-    if (ops > 0) await batch.commit();
-
-    await cfgRef.set({ roteirosChaveUsuario: true, executadoEm: new Date().toISOString() }, { merge: true });
-    console.log('✓ Migração de chaves de roteiro concluída.');
-  } catch (e) {
-    console.error('Erro na migração única de roteiros:', e);
-  }
-}
-
 function _rotPopularSelMes() {
   const sel = document.getElementById('rotSelMes');
   if (!sel) return;
@@ -11001,7 +10649,7 @@ async function rotCopiarMesAnterior() {
   if (!promotorNome) return;
   const [ano, m] = mes.split('-').map(Number);
   const prevMes = m === 1 ? `${ano-1}-12` : `${ano}-${String(m-1).padStart(2,'0')}`;
-  const prevKey = _rotResolveDocKey(promotorNome, prevMes);
+  const prevKey = _rotDocKey(promotorNome, prevMes);
   try {
     const doc = await FS_ROTEIROS.doc(prevKey).get();
     if (!doc.exists) { showToast(`⚠️ Nenhum roteiro encontrado em ${_rotMesLabel(prevMes)}.`,'#92400e'); return; }
@@ -11029,18 +10677,6 @@ function initRoteirizacao() {
     _renderMeuRoteiro();
     return;
   }
-  if (sessao?.role === 'diretor') {
-    // Diretor: somente leitura — vê só "Roteiros cadastrados" (com o botão de mapa), sem editar
-    if (subTabs) subTabs.style.display = 'none';
-    if (pProm) pProm.style.display = 'none';
-    document.getElementById('rotPanelFrequencia').style.display = 'none';
-    document.getElementById('rotPanelCadastrar').style.display  = '';
-    const cadForm = document.getElementById('rotCadastroForm');
-    if (cadForm) cadForm.style.display = 'none';
-    _rotRelDrillIdx = -1;
-    renderRotRelatorio();
-    return;
-  }
   if (subTabs) subTabs.style.display = '';
   if (pProm)   pProm.style.display   = 'none';
   rotSetTab('cadastrar');
@@ -11059,9 +10695,9 @@ function initRoteirizacao() {
     const cv = selVend ? selVend.value : '';
     if (selVend) {
       selVend.innerHTML = '<option value="">Selecione um vendedor…</option>' +
-        vendedores.map(v => {
-          return `<option value="${esc(v.nome)}" ${v.nome===cv?'selected':''}>${esc(v.nome)}</option>`;
-        }).join('');
+        vendedores.map(v =>
+          `<option value="${esc(v.nome)}" ${v.nome===cv?'selected':''}>${esc(v.nome)}</option>`
+        ).join('');
     }
     if (selVend && selVend.value) {
       _rotPopularPromotores(selVend.value);
@@ -11197,7 +10833,7 @@ async function _rotCarregarLojas(promotorNome) {
   }
 
   // Carregar roteiro do mês do Firestore
-  const docKey = _rotResolveDocKey(promotorNome, mes);
+  const docKey = _rotDocKey(promotorNome, mes);
   let roteiroLojas = [];
   let roteiroExiste = false;
   try {
@@ -11414,7 +11050,6 @@ function renderRotRelatorio() {
   const promsNomes = _rotRelGetProms();
   if (!promsNomes.length) { painel.style.display = 'none'; return; }
   painel.style.display = '';
-  _rotRelPromsNomesCache = promsNomes;
 
   body.innerHTML = promsNomes.map((nome, idx) => {
     const isOpen = _rotRelDrillIdx === idx;
@@ -11469,8 +11104,7 @@ function renderRotRelatorio() {
         </div>
         ${!totalVinc
           ? `<span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-weight:600">Pendente</span>`
-          : `<button onclick="event.stopPropagation();abrirRoteiroMapa(${idx})" title="Ver roteiro no mapa" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><i class="ti ti-map-2" style="font-size:15px" aria-hidden="true"></i></button>
-             <i class="ti ti-chevron-down" style="font-size:15px;color:#94a3b8;transform:rotate(${isOpen?'180':'0'}deg);transition:transform .2s"></i>`
+          : `<i class="ti ti-chevron-down" style="font-size:15px;color:#94a3b8;transform:rotate(${isOpen?'180':'0'}deg);transition:transform .2s"></i>`
         }
       </div>
       ${drillHTML}
@@ -11483,212 +11117,11 @@ function _rotRelToggle(idx) {
   renderRotRelatorio();
 }
 
-// ── Roteiro no Mapa ───────────────────────────
-let _rmapPromotorNome = null;
-let _rmapDiaAtual     = null;
-let _rmapModoAtual    = 'DRIVE';
-let _rmapMap          = null;
-let _rmapMarkers      = [];
-let _rmapPolyline     = null;
-let _rmapCarregando   = false;
-
-function abrirRoteiroMapa(idx) {
-  const nome = _rotRelPromsNomesCache[idx];
-  if (!nome) return;
-  _rmapPromotorNome = nome;
-  const partes = nome.trim().split(' ');
-  const iniciais = (partes[0][0] + (partes[1]?.[0] || '')).toUpperCase();
-  document.getElementById('rmapAvatar').textContent = iniciais;
-  document.getElementById('rmapNome').textContent = nome;
-  const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel || '') === normTxt(nome));
-  const ufsStr = [...new Set(lojasVinc.map(l => l.uf).filter(Boolean))].sort().join(', ');
-  document.getElementById('rmapSub').textContent =
-    `${lojasVinc.length} loja${lojasVinc.length>1?'s':''} vinculada${lojasVinc.length>1?'s':''}${ufsStr?' · '+ufsStr:''}`;
-  _rmapModoAtual = 'DRIVE';
-  document.querySelectorAll('.rmap-modo').forEach(el => el.classList.toggle('sel', el.dataset.modo === 'DRIVE'));
-  document.getElementById('modalRoteiroMapa').classList.remove('hidden');
-  const hoje = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][new Date().getDay()];
-  _rmapSelecionarDia(_DIAS_SEMANA.includes(hoje) ? hoje : 'Seg');
-}
-
-function fecharRoteiroMapa() {
-  document.getElementById('modalRoteiroMapa').classList.add('hidden');
-}
-
-function _rmapSelecionarDia(dia) {
-  _rmapDiaAtual = dia;
-  document.querySelectorAll('.rmap-dia').forEach(el => el.classList.toggle('sel', el.dataset.dia === dia));
-  _rmapAtualizar();
-}
-
-function _rmapSelecionarModo(modo) {
-  _rmapModoAtual = modo;
-  document.querySelectorAll('.rmap-modo').forEach(el => el.classList.toggle('sel', el.dataset.modo === modo));
-  _rmapAtualizar();
-}
-
-function _rmapIconeModo() {
-  return _rmapModoAtual === 'TWO_WHEELER' ? 'ti-motorbike' : _rmapModoAtual === 'TRANSIT' ? 'ti-bus' : 'ti-car';
-}
-
-function _rmapFormatarDuracao(segundosStr) {
-  const s = parseInt(segundosStr, 10) || 0;
-  const h = Math.floor(s / 3600);
-  const m = Math.round((s % 3600) / 60);
-  return h > 0 ? `${h}h ${m}min` : `${m} min`;
-}
-
-async function _rmapAtualizar() {
-  if (_rmapCarregando) return;
-  _rmapCarregando = true;
-  const listaEl = document.getElementById('rmapLista');
-  const totalEl = document.getElementById('rmapTotal');
-  const avisoEl = document.getElementById('rmapAvisoCoords');
-  const mapaEl  = document.getElementById('rmapMapa');
-  totalEl.style.display = 'none';
-  avisoEl.style.display = 'none';
-  listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px"><i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:6px" aria-hidden="true"></i>Calculando rota…</div>';
-
-  try {
-    await _rmapCarregarGoogleMaps();
-  } catch (e) {
-    listaEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#dc2626;font-size:12px">Não foi possível carregar o Google Maps.</div>';
-    _rmapCarregando = false;
-    return;
-  }
-
-  if (!_rmapMap) {
-    _rmapMap = new google.maps.Map(mapaEl, { zoom: 11, center: { lat: -8.05, lng: -34.9 } });
-  }
-  _rmapMarkers.forEach(m => m.setMap(null)); _rmapMarkers = [];
-  if (_rmapPolyline) { _rmapPolyline.setMap(null); _rmapPolyline = null; }
-
-  const lojasVinc = lojas.filter(l => normTxt(l.promotorResponsavel || '') === normTxt(_rmapPromotorNome));
-  const doDia = lojasVinc.filter(l => (l.diasVisita || []).includes(_rmapDiaAtual));
-
-  if (!doDia.length) {
-    listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px"><i class="ti ti-route-off" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>Nenhuma loja agendada para este dia</div>';
-    _rmapCarregando = false;
-    return;
-  }
-
-  const comCoord = [];
-  const semCoord = [];
-  doDia.forEach(l => { const c = _parseLocLoja(l); if (c) comCoord.push({ loja: l, coord: c }); else semCoord.push(l); });
-
-  if (semCoord.length) {
-    avisoEl.style.display = '';
-    avisoEl.innerHTML = `<i class="ti ti-alert-triangle" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> ${semCoord.length} loja${semCoord.length>1?'s':''} sem coordenada cadastrada (não aparece${semCoord.length>1?'m':''} no mapa): ${semCoord.map(l=>esc(l.nome)).join(', ')}`;
-  }
-
-  comCoord.forEach((p, i) => {
-    const marker = new google.maps.Marker({
-      position: p.coord, map: _rmapMap,
-      label: { text: String(i+1), color: '#fff', fontSize: '11px', fontWeight: '700' },
-      title: p.loja.nome || ''
-    });
-    _rmapMarkers.push(marker);
-  });
-
-  if (!comCoord.length) {
-    listaEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#94a3b8;font-size:12px">Nenhuma loja deste dia tem coordenada cadastrada.</div>';
-    _rmapCarregando = false;
-    return;
-  }
-
-  if (comCoord.length === 1) {
-    _rmapMap.setCenter(comCoord[0].coord);
-    _rmapMap.setZoom(14);
-    listaEl.innerHTML = `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
-      <div style="width:20px;height:20px;border-radius:50%;background:#1e3a5f;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
-      <div style="font-size:12px;color:#1e293b">${esc(comCoord[0].loja.nome||'')}</div>
-    </div>
-    <p style="font-size:11px;color:#94a3b8;margin:8px 0 0">Só uma loja neste dia — sem trajeto para calcular.</p>`;
-    _rmapCarregando = false;
-    return;
-  }
-
-  const bounds = new google.maps.LatLngBounds();
-  comCoord.forEach(p => bounds.extend(p.coord));
-  _rmapMap.fitBounds(bounds);
-
-  try {
-    const resultado = await _rmapCalcularRota(comCoord.map(p => p.coord), _rmapModoAtual);
-    _rmapRenderResultado(comCoord, resultado);
-  } catch (e) {
-    console.error('Erro ao calcular rota:', e);
-    listaEl.innerHTML = `<div style="text-align:center;padding:16px 0;color:#dc2626;font-size:12px">Não foi possível calcular a rota${_rmapModoAtual==='TRANSIT'?' de ônibus para esta região':''}.<br><span style="color:#94a3b8;font-size:11px">${esc(e.message||'')}</span></div>` +
-      comCoord.map((p,i) => `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
-        <div style="width:20px;height:20px;border-radius:50%;background:#1e3a5f;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
-        <div style="font-size:12px;color:#1e293b">${esc(p.loja.nome||'')}</div>
-      </div>`).join('');
-  }
-  _rmapCarregando = false;
-}
-
-async function _rmapCalcularRota(coords, modo) {
-  const body = {
-    origin:      { location: { latLng: { latitude: coords[0].lat, longitude: coords[0].lng } } },
-    destination: { location: { latLng: { latitude: coords[coords.length-1].lat, longitude: coords[coords.length-1].lng } } },
-    intermediates: coords.slice(1, -1).map(c => ({ location: { latLng: { latitude: c.lat, longitude: c.lng } } })),
-    travelMode: modo,
-  };
-  if (modo === 'DRIVE' || modo === 'TWO_WHEELER') body.routingPreference = 'TRAFFIC_AWARE';
-
-  const resp = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
-      'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters',
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await resp.json();
-  if (!resp.ok || !data.routes || !data.routes.length) {
-    throw new Error(data?.error?.message || 'Rota não encontrada.');
-  }
-  return data.routes[0];
-}
-
-function _rmapRenderResultado(comCoord, rota) {
-  const listaEl = document.getElementById('rmapLista');
-  const totalEl = document.getElementById('rmapTotal');
-
-  if (rota.polyline?.encodedPolyline && google.maps.geometry) {
-    const path = google.maps.geometry.encoding.decodePath(rota.polyline.encodedPolyline);
-    _rmapPolyline = new google.maps.Polyline({ path, map: _rmapMap, strokeColor: '#1d4ed8', strokeWeight: 4, strokeOpacity: 0.8 });
-  }
-
-  const legs = rota.legs || [];
-  let html = '';
-  comCoord.forEach((p, i) => {
-    html += `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
-      <div style="width:20px;height:20px;border-radius:50%;background:${i===comCoord.length-1?'#15803d':'#1e3a5f'};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
-      <div style="font-size:12px;color:#1e293b">${esc(p.loja.nome||'')}</div>
-    </div>`;
-    const leg = legs[i];
-    if (leg) {
-      const km = ((leg.distanceMeters||0)/1000).toFixed(1);
-      html += `<div style="display:flex;align-items:center;gap:6px;padding:2px 0 2px 30px;font-size:11px;color:#1d4ed8">
-        <i class="ti ${_rmapIconeModo()}" style="font-size:13px" aria-hidden="true"></i> ${_rmapFormatarDuracao(leg.duration)} · ${km} km
-      </div>`;
-    }
-  });
-  listaEl.innerHTML = html;
-
-  const totalKm = ((rota.distanceMeters||0)/1000).toFixed(1);
-  totalEl.style.display = 'flex';
-  totalEl.innerHTML = `<span style="font-size:12px;color:#64748b;font-weight:600">Tempo total estimado</span>
-    <span style="font-size:13px;color:#0e2841;font-weight:700">${_rmapFormatarDuracao(rota.duration)} · ${totalKm} km</span>`;
-}
-
 function _rotRelGetProms() {
-  const isAdmin   = sessao?.role === 'admin';
-  const isVend    = sessao?.role === 'vendedor';
-  const isDiretor = sessao?.role === 'diretor';
+  const isAdmin = sessao?.role === 'admin';
+  const isVend  = sessao?.role === 'vendedor';
   let promsNomes = [];
-  if (isAdmin || isDiretor) {
+  if (isAdmin) {
     promsNomes = [...new Set([
       ...usuarios.filter(u => u.role === 'promotor').map(u => u.nome),
       ...produtos.map(p => p.promotor).filter(Boolean)
@@ -11843,7 +11276,7 @@ async function salvarRoteirizacao() {
 
   try {
     const mes = document.getElementById('rotSelMes')?.value || _rotGetMesAtual();
-    const docKey = _rotResolveDocKey(promotorNome, mes);
+    const docKey = _rotDocKey(promotorNome, mes);
     const mesSelecionado = mes;
     const mesAtual = _rotGetMesAtual();
 
@@ -11920,7 +11353,7 @@ async function excluirRoteirizacao() {
   const mes = document.getElementById('rotSelMes')?.value || _rotGetMesAtual();
   const mesLabel = document.getElementById('rotSelMes')?.options[document.getElementById('rotSelMes').selectedIndex]?.text || mes;
   if (!confirm(`Excluir o roteiro de "${promotorNome}" em ${mesLabel}?\n\nAs lojas vinculadas serão desvinculadas e os dias de visita removidos.`)) return;
-  const docKey = _rotResolveDocKey(promotorNome, mes);
+  const docKey = _rotDocKey(promotorNome, mes);
   try {
     await FS_ROTEIROS.doc(docKey).delete();
     // Se for mês atual, limpar promotorResponsavel e diasVisita nas lojas
@@ -12121,7 +11554,7 @@ async function renderFreqVisita() {
     }
     if (semWrap) semWrap.style.display = '';
 
-    const docKey = _rotResolveDocKey(promotorNome, mes);
+    const docKey = _rotDocKey(promotorNome, mes);
     const doc = await FS_ROTEIROS.doc(docKey).get();
     const roteiroLojas = doc.exists ? (doc.data().lojas || []) : [];
 
@@ -12140,14 +11573,14 @@ async function renderFreqVisita() {
       const diasAgendados = _freqGetDatasDoMes(mes, r.dias || []);
       const movs = historico.filter(m => {
         if (normTxt(m.promotor) !== normTxt(promotorNome)) return false;
-        const d = _movDataToDate(m.data);
+        const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
         if (d.getFullYear() !== ano || d.getMonth()+1 !== mesNum) return false;
         return loja ? (String(m.lojaId) === String(loja.id) || normTxt(m.loja) === normTxt(loja.nome)) : false;
       });
       const diasComVisita = new Set();
       const gpsPerDia = new Map(); // dia → { distancia, presenca } (melhor leitura do dia)
       movs.forEach(m => {
-        const d = _movDataToDate(m.data);
+        const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
         const dia = d.getDate();
         diasComVisita.add(dia);
         const dist = m.distanciaLoja ?? null;
@@ -12167,7 +11600,7 @@ async function renderFreqVisita() {
     );
     const movsForaDoRoteiro = historico.filter(m => {
       if (normTxt(m.promotor) !== normTxt(promotorNome)) return false;
-      const d = _movDataToDate(m.data);
+      const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
       if (d.getFullYear() !== ano || d.getMonth()+1 !== mesNum) return false;
       return m.loja && !lojasRoteiroNorm.has(normTxt(m.loja));
     });
@@ -12179,7 +11612,7 @@ async function renderFreqVisita() {
         extraPorLoja.set(key, { loja: lojaObj, diasComVisita: new Set(), gpsPerDia: new Map() });
       }
       const e = extraPorLoja.get(key);
-      const d = _movDataToDate(m.data);
+      const d = m.data?.toDate ? m.data.toDate() : new Date(m.data?.seconds ? m.data.seconds*1000 : m.data);
       const dia = d.getDate();
       e.diasComVisita.add(dia);
       const dist = m.distanciaLoja ?? null;
@@ -12871,6 +12304,7 @@ function fecharRankDetalhe() {
 
 const _ALL_UFS_SO = ['AL','BA','PB','PE','RN','SE'];
 let _soUFs = new Set(_ALL_UFS_SO); // UFs selecionadas
+let _soVendSOInicializado = false; // evita resetar as UFs do vendedor a cada vez que ele reabre a aba
 
 function toggleFiltrosSellOut() {
   const body    = document.getElementById('filtrosSellOutBody');
@@ -12915,15 +12349,19 @@ function _soPopularSelects() {
   if (!fabSel || !redeSel || !vendSel) return;
   const fabs  = [...new Set(catalogo.map(c => c.fabrica).filter(Boolean))].sort();
   const redes = [...new Set(lojas.map(l => l.rede).filter(Boolean))].sort();
-  const vends = usuarios.filter(u => u.role === 'vendedor').sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
-  const curF = fabSel.value, curR = redeSel.value, curV = vendSel.value;
+  const isVendSessao = sessao?.role === 'vendedor';
+  const vends = isVendSessao
+    ? usuarios.filter(u => u.role === 'vendedor' && u.nome === sessao.nome)
+    : usuarios.filter(u => u.role === 'vendedor').sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+  const curF = fabSel.value, curR = redeSel.value, curV = isVendSessao ? sessao.nome : vendSel.value;
   fabSel.innerHTML  = '<option value="">Todas</option>' + fabs.map(f  => `<option ${f===curF?'selected':''}>${esc(f)}</option>`).join('');
   redeSel.innerHTML = '<option value="">Todas</option>' + redes.map(r => `<option ${r===curR?'selected':''}>${esc(r)}</option>`).join('');
-  vendSel.innerHTML = '<option value="">Todos</option>' + vends.map(v => {
+  vendSel.innerHTML = (isVendSessao ? '' : '<option value="">Todos</option>') + vends.map(v => {
     const ufsStr = (v.ufs||[]).join(', ');
     const label  = ufsStr ? `${v.nome} (${ufsStr})` : v.nome;
     return `<option value="${esc(v.nome)}" ${v.nome===curV?'selected':''}>${esc(label)}</option>`;
   }).join('');
+  vendSel.disabled = isVendSessao;
 }
 
 function _soOnVendedorChange() {
@@ -13052,11 +12490,9 @@ async function gerarExcelSellOut() {
   const cbs = document.querySelectorAll('#soTableBody .so-cb:checked');
   if (!cbs.length) { showToast('Selecione ao menos um produto.','#92400e'); return; }
 
-  // Reconstruir a lista igual ao renderSellOut (nível produto+fábrica, pra casar com os índices marcados)
+  // Reconstruir a lista igual ao renderSellOut
   const lojaRedeMap = {};
   lojas.forEach(l => { lojaRedeMap[normTxt(l.nome)] = l.rede || ''; });
-  const lojaUFMap = {};
-  lojas.forEach(l => { lojaUFMap[normTxt(l.nome)] = l.uf || ''; });
 
   const lancFiltrados = produtos.filter(p => {
     const dias = diasRestantes(p.validade);
@@ -13075,58 +12511,27 @@ async function gerarExcelSellOut() {
     const key = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
     if (!grupos[key]) {
       const cat = catalogo.find(c => normTxt(c.nome) === normTxt(p.produto||'') && normTxt(c.fabrica||'') === normTxt(p.fabrica||''));
-      grupos[key] = { nome:p.produto||'', fabrica:p.fabrica||'', und:cat?.und||p.und||'', cat:cat, codRede:cat?(cat.codigosRedes?.[redeFiltro]||''):'', qtde:0, minData:null, preco:0, lancamentos:[] };
+      grupos[key] = { nome:p.produto||'', fabrica:p.fabrica||'', und:cat?.und||p.und||'', codRede:cat?(cat.codigosRedes?.[redeFiltro]||''):'', qtde:0, minData:null, preco:0 };
     }
     grupos[key].qtde += Number(p.quantidade)||0;
     if (!grupos[key].minData || p.validade < grupos[key].minData) grupos[key].minData = p.validade;
     if (p.preco && Number(p.preco) > grupos[key].preco) grupos[key].preco = Number(p.preco);
-    grupos[key].lancamentos.push(p);
   });
 
-  const gruposSelecionaveis = Object.values(grupos)
+  let lista = Object.values(grupos)
     .filter(g => !redeFiltro || g.codRede)
     .sort((a,b) => a.minData?.localeCompare(b.minData||'')||0);
 
-  // Filtrar só os selecionados (por índice — mesma ordem/agrupamento da pré-visualização)
+  // Filtrar só os selecionados (por índice)
   const idxSel = new Set([...cbs].map(cb => Number(cb.dataset.idx)));
-  const gruposSelecionados = gruposSelecionaveis.filter((_, i) => idxSel.has(i));
-  if (!gruposSelecionados.length) { showToast('Nenhum item para exportar.','#92400e'); return; }
+  lista = lista.filter((_, i) => idxSel.has(i));
+  if (!lista.length) { showToast('Nenhum item para exportar.','#92400e'); return; }
 
   showToast('⏳ Gerando Excel SellOut...','#1e3a8a');
 
-  // Explodir cada produto selecionado em uma linha por loja que carrega o produto —
-  // se uma loja não tem preço próprio lançado, herda o maior preço encontrado
-  // em outra loja da mesma UF (região) para o mesmo produto.
-  let lista = [];
-  gruposSelecionados.forEach(g => {
-    const porLoja = {};
-    g.lancamentos.forEach(p => {
-      const lojaNome = p.loja || '';
-      const lKey = normTxt(lojaNome);
-      if (!porLoja[lKey]) {
-        const rede = lojaRedeMap[lKey] || redeFiltro || '';
-        porLoja[lKey] = {
-          nome: g.nome, fabrica: g.fabrica, und: g.und,
-          loja: lojaNome, uf: p.uf || lojaUFMap[lKey] || '', rede: rede,
-          codRede: g.cat ? (g.cat.codigosRedes?.[rede] || '') : '',
-          qtde: 0, minData: null, preco: 0,
-        };
-      }
-      porLoja[lKey].qtde += Number(p.quantidade) || 0;
-      if (!porLoja[lKey].minData || p.validade < porLoja[lKey].minData) porLoja[lKey].minData = p.validade;
-      if (p.preco && Number(p.preco) > porLoja[lKey].preco) porLoja[lKey].preco = Number(p.preco);
-    });
-    const linhasProduto = Object.values(porLoja);
-    const precoPorUF = {};
-    linhasProduto.forEach(r => {
-      if (r.preco > 0) { if (!precoPorUF[r.uf] || r.preco > precoPorUF[r.uf]) precoPorUF[r.uf] = r.preco; }
-    });
-    linhasProduto.forEach(r => { if (!r.preco && precoPorUF[r.uf]) r.preco = precoPorUF[r.uf]; });
-    lista = lista.concat(linhasProduto);
-  });
-  lista.sort((a,b) => a.minData?.localeCompare(b.minData||'')||0);
-
-  const cols = ['CLIENTE','UF','LOJAS','COD. REDE','PRODUTO','CUSTO','R$ GONDOLA','QTDE KG/UND','VENCIMENTO','R$ AÇÃO','R$ SELLOUT','TOTAL'];
+  const ufsStr  = [...ufsFiltro].sort().join(', ') || 'Todas';
+  const cliente = redeFiltro || 'Todas as Redes';
+  const cols    = ['CLIENTE','LOJAS','COD. REDE','PRODUTO','CUSTO','R$ GONDOLA','QTDE KG/UND','VENCIMENTO','R$ AÇÃO','R$ SELLOUT','TOTAL'];
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('SellOut');
@@ -13143,7 +12548,7 @@ async function gerarExcelSellOut() {
 
   // ── Cabeçalho padrão ──
   const logoB64SO = await getLogoBase64();
-  ws.mergeCells('A1:L1');
+  ws.mergeCells('A1:K1');
   const soR1 = ws.getCell('A1');
   soR1.value = 'Compartilhar Vendas e Promo';
   soR1.font = { bold:true, size:15, color:{ argb:'FF0E2841' } };
@@ -13156,14 +12561,14 @@ async function gerarExcelSellOut() {
     } catch(e) {}
   }
 
-  ws.mergeCells('A2:L2');
+  ws.mergeCells('A2:K2');
   const soR2 = ws.getCell('A2');
   soR2.value = 'SOLICITAÇÃO DE SELLOUT';
   soR2.font = { size:11, color:{ argb:'FF1B6B7A' } };
   soR2.alignment = { vertical:'middle' };
   ws.getRow(2).height = 18;
 
-  ws.mergeCells('A3:L3');
+  ws.mergeCells('A3:K3');
   const soR3 = ws.getCell('A3');
   soR3.value = 'Exportado em: ' + new Date().toLocaleDateString('pt-BR');
   soR3.font = { size:10, color:{ argb:'FF64748B' } };
@@ -13194,11 +12599,9 @@ async function gerarExcelSellOut() {
     const undSuffix = g.und ? ` "${g.und}"` : '';
     const precoBR  = g.preco ? parseFloat(g.preco.toFixed(2)) : null;
     const vencFmt  = g.minData ? fmtData(g.minData) : '';
-    const clienteRow = g.rede || '—';
     const r = ws.addRow([
-      clienteRow,
-      g.uf || '',
-      g.loja || '',
+      cliente,
+      ufsStr,
       g.codRede || '',
       g.nome,
       null,      // CUSTO
@@ -13207,41 +12610,41 @@ async function gerarExcelSellOut() {
       vencFmt,   // VENCIMENTO
       null,      // R$ AÇÃO
       null,      // R$ SELLOUT
-      { formula: `IF(K${rowNum}="","",G${rowNum}*K${rowNum})` }
+      { formula: `IF(J${rowNum}="","",G${rowNum}*J${rowNum})` }
     ]);
     // Fundo alternado
     if (i % 2 === 1) r.eachCell({ includeEmpty:true }, c => { c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFF8FAFC' } }; });
     // Células preenchíveis — fundo amarelo
-    [6,10,11].forEach(col => { r.getCell(col).fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFFEFCE8' } }; });
+    [5,9,10].forEach(col => { r.getCell(col).fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFFEFCE8' } }; });
     // TOTAL — fundo azul claro
-    r.getCell(12).fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFEFF6FF' } };
-    r.getCell(12).font = { color:{ argb:'FF1E40AF' }, size:10 };
-    // Formatos — F, G, J, K contabilidade; H com unidade
+    r.getCell(11).fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFEFF6FF' } };
+    r.getCell(11).font = { color:{ argb:'FF1E40AF' }, size:10 };
+    // Formatos — E, F, I, J contabilidade; G com unidade
+    r.getCell(5).numFmt  = accFmt;
     r.getCell(6).numFmt  = accFmt;
-    r.getCell(7).numFmt  = accFmt;
-    r.getCell(8).numFmt  = `#,##0.##${undSuffix}`;
-    r.getCell(8).alignment = { horizontal:'center' };
+    r.getCell(7).numFmt  = `#,##0.##${undSuffix}`;
+    r.getCell(7).alignment = { horizontal:'center' };
+    r.getCell(9).numFmt  = accFmt;
     r.getCell(10).numFmt = accFmt;
     r.getCell(11).numFmt = accFmt;
-    r.getCell(12).numFmt = accFmt;
     // Bordas pretas em todas as células — definidas por último
-    for (let ci = 1; ci <= 12; ci++) r.getCell(ci).border = allBorders;
+    for (let ci = 1; ci <= 11; ci++) r.getCell(ci).border = allBorders;
     r.height = 16;
   });
 
   // Larguras das colunas
-  [16, 8, 26, 12, 40, 12, 14, 14, 14, 12, 14, 14].forEach((w,i) => { ws.getColumn(i+1).width = w; });
+  [18, 16, 14, 44, 12, 14, 14, 14, 12, 14, 14].forEach((w,i) => { ws.getColumn(i+1).width = w; });
 
-  // Linha de totais — borda SOMENTE em K (col 11) e L (col 12)
+  // Linha de totais — borda SOMENTE em J (col 10) e K (col 11)
   const lastDataRow = 6 + lista.length;
-  const totRow = ws.addRow([null,null,null,null,null,null,null,null,null,null,'TOTAL',{ formula:`SUMPRODUCT((L7:L${lastDataRow})*1)` }]);
-  totRow.getCell(11).font      = { bold:true, color:{ argb:'FF1E3A8A' } };
-  totRow.getCell(11).alignment = { horizontal:'right' };
+  const totRow = ws.addRow([null,null,null,null,null,null,null,null,null,'TOTAL',{ formula:`SUMPRODUCT((K7:K${lastDataRow})*1)` }]);
+  totRow.getCell(10).font      = { bold:true, color:{ argb:'FF1E3A8A' } };
+  totRow.getCell(10).alignment = { horizontal:'right' };
+  totRow.getCell(10).border    = allBorders;
+  totRow.getCell(11).numFmt    = accFmt;
+  totRow.getCell(11).fill      = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFEFF6FF' } };
+  totRow.getCell(11).font      = { bold:true, color:{ argb:'FF1E40AF' } };
   totRow.getCell(11).border    = allBorders;
-  totRow.getCell(12).numFmt    = accFmt;
-  totRow.getCell(12).fill      = { type:'pattern', pattern:'solid', fgColor:{ argb:'FFEFF6FF' } };
-  totRow.getCell(12).font      = { bold:true, color:{ argb:'FF1E40AF' } };
-  totRow.getCell(12).border    = allBorders;
   totRow.height = 18;
 
   const fname = 'sellout_' + (redeFiltro||'todas').replace(/\s+/g,'_').toLowerCase() + '_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-') + '.xlsx';
@@ -13254,14 +12657,14 @@ async function gerarExcelSellOut() {
     rede:        redeFiltro || 'Todas',
     ufs:         [...ufsFiltro].sort(),
     vendedor:    vendFiltro || 'Todos',
-    produtos:    gruposSelecionados.map(g => ({ nome: g.nome, qtde: g.qtde, und: g.und || '' })),
+    produtos:    lista.map(g => ({ nome: g.nome, qtde: g.qtde, und: g.und || '' })),
     dataEnviada: '',
     status:      'pendente'
   };
   try {
     const docRef = await FS_SELLOUT_HIST.add(histRec);
     selloutHist.unshift({ id: docRef.id, ...histRec });
-    renderAcompSellOut();
+    if (sessao?.role === 'admin') renderAcompSellOut(); else renderAcompSellOutVD();
   } catch(e) {}
 
   // ── Marcar cada produto do SellOut como emSellout:true ──
@@ -13269,7 +12672,7 @@ async function gerarExcelSellOut() {
   // ele não será penalizado no score de "Produtos em dia".
   try {
     const batch = db.batch();
-    gruposSelecionados.forEach(g => {
+    lista.forEach(g => {
       (g.lancamentos || []).forEach(p => {
         if (!p.emSellout) {
           batch.update(FS_PRODUTOS.doc(String(p.id)), { emSellout: true });
@@ -14122,72 +13525,6 @@ function _popularMovSelects(prefixo, callback) {
   if (prodSel) { const cur=prodSel.value; const opts=[...new Set(base.map(m=>m.produto).filter(Boolean))].sort(); prodSel.innerHTML='<option value="">Todos</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
 }
 
-// Função dedicada de Movimentações (cascata padronizada: Fábrica → Vendedor → UF → Rede → Loja → Produto).
-// Não reaproveita _popularMovSelects para não alterar o comportamento do Histórico (prefixo 'h'), que continua igual.
-function _popularMovSelectsM() {
-  const isVendMov = sessao?.role === 'vendedor';
-  const wrapVend = document.getElementById('mVendedorWrap');
-  if (wrapVend) wrapVend.style.display = isVendMov ? 'none' : 'flex';
-  const mUFnum = document.getElementById('mUFnum');
-  if (mUFnum) mUFnum.textContent = 'UF';
-
-  // Fábrica
-  const fabSel = document.getElementById('mFabrica');
-  if (fabSel) { const cur=fabSel.value; const opts=[...new Set(historico.map(m=>m.fabrica).filter(Boolean))].sort(); fabSel.innerHTML='<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
-  const fFab = fabSel?.value || '';
-
-  // Vendedor (cascata: Fábrica)
-  const vendSel2 = document.getElementById('mVendedor');
-  if (!isVendMov && vendSel2) {
-    const cur = vendSel2.value;
-    const vends = usuarios.filter(u=>u.role==='vendedor').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
-    vendSel2.innerHTML = '<option value="">Todos</option>'+vends.map(v=>`<option value="${v.nome}" ${v.nome===cur?'selected':''}>${v.nome} (${(v.ufs||[]).join('·')})</option>`).join('');
-  }
-  const fVend = isVendMov ? '' : (vendSel2?.value || '');
-  const vendObj = fVend ? usuarios.find(u=>u.role==='vendedor'&&u.nome===fVend) : null;
-  const ufsVend = vendObj?.ufs || [];
-
-  // UF (cascata: Fábrica + Vendedor)
-  const ufSel = document.getElementById('mUF');
-  if (ufSel) {
-    const cur = ufSel.value;
-    let base = [...historico];
-    if (fFab) base = base.filter(m=>m.fabrica===fFab);
-    if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
-    const opts = [...new Set(base.map(m=>m.uf).filter(Boolean))].sort();
-    ufSel.innerHTML = '<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('');
-  }
-  const fUF = ufSel?.value || '';
-
-  // Rede (cascata: Fábrica + Vendedor + UF)
-  const redeSel = document.getElementById('mRede');
-  if (redeSel) {
-    const cur = redeSel.value;
-    let base = [...historico];
-    if (fFab) base = base.filter(m=>m.fabrica===fFab);
-    if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
-    if (fUF) base = base.filter(m=>m.uf===fUF);
-    const opts = [...new Set(base.map(m=>m.rede).filter(Boolean))].sort();
-    redeSel.innerHTML = '<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('');
-  }
-  const fRede = redeSel?.value || '';
-
-  // Loja (cascata: Fábrica + Vendedor + UF + Rede)
-  let base = [...historico];
-  if (fFab) base = base.filter(m=>m.fabrica===fFab);
-  if (ufsVend.length) base = base.filter(m=>ufsVend.includes(m.uf));
-  if (fUF) base = base.filter(m=>m.uf===fUF);
-  if (fRede) base = base.filter(m=>m.rede===fRede);
-  const lojaSel = document.getElementById('mLoja');
-  if (lojaSel) { const cur=lojaSel.value; const opts=[...new Set(base.map(m=>m.loja).filter(Boolean))].sort(); lojaSel.innerHTML='<option value="">Todas</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
-  const fLoja = lojaSel?.value || '';
-  if (fLoja) base = base.filter(m=>m.loja===fLoja);
-
-  // Produto (cascata completa)
-  const prodSel = document.getElementById('mProduto');
-  if (prodSel) { const cur=prodSel.value; const opts=[...new Set(base.map(m=>m.produto).filter(Boolean))].sort(); prodSel.innerHTML='<option value="">Todos</option>'+opts.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join(''); }
-}
-
 function _filtrarHistorico(prefixo) {
   const p=prefixo;
   const fFab  = document.getElementById(p+'Fabrica')?.value  || '';
@@ -14203,6 +13540,9 @@ function _filtrarHistorico(prefixo) {
   const parseFn = p==='m' ? _parseMovData : dataParaISO;
   const fDtI  = parseFn(document.getElementById(p+'DataIni')?.value||'');
   const fDtF  = parseFn(document.getElementById(p+'DataFim')?.value||'');
+  // Botão limpar datas
+  const bLimp = document.getElementById(p+'BtnLimparDatas');
+  if (bLimp) bLimp.style.display = (fDtI||fDtF) ? '' : 'none';
   // Para modo mensal, comparar apenas os 7 primeiros chars (AAAA-MM)
   const cmpI = (p==='m' && _movMode==='mensal' && fDtI) ? fDtI.slice(0,7) : fDtI;
   const cmpF = (p==='m' && _movMode==='mensal' && fDtF) ? fDtF.slice(0,7) : fDtF;
@@ -14299,7 +13639,7 @@ function toggleMovLeg(id) {
 }
 
 function renderMovChart() {
-  _popularMovSelectsM();
+  _popularMovSelects('m');
   const dados = _filtrarHistorico('m');
   const header = document.getElementById('movChartHeader');
   const semEl  = document.getElementById('movSemDados');
@@ -14325,9 +13665,9 @@ function renderMovChart() {
   // Cabeçalho dinâmico Movimentações
   const _mFiltrosAtivos = [
     _mFab  ? { label: 'Fábrica',  val: _mFab  } : null,
+    _mRede ? { label: 'Rede',     val: _mRede } : null,
     _mVend ? { label: 'Vendedor', val: _mVend } : null,
     _mUF   ? { label: 'UF',       val: _mUF   } : null,
-    _mRede ? { label: 'Rede',     val: _mRede } : null,
     fLoja  ? { label: 'Loja',     val: fLoja  } : null,
     fProd  ? { label: 'Produto',  val: fProd  } : null,
   ].filter(Boolean);
@@ -14494,7 +13834,7 @@ function renderHistorico(resetLimite) {
 
     const vuCell = _htmlVidaUtil(vu);
     const entregaStyle = _estiloEntregaInput(entregaAlerta);
-    const entregaCell = `<input id="hEntrega_${m.id}" type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value,this)" style="${entregaStyle}" />`;
+    const entregaCell = `<input type="date" value="${m.dataEntrega||''}" onchange="salvarDataEntrega(${m.id},this.value,this)" style="${entregaStyle}" />`;
 
     return `<tr class="${rowCls}">
       <td>${fmtData(m.data)}</td>
@@ -14690,39 +14030,22 @@ function salvarDataEntrega(movId, dataEntrega, inputEl) {
   }
   const idx = historico.findIndex(m => m.id === movId);
   if (idx < 0) return;
-  const base = historico[idx];
-  const valorNovo = dataEntrega || null;
-  // A Data de Entrega é uma característica do ITEM (mesmo produto + loja + validade), não de
-  // uma linha isolada — aplica em todos os registros desse item no histórico (Novo, Alteração,
-  // Vencido automático, Exclusão), assim não precisa informar de novo em cada linha.
-  const irmaos = historico.filter(m =>
-    m.produto === base.produto && m.loja === base.loja && m.validade === base.validade
-  );
-  irmaos.forEach(m => {
-    m.dataEntrega = valorNovo;
-    if (m.firestoreId) {
-      FS_HISTORICO.doc(m.firestoreId).update({ dataEntrega: valorNovo });
-    } else {
-      FS_HISTORICO.where('id', '==', m.id).get().then(snap => {
-        snap.forEach(doc => doc.ref.update({ dataEntrega: valorNovo }));
-      });
-    }
-  });
-  showToast(irmaos.length > 1
-    ? `📅 Data de entrega salva em ${irmaos.length} registros deste item!`
-    : '📅 Data de entrega salva!', '#166534');
-  // Atualiza a célula de Vida Útil + o próprio campo de data em todas as linhas afetadas que
-  // estejam na tela agora — sem redesenhar a linha inteira (redesenhar destruiria o <input
-  // type="date"> e interromperia a digitação de quem estiver editando outra linha).
-  irmaos.forEach(m => {
-    const vuEl = document.getElementById('hVU_' + m.id);
-    if (vuEl) vuEl.innerHTML = _htmlVidaUtil(_calcVidaUtilMov(m));
-    const campo = (m.id === movId && inputEl) ? inputEl : document.getElementById('hEntrega_' + m.id);
-    if (campo) {
-      campo.value = valorNovo || '';
-      campo.style.cssText = _estiloEntregaInput(_calcEntregaAlerta(m));
-    }
-  });
+  historico[idx].dataEntrega = dataEntrega || null;
+  const fsId = historico[idx].firestoreId;
+  if (fsId) {
+    FS_HISTORICO.doc(fsId).update({ dataEntrega: dataEntrega || null });
+  } else {
+    FS_HISTORICO.where('id', '==', movId).get().then(snap => {
+      snap.forEach(doc => doc.ref.update({ dataEntrega: dataEntrega || null }));
+    });
+  }
+  showToast('📅 Data de entrega salva!', '#166534');
+  // Atualiza só a célula de Vida Útil e a cor do próprio campo — sem redesenhar a linha
+  // (redesenhar destruiria o <input type="date"> e interromperia a digitação)
+  const m = historico[idx];
+  const vuEl = document.getElementById('hVU_' + movId);
+  if (vuEl) vuEl.innerHTML = _htmlVidaUtil(_calcVidaUtilMov(m));
+  if (inputEl) inputEl.style.cssText = _estiloEntregaInput(_calcEntregaAlerta(m));
 }
 
 // ── Saídas automáticas por vencimento ────────
@@ -14750,7 +14073,7 @@ function verificarSaidasPorVencimento() {
       firestoreId:   'h_' + Math.round(Date.now() + Math.random()),
       shelfLife:     null,
       dataFabricacao:null,
-      dataEntrega:   _dataEntregaOrigem(p),
+      dataEntrega:   null,
       qtde,
       produto:       p.produto  || '',
       loja:          p.loja     || '',
@@ -14844,7 +14167,7 @@ function _registrarMovimento(tipo, qtde, produto, acao, atualizadoPor, geoInfo) 
     validade:       produto.validade || '',
     shelfLife:      shelfLife,
     dataFabricacao: dataFabricacao,
-    dataEntrega:    (acaoFinal === 'alteracao' || acaoFinal === 'exclusao') ? _dataEntregaOrigem(produto) : null,
+    dataEntrega:    acaoFinal === 'alteracao' ? _dataEntregaOrigem(produto) : null,
     loja:           produto.loja     || '',
     rede:           lojaObj?.rede    || '',
     uf:             produto.uf       || '',
@@ -15081,20 +14404,13 @@ function abrirEditModal(id, isDuplicate) {
   _atualizarBtnEditConcorrencia();
   document.getElementById('editModal').classList.remove('hidden');
 }
-async function salvarEdicao() {
+function salvarEdicao() {
   const id = Number(document.getElementById('edit_id').value);
   const idx = produtos.findIndex(p => p.id === id);
   if (idx < 0) return;
-  // Trava contra duplo-clique/duplo-toque no "Salvar" (aguarda GPS antes de terminar)
-  if (window._gravandoMovimento) return;
-  window._gravandoMovimento = true;
-  try {
   const isAdmin = sessao && sessao.role === 'admin';
   const qtdeAnterior = Number(produtos[idx].quantidade) || 0;
-  const qtdeInputVal = document.getElementById('edit_quantidade').value;
-  const qtdeParsed   = Number(qtdeInputVal);
-  // 0 é um valor válido (produto vendido/zerado) — só cai no valor anterior se o campo estiver vazio ou inválido
-  const qtdeNova     = (qtdeInputVal === '' || isNaN(qtdeParsed) || qtdeParsed < 0) ? qtdeAnterior : qtdeParsed;
+  const qtdeNova     = Number(document.getElementById('edit_quantidade').value) || qtdeAnterior;
   produtos[idx].quantidade = qtdeNova;
   const precoAnterior = Number(produtos[idx].preco) || 0;
   const precoNovo     = Number(document.getElementById('edit_preco').value) || 0;
@@ -15122,17 +14438,10 @@ async function salvarEdicao() {
   produtos[idx].dataAtualizacao = new Date().toISOString().slice(0,10);
   // Registrar movimentação se quantidade mudou
   const diff = qtdeNova - qtdeAnterior;
-  if (diff !== 0) {
-    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
-    const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
-    _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
-  }
+  if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
   FS_PRODUTOS.doc(String(id)).set(produtos[idx]); renderTabela();
   document.getElementById('editModal').classList.add('hidden');
   showToast('✅ Produto atualizado!','#166534');
-  } finally {
-    window._gravandoMovimento = false;
-  }
 }
 
 // ── Editar EAN ───────────────────────────────
@@ -15622,8 +14931,7 @@ async function salvarEdicao() {
     if (!v || v.length < 10) { showToast('⚠️ Informe a data de validade.','#92400e'); return; }
     const dt = _maParseData(v);
     if (!dt) { showToast('⚠️ Data inválida. Use DD/MM/AAAA.','#92400e'); return; }
-    // Quantidade 0 é válida (produto vendido/zerado) — só bloqueia se estiver vazio ou negativo/inválido
-    if (q === '' || isNaN(Number(q)) || Number(q) < 0) { showToast('⚠️ Informe a quantidade.','#92400e'); return; }
+    if (!q || Number(q) <= 0) { showToast('⚠️ Informe a quantidade.','#92400e'); return; }
     // Verificar antecipadamente duplicata própria e de outro promotor
     if (sessao && sessao.role === 'promotor' && _maLojaObj && _maProdObj) {
       const isoDate = dataParaISO(v);
@@ -15991,26 +15299,18 @@ async function salvarEdicao() {
       `<button type="button" onclick="_maEditarQtde(${prodId})" title="Editar quantidade" style="background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'"><i class="ti ti-pencil" style="font-size:15px" aria-hidden="true"></i></button>`;
   };
 
-  window._maSalvarQtde = async function(prodId) {
+  window._maSalvarQtde = function(prodId) {
     const inp = document.getElementById('maQinput_' + prodId);
     if (!inp) return;
     const novaQtde = parseFloat(inp.value);
     if (isNaN(novaQtde) || novaQtde < 0) { showToast('Quantidade inválida.', '#92400e'); return; }
     const idx = produtos.findIndex(p => p.id === prodId);
     if (idx < 0) return;
-    // Trava contra duplo-clique/duplo-toque no botão de confirmar (aguarda GPS antes de terminar)
-    if (window._gravandoMovimento) return;
-    window._gravandoMovimento = true;
-    try {
     const antiga = Number(produtos[idx].quantidade) || 0;
     const diff = novaQtde - antiga;
     produtos[idx].quantidade = novaQtde;
     FS_PRODUTOS.doc(String(prodId)).update({ quantidade: novaQtde });
-    if (diff !== 0) {
-      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(produtos[idx].loja));
-      const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
-      _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao', null, geoInfo);
-    }
+    if (diff !== 0) _registrarMovimento(diff > 0 ? 'entrada' : 'saida', Math.abs(diff), produtos[idx], 'alteracao');
     renderTabela();
     // Atualizar visual
     const qtdeEl = document.getElementById('maQqtde_' + prodId);
@@ -16022,9 +15322,6 @@ async function salvarEdicao() {
         `<button type="button" onclick="_maEditarQtde(${prodId})" title="Editar quantidade" style="background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'"><i class="ti ti-pencil" style="font-size:15px" aria-hidden="true"></i></button>`;
     }
     showToast('✅ Quantidade atualizada!', '#166534');
-    } finally {
-      window._gravandoMovimento = false;
-    }
   };
 
   // ── Fim Consulta ────────────────────────────────────────────────────
@@ -16502,37 +15799,11 @@ async function carregarDados() {
 // ── RUPTURA DE GÔNDOLA (calculada do histórico) ──
 // ══════════════════════════════════════════════
 
-// Vendedor não é gravado no histórico — deriva-se pela UF (mesma lógica usada nos relatórios Excel)
-function _vendedorPorUF(uf) {
-  if (!uf) return '';
-  const v = usuarios.find(function(u){ return u.role === 'vendedor' && Array.isArray(u.ufs) && u.ufs.includes(uf); });
-  return v ? v.nome : '';
-}
-
-// Código de um item do catálogo numa rede específica (comparação sem acento/maiúscula)
-function _gRuptCodRede(item, rede) {
-  if (!rede) return '';
-  const codes = item.codigosRedes || {};
-  const redeNorm = normTxt(rede);
-  const key = Object.keys(codes).find(function(k){ return normTxt(k) === redeNorm; });
-  return key ? (codes[key] || '') : '';
-}
-
-// Converte qualquer formato de data usado no histórico (Firestore Timestamp,
-// segundos, ou string 'YYYY-MM-DD') para Date
-function _gRuptToDate(v) {
-  if (!v) return null;
-  if (v.toDate) return v.toDate();
-  if (v.seconds) return new Date(v.seconds*1000);
-  if (typeof v === 'string' && v.length === 10) return new Date(v+'T00:00:00');
-  return new Date(v);
-}
-
 function _calcularRupturas() {
   const grupos = {};
   historico.forEach(function(m) {
     const key = (m.produto || m.prod || '') + '|||' + (m.lojaId || m.loja || '');
-    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', promotor: m.promotor || '', fabrica: m.fabrica || '', movs: [] };
+    if (!grupos[key]) grupos[key] = { produto: m.produto || m.prod || '', loja: m.loja || '', lojaId: m.lojaId || '', rede: m.rede || '', uf: m.uf || '', vendedor: m.vendedor || '', promotor: m.promotor || '', movs: [] };
     grupos[key].movs.push(m);
   });
 
@@ -16540,7 +15811,11 @@ function _calcularRupturas() {
   const hoje = new Date(); hoje.setHours(23,59,59,0);
 
   Object.values(grupos).forEach(function(g) {
-    g.movs.sort(function(a, b) { return _gRuptToDate(a.data) - _gRuptToDate(b.data); });
+    g.movs.sort(function(a, b) {
+      const da = a.data && a.data.toDate ? a.data.toDate() : new Date(a.data && a.data.seconds ? a.data.seconds*1000 : a.data);
+      const db = b.data && b.data.toDate ? b.data.toDate() : new Date(b.data && b.data.seconds ? b.data.seconds*1000 : b.data);
+      return da - db;
+    });
 
     for (let i = 0; i < g.movs.length; i++) {
       const m = g.movs[i];
@@ -16548,18 +15823,13 @@ function _calcularRupturas() {
       const isSaida = tipo.includes('saida') || tipo.includes('saída') || tipo === 'vencimento' || tipo.includes('venciment');
       if (!isSaida) continue;
 
-      // Início real da ruptura: se foi saída por vencimento, usa a validade do produto
-      // (data real em que ficou indisponível), não a data em que o promotor registrou —
-      // evita distorção quando o lançamento é feito com atraso.
-      const dataSaida = (tipo.includes('venciment') && m.validade) ? _gRuptToDate(m.validade) : _gRuptToDate(m.data);
+      const dataSaida = m.data && m.data.toDate ? m.data.toDate() : new Date(m.data && m.data.seconds ? m.data.seconds*1000 : m.data);
 
       let proxEntrada = null;
       for (let j = i+1; j < g.movs.length; j++) {
         const tipo2 = (g.movs[j].tipo || '').toLowerCase();
         if (tipo2.includes('entrada') || tipo2 === 'entrada' || tipo2.includes('reposic')) {
-          // Fim real da ruptura: prioriza a Data de Entrega (chegada física na loja)
-          // sobre a data de lançamento no sistema, quando preenchida.
-          proxEntrada = g.movs[j].dataEntrega ? _gRuptToDate(g.movs[j].dataEntrega) : _gRuptToDate(g.movs[j].data);
+          proxEntrada = g.movs[j].data && g.movs[j].data.toDate ? g.movs[j].data.toDate() : new Date(g.movs[j].data && g.movs[j].data.seconds ? g.movs[j].data.seconds*1000 : g.movs[j].data);
           break;
         }
       }
@@ -16574,9 +15844,8 @@ function _calcularRupturas() {
         lojaId: g.lojaId,
         rede: g.rede,
         uf: g.uf,
-        vendedor: _vendedorPorUF(g.uf),
+        vendedor: g.vendedor,
         promotor: g.promotor,
-        fabrica: g.fabrica,
         dataSaida: dataSaida,
         dataFim: proxEntrada,
         dias: dias,
@@ -16588,26 +15857,7 @@ function _calcularRupturas() {
   return rupturas;
 }
 
-// Universo completo para popular os filtros: TODAS as combinações já lançadas no
-// Histórico, independente de terem gerado uma ruptura calculada ou não — assim uma
-// fábrica/rede/vendedor sem ruptura no momento continua aparecendo pra seleção
-// (só a lista de resultados fica vazia, o que é o comportamento esperado).
-function _gRuptUniverso() {
-  return historico.map(function(m) {
-    const uf = m.uf || '';
-    return {
-      fabrica:  m.fabrica || '',
-      vendedor: _vendedorPorUF(uf),
-      uf:       uf,
-      rede:     m.rede || '',
-      loja:     m.loja || '',
-      produto:  m.produto || m.prod || '',
-    };
-  });
-}
-
-function _gRuptPopularSelects() {
-  const universo = _gRuptUniverso();
+function _gRuptPopularSelects(todasRupturas) {
   const setOpts = function(id, vals) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -16617,68 +15867,16 @@ function _gRuptPopularSelects() {
       [...new Set(vals.filter(Boolean))].sort(function(a,b){return a.localeCompare(b,'pt-BR');})
         .map(function(v){return '<option value="' + esc(v) + '"' + (v===cur?' selected':'') + '>' + esc(v) + '</option>';}).join('');
   };
-
-  // ── Cascata: Fábrica → Vendedor → UF → Rede → Loja → Produto ──
-  // Fábrica: lista cadastral completa (todas as fábricas cadastradas), não só as que já têm lançamento.
-  setOpts('gRuptFabrica', fabricas.map(function(f){return f.nome;}).concat(universo.map(function(r){return r.fabrica;})));
-  const fFab = document.getElementById('gRuptFabrica')?.value || '';
-
-  // Vendedor: lista cadastral completa de vendedores, independente da Fábrica (vendedor não é amarrado a fábrica).
-  const vendedores = usuarios.filter(function(u){return u.role==='vendedor';});
-  setOpts('gRuptVendedor', vendedores.map(function(u){return u.nome;}).concat(universo.map(function(r){return r.vendedor;})));
-  const fVend = document.getElementById('gRuptVendedor')?.value || '';
-  const vendSel = fVend ? vendedores.find(function(u){return u.nome===fVend;}) : null;
-
-  // UF: se há Vendedor selecionado, mostra as UFs dele; senão, união das UFs de todos os vendedores + de todas as lojas cadastradas.
-  let ufsOpts;
-  if (vendSel) {
-    ufsOpts = vendSel.ufs || [];
-  } else {
-    const ufsVendedores = vendedores.reduce(function(acc,u){ return acc.concat(u.ufs||[]); }, []);
-    const ufsLojas = lojas.map(function(l){return l.uf;});
-    ufsOpts = ufsVendedores.concat(ufsLojas).concat(universo.map(function(r){return r.uf;}));
-  }
-  setOpts('gRuptUF', ufsOpts);
-  const fUF = document.getElementById('gRuptUF')?.value || '';
-
-  // Rede: redes das lojas cadastradas na UF/vendedor filtrados, cruzando com o catálogo
-  // para só listar redes que de fato compram produtos da fábrica filtrada (quando houver).
-  let lojasParaRede = lojas.slice();
-  if (fUF)   lojasParaRede = lojasParaRede.filter(function(l){return l.uf===fUF;});
-  if (vendSel) lojasParaRede = lojasParaRede.filter(function(l){return (vendSel.ufs||[]).includes(l.uf);});
-  let redesCandidatas = [...new Set(lojasParaRede.map(function(l){return l.rede;}).filter(Boolean))];
-  if (fFab) {
-    redesCandidatas = redesCandidatas.filter(function(r){
-      return catalogo.some(function(c){ return c.fabrica===fFab && _gRuptCodRede(c, r); });
-    });
-  }
-  const baseUFhist = fUF ? universo.filter(function(r){return r.uf===fUF;}) : universo;
-  setOpts('gRuptRede', redesCandidatas.concat(baseUFhist.map(function(r){return r.rede;})));
-  const fRede = document.getElementById('gRuptRede')?.value || '';
-
-  // Loja: além das lojas com lançamento, inclui todas as lojas da rede (via catálogo/codigosRedes)
-  // que carregam produtos da fábrica filtrada, mesmo sem nenhum lançamento ainda.
-  const baseRedeHist = fRede ? baseUFhist.filter(function(r){return r.rede===fRede;}) : baseUFhist;
-  let lojaOpts = baseRedeHist.map(function(r){return r.loja;});
-  if (fRede) {
-    let itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, fRede); });
-    if (fFab) itensCatalogo = itensCatalogo.filter(function(c){ return c.fabrica === fFab; });
-    if (itensCatalogo.length) {
-      let lojasDaRede = lojas.filter(function(l){ return l.rede === fRede; });
-      if (fUF)   lojasDaRede = lojasDaRede.filter(function(l){ return l.uf === fUF; });
-      if (vendSel) lojasDaRede = lojasDaRede.filter(function(l){ return (vendSel.ufs||[]).includes(l.uf); });
-      lojaOpts = lojaOpts.concat(lojasDaRede.map(function(l){ return l.nome; }));
-    }
-  }
-  setOpts('gRuptLoja', lojaOpts);
-  const fLoja = document.getElementById('gRuptLoja')?.value || '';
-
-  const baseLoja = fLoja ? baseRedeHist.filter(function(r){return r.loja===fLoja;}) : baseRedeHist;
-  setOpts('gRuptProduto', baseLoja.map(function(r){return r.produto;}));
+  setOpts('gRuptRede',    todasRupturas.map(function(r){return r.rede;}));
+  setOpts('gRuptVendedor',todasRupturas.map(function(r){return r.vendedor;}));
+  setOpts('gRuptUF',      todasRupturas.map(function(r){return r.uf;}));
+  setOpts('gRuptLoja',    todasRupturas.map(function(r){return r.loja;}));
+  setOpts('gRuptPromotor',todasRupturas.map(function(r){return r.promotor;}));
+  setOpts('gRuptProduto', todasRupturas.map(function(r){return r.produto;}));
 }
 
 function limparFiltrosGraficoRuptura() {
-  ['gRuptFabrica','gRuptVendedor','gRuptUF','gRuptRede','gRuptLoja','gRuptProduto'].forEach(function(id){
+  ['gRuptRede','gRuptVendedor','gRuptUF','gRuptLoja','gRuptPromotor','gRuptProduto'].forEach(function(id){
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['gRuptDataIni','gRuptDataFim'].forEach(function(id){
@@ -16687,147 +15885,16 @@ function limparFiltrosGraficoRuptura() {
   renderGraficoRuptura();
 }
 
-let _gRuptListaAtual = [];
-let _gRuptChart = null;
-
-// ── Taxa de Ruptura Diária (%) — últimos 14 dias ────────────
-function _gRuptRenderTaxaDiaria(listaBase, fLoja, fRede, fFab, fProd) {
-  const canvas = document.getElementById('gRuptTaxaChart');
-  const legendaEl = document.getElementById('gRuptTaxaLegenda');
-  if (!canvas || typeof Chart === 'undefined') return;
-
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const NDIAS = 14;
-  const inicio = new Date(hoje); inicio.setDate(inicio.getDate() - (NDIAS - 1));
-
-  // Denominador: se há loja (ou rede) filtrada, usa o nº de itens que a rede
-  // compra (catalogo x codigosRedes) — é o universo real. Sem isso, usa o nº
-  // de produtos distintos que apareceram nas rupturas filtradas (aproximação).
-  // Respeita também o filtro de Fábrica/Produto, se estiverem ativos.
-  let denom = null;
-  let baseLabel = '';
-  const redeRef = fRede || (fLoja ? (lojas.find(function(l){return normTxt(l.nome)===normTxt(fLoja);})||{}).rede : '');
-  if (redeRef) {
-    let itensRede = catalogo.filter(function(c){ return _gRuptCodRede(c, redeRef); });
-    if (fFab)  itensRede = itensRede.filter(function(c){ return c.fabrica === fFab; });
-    if (fProd) itensRede = itensRede.filter(function(c){ return c.nome === fProd; });
-    denom = itensRede.length;
-    baseLabel = 'base: itens' + (fFab ? (' da ' + fFab) : '') + ' que a ' + redeRef + ' compra (' + denom + ' SKUs)';
-  }
-  if (!denom) {
-    denom = new Set(listaBase.map(function(r){ return normTxt(r.produto); })).size;
-    baseLabel = denom ? ('base: ' + denom + ' produto(s) com ocorrência no período') : '';
-  }
-  if (legendaEl) legendaEl.textContent = baseLabel;
-  if (!denom) denom = 1;
-
-  const labels = [];
-  const dados = [];
-  for (let i = 0; i < NDIAS; i++) {
-    const d = new Date(inicio); d.setDate(d.getDate() + i);
-    const diaIni = new Date(d); diaIni.setHours(0,0,0,0);
-    const diaFim = new Date(d); diaFim.setHours(23,59,59,999);
-    const skus = new Set();
-    listaBase.forEach(function(r) {
-      const fimPeriodo = r.ativa ? new Date() : r.dataFim;
-      if (r.dataSaida <= diaFim && fimPeriodo >= diaIni) skus.add(normTxt(r.produto) + '|' + normTxt(r.loja));
-    });
-    labels.push(String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'));
-    dados.push(Math.round(Math.min(100, (skus.size / denom) * 100) * 10) / 10);
-  }
-
-  if (_gRuptChart) { _gRuptChart.destroy(); _gRuptChart = null; }
-  _gRuptChart = new Chart(canvas, {
-    type: 'bar',
-    data: { labels: labels, datasets: [{ label: 'Taxa de Ruptura (%)', data: dados, backgroundColor: '#dc2626', borderRadius: 3 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
-    }
-  });
-}
-
-// ── Ruptura Prevista — próximos 7 dias ──────────────────────
-function _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd) {
-  const wrap = document.getElementById('gRuptPrevistaWrap');
-  const listaEl = document.getElementById('gRuptPrevistaLista');
-  if (!wrap || !listaEl) return;
-
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const limite = new Date(hoje); limite.setDate(limite.getDate() + 7);
-
-  const itens = produtos.filter(function(p) {
-    if (!p.validade || !(Number(p.quantidade) > 0)) return false;
-    const v = new Date(p.validade + 'T00:00:00');
-    if (v < hoje || v > limite) return false;
-    if (fFab  && p.fabrica !== fFab)  return false;
-    if (fUF   && p.uf      !== fUF)   return false;
-    if (fLoja && p.loja    !== fLoja) return false;
-    if (fProd && p.produto !== fProd) return false;
-    if (fVend && _vendedorPorUF(p.uf) !== fVend) return false;
-    if (fRede) {
-      const lj = lojas.find(function(l){ return normTxt(l.nome)===normTxt(p.loja); });
-      if (!lj || lj.rede !== fRede) return false;
-    }
-    return true;
-  }).map(function(p) {
-    const v = new Date(p.validade + 'T00:00:00');
-    return { produto: p.produto, loja: p.loja, dias: Math.round((v-hoje)/86400000) };
-  }).sort(function(a,b){ return a.dias - b.dias; });
-
-  if (!itens.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = '';
-  listaEl.innerHTML = itens.map(function(it, i) {
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;' + (i < itens.length-1 ? 'border-bottom:1px solid #fef3c7' : '') + '">' +
-      '<div><div style="font-size:12px;font-weight:600;color:#1e293b">' + esc(it.produto) + '</div><div style="font-size:10.5px;color:#64748b">' + esc(it.loja) + '</div></div>' +
-      '<span style="font-size:10.5px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px">vence em ' + it.dias + (it.dias===1?' dia':' dias') + '</span>' +
-    '</div>';
-  }).join('');
-}
-
-// ── Itens da rede sem nenhum lançamento (entram na mesma tabela de ruptura) ──
-// Só calcula quando há uma Rede ativa (selecionada direto, ou derivada da Loja escolhida).
-function _gRuptItensNuncaLancados(fFab, fVend, fUF, fRede, fLoja, fProd) {
-  const redeAtiva = fRede || (fLoja ? (lojas.find(function(l){return normTxt(l.nome)===normTxt(fLoja);})||{}).rede : '');
-  if (!redeAtiva) return [];
-
-  let lojasDaRede = lojas.filter(function(l){ return l.rede === redeAtiva; });
-  if (fLoja) lojasDaRede = lojasDaRede.filter(function(l){ return normTxt(l.nome)===normTxt(fLoja); });
-  if (fUF)   lojasDaRede = lojasDaRede.filter(function(l){ return l.uf===fUF; });
-  if (fVend) lojasDaRede = lojasDaRede.filter(function(l){ return _vendedorPorUF(l.uf)===fVend; });
-  if (!lojasDaRede.length) return [];
-
-  let itensCatalogo = catalogo.filter(function(c){ return _gRuptCodRede(c, redeAtiva); });
-  if (fFab)  itensCatalogo = itensCatalogo.filter(function(c){ return c.fabrica===fFab; });
-  if (fProd) itensCatalogo = itensCatalogo.filter(function(c){ return c.nome===fProd; });
-  if (!itensCatalogo.length) return [];
-
-  const out = [];
-  lojasDaRede.forEach(function(loja) {
-    itensCatalogo.forEach(function(c) {
-      const temHistorico = historico.some(function(m){ return normTxt(m.produto||'')===normTxt(c.nome) && normTxt(m.loja||'')===normTxt(loja.nome); });
-      if (temHistorico) return;
-      out.push({
-        produto: c.nome, loja: loja.nome, lojaId: loja.id || '', rede: redeAtiva, uf: loja.uf || '',
-        vendedor: _vendedorPorUF(loja.uf), promotor: '', fabrica: c.fabrica || '',
-        dataSaida: null, dataFim: null, dias: null, ativa: false, nuncaLancado: true,
-      });
-    });
-  });
-  return out;
-}
-
 function renderGraficoRuptura() {
   if (document.getElementById('viewGraficos')?.style.display === 'none') return;
   const todasRupturas = _calcularRupturas();
-  _gRuptPopularSelects();
+  _gRuptPopularSelects(todasRupturas);
 
-  const fFab    = document.getElementById('gRuptFabrica')?.value || '';
+  const fRede   = document.getElementById('gRuptRede')?.value || '';
   const fVend   = document.getElementById('gRuptVendedor')?.value || '';
   const fUF     = document.getElementById('gRuptUF')?.value || '';
-  const fRede   = document.getElementById('gRuptRede')?.value || '';
   const fLoja   = document.getElementById('gRuptLoja')?.value || '';
+  const fProm   = document.getElementById('gRuptPromotor')?.value || '';
   const fProd   = document.getElementById('gRuptProduto')?.value || '';
   const fIniStr = document.getElementById('gRuptDataIni')?.value || '';
   const fFimStr = document.getElementById('gRuptDataFim')?.value || '';
@@ -16840,27 +15907,17 @@ function renderGraficoRuptura() {
   const fIni = parseDataBR(fIniStr);
   const fFim = parseDataBR(fFimStr);
 
-  const listaSemFiltroData = todasRupturas.filter(function(r) {
-    if (fFab   && r.fabrica  !== fFab)    return false;
+  let lista = todasRupturas.filter(function(r) {
+    if (fRede  && r.rede     !== fRede)   return false;
     if (fVend  && r.vendedor !== fVend)   return false;
     if (fUF    && r.uf       !== fUF)     return false;
-    if (fRede  && r.rede     !== fRede)   return false;
     if (fLoja  && r.loja     !== fLoja)   return false;
+    if (fProm  && r.promotor !== fProm)   return false;
     if (fProd  && r.produto  !== fProd)   return false;
-    return true;
-  });
-
-  let lista = listaSemFiltroData.filter(function(r) {
     if (fIni   && r.dataSaida < fIni)     return false;
     if (fFim) { const fim = new Date(fFim); fim.setHours(23,59,59); if (r.dataSaida > fim) return false; }
     return true;
   });
-
-  const nuncaLancados = _gRuptItensNuncaLancados(fFab, fVend, fUF, fRede, fLoja, fProd);
-  _gRuptListaAtual = lista.concat(nuncaLancados);
-
-  _gRuptRenderTaxaDiaria(listaSemFiltroData, fLoja, fRede, fFab, fProd);
-  _gRuptRenderPrevista(fFab, fVend, fUF, fRede, fLoja, fProd);
 
   const cont = document.getElementById('gRuptConteudo');
   const statsEl = document.getElementById('gRuptStats');
@@ -16875,9 +15932,8 @@ function renderGraficoRuptura() {
     '<div style="background:#fef3c7;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#d97706">' + mediaDias + 'd</div><div style="font-size:10px;color:#d97706;margin-top:3px">Média de dias</div></div>' +
     '<div style="background:#fef2f2;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#dc2626">' + maiorDias + 'd</div><div style="font-size:10px;color:#dc2626;margin-top:3px">Maior ruptura</div></div>' +
     '<div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#059669">' + resolvidas + '</div><div style="font-size:10px;color:#059669;margin-top:3px">Resolvidas</div></div>';
-  // Card "Nunca lançados" ocultado por pedido do Marcos (não será usado por ora) — nuncaLancados.length ainda calculado e usado no restante da função (tabela/Excel).
 
-  if (!lista.length && !nuncaLancados.length) {
+  if (!lista.length) {
     if (cont) cont.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Nenhuma ruptura encontrada no período</div>';
     return;
   }
@@ -16913,136 +15969,25 @@ function renderGraficoRuptura() {
     '</div>';
   }).join('');
 
-  // Linhas de ruptura real (Ativa/Resolvida).
-  // Sem loja filtrada: agrupa por produto (senão repetiria a mesma linha em cada loja) —
-  // clique no produto expande a lista de lojas afetadas. Com loja filtrada: já vem escopado a 1 loja, direto.
-  let tbHtml;
-  if (fLoja) {
-    tbHtml = lista.map(function(r) {
-      return '<tr>' +
-        '<td style="font-weight:600">' + esc(r.produto) + '</td>' +
-        '<td>' + esc(r.loja) + '</td>' +
-        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
-        '<td>' + esc(r.rede||'—') + '</td>' +
-        '<td>' + fmtData(r.dataSaida) + '</td>' +
-        '<td>' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
-        '<td><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
-        '<td><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
-      '</tr>';
-    }).join('');
-  } else {
-    const gruposAtivaMap = {};
-    lista.forEach(function(r) {
-      const key = r.produto;
-      if (!gruposAtivaMap[key]) gruposAtivaMap[key] = { produto: r.produto, fabrica: r.fabrica, rede: r.rede, itens: [] };
-      gruposAtivaMap[key].itens.push(r);
-    });
-    const gruposAtiva = Object.values(gruposAtivaMap).sort(function(a,b) {
-      const maxA = Math.max.apply(null, a.itens.map(function(i){return i.dias;}));
-      const maxB = Math.max.apply(null, b.itens.map(function(i){return i.dias;}));
-      return maxB - maxA;
-    });
-    window._gRuptToggleAtivaGrupo = function(idx) {
-      const det = document.getElementById('gRuptAtivaDet' + idx);
-      const chev = document.getElementById('gRuptAtivaChev' + idx);
-      if (!det) return;
-      const abrir = det.style.display === 'none';
-      det.style.display = abrir ? '' : 'none';
-      if (chev) chev.className = abrir ? 'ti ti-chevron-down' : 'ti ti-chevron-right';
-    };
-    tbHtml = gruposAtiva.map(function(g, idx) {
-      const temAtiva = g.itens.some(function(i){return i.ativa;});
-      const maxDias  = Math.max.apply(null, g.itens.map(function(i){return i.dias;}));
-      const nLojas   = g.itens.length;
-      const corBg  = temAtiva ? '#fee2e2' : '#d1fae5';
-      const corTxt = temAtiva ? '#991b1b' : '#065f46';
-      const label = (temAtiva ? '● Em ruptura em ' : '✓ Resolvida em ') + nLojas + (nLojas===1?' loja':' lojas') + ' (até ' + maxDias + 'd)';
-      const chips = g.itens.slice().sort(function(a,b){return b.dias-a.dias;}).map(function(i) {
-        const corC = i.ativa ? '#991b1b' : '#065f46';
-        const bgC  = i.ativa ? '#fee2e2' : '#d1fae5';
-        return '<span style="font-size:11px;background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:5px">' +
-          esc(i.uf||'—') + ' · ' + esc(i.loja) +
-          '<span style="background:' + bgC + ';color:' + corC + ';padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600">' + i.dias + 'd ' + (i.ativa?'● Ativa':'✓ Resolvida') + '</span>' +
-        '</span>';
-      }).join('');
-      const linhaPrincipal = '<tr onclick="_gRuptToggleAtivaGrupo(' + idx + ')" style="cursor:pointer' + (idx%2 ? ';background:#fafbfc' : '') + '">' +
-        '<td style="font-weight:600;color:#1e293b" colspan="7"><i id="gRuptAtivaChev' + idx + '" class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-right:6px" aria-hidden="true"></i>' + esc(g.produto) + '</td>' +
-        '<td><span style="background:' + corBg + ';color:' + corTxt + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap">' + label + '</span></td>' +
-      '</tr>';
-      const linhaDetalhe = '<tr id="gRuptAtivaDet' + idx + '" style="display:none">' +
-        '<td colspan="8" style="background:#fafbfc;padding:10px 14px">' +
-          '<div style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">Lojas da ' + esc(g.rede||'rede') + ' com este produto em ruptura ou já resolvida:</div>' +
-          '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chips + '</div>' +
-        '</td>' +
-      '</tr>';
-      return linhaPrincipal + linhaDetalhe;
-    }).join('');
-  }
-
-  // Itens nunca lançados entram na mesma tabela.
-  // Sem loja filtrada: agrupa por produto (senão repetiria a mesma linha em cada loja da rede) —
-  // clique no produto expande a lista de lojas. Com loja filtrada: já vem escopado a 1 loja, direto.
-  if (fLoja) {
-    const CAP_NUNCA = 20;
-    const nuncaExibir = nuncaLancados.slice(0, CAP_NUNCA);
-    const nuncaRestantes = nuncaLancados.length - nuncaExibir.length;
-    tbHtml += nuncaExibir.map(function(r) {
-      return '<tr>' +
-        '<td style="font-weight:600;color:#94a3b8">' + esc(r.produto) + '</td>' +
-        '<td style="color:#94a3b8">' + esc(r.loja) + '</td>' +
-        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
-        '<td style="color:#94a3b8">' + esc(r.rede||'—') + '</td>' +
-        '<td colspan="2" style="font-size:11px;color:#94a3b8">— nenhum lançamento registrado</td>' +
-        '<td style="color:#94a3b8">—</td>' +
-        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">○ Nunca lançado</span></td>' +
-      '</tr>';
-    }).join('');
-    if (nuncaRestantes > 0) {
-      tbHtml += '<tr><td colspan="8" style="text-align:center;font-size:11px;color:#cbd5e1;padding:8px">+ ' + nuncaRestantes + ' itens da rede sem nenhum lançamento — ver todos no Excel exportado</td></tr>';
-    }
-  } else {
-    const gruposMap = {};
-    nuncaLancados.forEach(function(r) {
-      const key = r.produto;
-      if (!gruposMap[key]) gruposMap[key] = { produto: r.produto, fabrica: r.fabrica, rede: r.rede, lojas: [] };
-      gruposMap[key].lojas.push({ nome: r.loja, uf: r.uf });
-    });
-    const grupos = Object.values(gruposMap).sort(function(a,b){ return b.lojas.length - a.lojas.length; });
-    const CAP_CHIPS = 30;
-    window._gRuptToggleNuncaGrupo = function(idx) {
-      const det = document.getElementById('gRuptNuncaDet' + idx);
-      const chev = document.getElementById('gRuptNuncaChev' + idx);
-      if (!det) return;
-      const abrir = det.style.display === 'none';
-      det.style.display = abrir ? '' : 'none';
-      if (chev) chev.className = abrir ? 'ti ti-chevron-down' : 'ti ti-chevron-right';
-    };
-    tbHtml += grupos.map(function(g, idx) {
-      const chips = g.lojas.slice(0, CAP_CHIPS).map(function(l) {
-        return '<span style="font-size:11px;background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:6px">' + esc(l.uf||'—') + ' · ' + esc(l.nome) + '</span>';
-      }).join('');
-      const restoChips = g.lojas.length - CAP_CHIPS;
-      const linhaPrincipal = '<tr onclick="_gRuptToggleNuncaGrupo(' + idx + ')" style="cursor:pointer' + (idx%2 ? ';background:#fafbfc' : '') + '">' +
-        '<td style="font-weight:600;color:#1e293b" colspan="7"><i id="gRuptNuncaChev' + idx + '" class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-right:6px" aria-hidden="true"></i>' + esc(g.produto) + '</td>' +
-        '<td><span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap">○ Nunca lançado em ' + g.lojas.length + (g.lojas.length===1?' loja':' lojas') + '</span></td>' +
-      '</tr>';
-      const linhaDetalhe = '<tr id="gRuptNuncaDet' + idx + '" style="display:none">' +
-        '<td colspan="8" style="background:#fafbfc;padding:10px 14px">' +
-          '<div style="font-size:10.5px;color:#94a3b8;margin-bottom:6px">Lojas da ' + esc(g.rede||'rede') + ' sem nenhum lançamento deste produto:</div>' +
-          '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chips + (restoChips>0 ? '<span style="font-size:11px;color:#cbd5e1;padding:3px 9px">+ ' + restoChips + ' lojas</span>' : '') + '</div>' +
-        '</td>' +
-      '</tr>';
-      return linhaPrincipal + linhaDetalhe;
-    }).join('');
-  }
+  let tbHtml = lista.map(function(r) {
+    return '<tr>' +
+      '<td style="font-weight:600">' + esc(r.produto) + '</td>' +
+      '<td>' + esc(r.loja) + '</td>' +
+      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
+      '<td>' + esc(r.rede||'—') + '</td>' +
+      '<td>' + fmtData(r.dataSaida) + '</td>' +
+      '<td>' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
+      '<td><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
+      '<td><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
+    '</tr>';
+  }).join('');
 
   if (cont) cont.innerHTML =
-    (lista.length ?
     '<div style="margin-bottom:14px">' +
       '<div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:5px;padding:0 2px"><span>Produto / Loja</span><span style="margin-right:58px">Últimos 60 dias</span><span>Total</span></div>' +
       tlHtml +
       (lista.length>10 ? '<div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:4px">+ ' + (lista.length-10) + ' ocorrências adicionais na tabela abaixo</div>' : '') +
-    '</div>' : '') +
+    '</div>' +
     '<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">' +
       '<table style="width:100%;border-collapse:collapse">' +
         '<thead><tr style="background:#f8fafc">' +
@@ -17060,89 +16005,6 @@ function renderGraficoRuptura() {
     '</div>';
 }
 
-// ── Exportar Excel — Ruptura de Gôndola ──────
-async function exportarExcelRuptura() {
-  if (typeof ExcelJS === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca...','#92400e'); return; }
-  const lista = [..._gRuptListaAtual].sort(function(a,b){ return (b.dias||-1) - (a.dias||-1); });
-  if (!lista.length) { showToast('Nenhuma ruptura para exportar com esses filtros.','#92400e'); return; }
-
-  showToast('⏳ Gerando planilha...','#1e3a5f');
-  try {
-    const wb = new ExcelJS.Workbook();
-    wb.creator = 'Controle de Validade'; wb.created = new Date();
-    const ws = wb.addWorksheet('Ruptura de Gôndola');
-    ws.pageSetup = { paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0,
-      margins:{left:.25,right:.25,top:.5,bottom:.5,header:.2,footer:.2} };
-
-    const AZUL = 'FF0E2841';
-    const cols = ['PRODUTO','LOJA','UF','REDE','FÁBRICA','VENDEDOR','ÚLTIMO REGISTRO (SAÍDA)','PRÓXIMA ENTRADA','DIAS RUPTURA','SITUAÇÃO'];
-    ws.columns = [{width:34},{width:34},{width:7},{width:18},{width:16},{width:18},{width:20},{width:18},{width:14},{width:14}];
-
-    const logoB64 = await getLogoBase64();
-    ws.mergeCells('A1:J1');
-    const c1 = ws.getCell('A1');
-    c1.value = 'Compartilhar Vendas e Promo';
-    c1.font  = {name:'Arial',size:15,bold:true,color:{argb:AZUL}};
-    c1.alignment = {horizontal:'left',vertical:'middle'};
-    ws.getRow(1).height = 24;
-    ws.mergeCells('A2:J2');
-    const c2 = ws.getCell('A2');
-    c2.value = 'Relatório de Ruptura de Gôndola';
-    c2.font  = {name:'Arial',size:11,color:{argb:'FF1B6B7A'}};
-    c2.alignment = {horizontal:'left',vertical:'middle'};
-    ws.getRow(2).height = 18;
-    ws.mergeCells('A3:J3');
-    const c3 = ws.getCell('A3');
-    c3.value = `Emitido em: ${new Date().toLocaleDateString('pt-BR')}`;
-    c3.font  = {name:'Arial',size:10,color:{argb:'FF64748B'}};
-    c3.alignment = {horizontal:'left',vertical:'middle'};
-    ws.getRow(3).height = 16;
-    [4,5].forEach(r => ws.getRow(r).height = 8);
-    if (logoB64) {
-      try {
-        const imgId = wb.addImage({base64:logoB64,extension:'png'});
-        ws.addImage(imgId,{tl:{col:7,row:0},ext:{width:220,height:57},editAs:'oneCell'});
-      } catch(e){}
-    }
-
-    const hr = ws.getRow(6); hr.height = 18;
-    cols.forEach((h,i) => {
-      const c = hr.getCell(i+1);
-      c.value = h;
-      c.font  = {name:'Arial',size:11,bold:true,color:{argb:'FFFFFFFF'}};
-      c.fill  = {type:'pattern',pattern:'solid',fgColor:{argb:AZUL}};
-      c.alignment = {horizontal:'center',vertical:'middle'};
-    });
-    ws.autoFilter = {from:'A6', to:'J6'};
-
-    lista.forEach((r,i) => {
-      const rn  = i+7;
-      const row = ws.getRow(rn); row.height = 15;
-      const situacao = r.nuncaLancado ? 'Nunca lançado' : (r.ativa ? 'Ativa' : 'Resolvida');
-      const fg = r.nuncaLancado ? 'FF475569' : (r.ativa ? 'FF991B1B' : 'FF166534');
-      const bg = r.nuncaLancado ? 'FFF1F5F9' : (r.ativa ? 'FFFEF2F2' : 'FFF0FDF4');
-      const vals = [
-        r.produto, r.loja, r.uf||'—', r.rede||'—', r.fabrica||'—', r.vendedor||'—',
-        r.nuncaLancado ? null : (r.dataSaida||null),
-        r.nuncaLancado ? null : (r.ativa ? null : (r.dataFim||null)),
-        r.nuncaLancado ? null : r.dias,
-        situacao
-      ];
-      vals.forEach((v,ci) => {
-        const c = row.getCell(ci+1);
-        c.value = v;
-        c.font  = {name:'Arial',size:10,bold:ci===8||ci===9,color:{argb:ci===9?fg:'FF1E293B'}};
-        c.alignment = {horizontal:(ci===2||ci===8||ci===9)?'center':'left',vertical:'middle'};
-        if (ci===9) c.fill = {type:'pattern',pattern:'solid',fgColor:{argb:bg}};
-        if ((ci===6||ci===7) && v) c.numFmt = 'dd/mm/yyyy';
-        if (ci===7 && !r.nuncaLancado && r.ativa) { c.value = '— em aberto'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
-        if (ci===6 && r.nuncaLancado) { c.value = '— nenhum lançamento'; c.font = {name:'Arial',size:10,italic:true,color:{argb:'FF94A3B8'}}; }
-      });
-    });
-
-    await _downloadExcel(wb, 'Ruptura de Gôndola.xlsx');
-  } catch(e) { console.error(e); showToast('⚠️ Erro ao gerar planilha: '+e.message,'#92400e'); }
-}
 
 carregarDados();
 </script>
