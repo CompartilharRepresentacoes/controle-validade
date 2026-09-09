@@ -1028,6 +1028,11 @@
         style="background:transparent;color:#64748b;border:0.5px solid #cbd5e1;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px">
         <i class="ti ti-history" style="font-size:14px" aria-hidden="true"></i> Histórico
       </button>
+
+      <button id="btnViewRelatorios" onclick="setView('relatorios')"
+        style="background:transparent;color:#64748b;border:0.5px solid #cbd5e1;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px">
+        <i class="ti ti-file-analytics" style="font-size:14px" aria-hidden="true"></i> Relatórios
+      </button>
     </div>
 
     <!-- Formulário -->
@@ -2669,6 +2674,89 @@
   </div>
 
     </div><!-- /viewRanking -->
+
+    <!-- View: Relatórios -->
+    <div id="viewRelatorios" style="display:none;margin-bottom:24px">
+
+      <!-- ── Cabeçalho ── -->
+      <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i class="ti ti-file-analytics" style="font-size:22px;color:#1e3a5f" aria-hidden="true"></i>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#1e293b">Relatórios</div>
+            <div style="font-size:12px;color:#64748b">Selecione os filtros e os relatórios desejados, depois exporte em Excel ou PDF</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Filtro em cascata ── -->
+      <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <i class="ti ti-list-search" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
+          <h2 class="text-base font-semibold text-blue-700">Filtros</h2>
+        </div>
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Fábrica</label>
+            <select id="relFabrica" onchange="_relOnFiltroChange()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as Fábricas</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500">Rede</label>
+            <select id="relRede" onchange="_relOnFiltroChange()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as Redes</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="relChevronVend"></i>
+          <div class="flex flex-col gap-1" id="relVendedorWrap">
+            <label class="text-xs text-slate-500">Vendedor</label>
+            <select id="relVendedor" onchange="_relOnFiltroChange()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todos os Vendedores</option>
+            </select>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></i>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-slate-500" id="relUFlabel">UF</label>
+            <select id="relUF" onchange="_relOnFiltroChange()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Todas as UFs</option>
+            </select>
+          </div>
+          <button onclick="limparFiltrosRelatorios()" style="font-size:11px;padding:7px 12px;border:0.5px solid #cbd5e1;border-radius:8px;background:transparent;color:#64748b;cursor:pointer;margin-left:auto">Limpar filtros</button>
+        </div>
+        <div id="relResumoFiltros" style="font-size:11px;color:#64748b;margin-top:8px"></div>
+      </div>
+
+      <!-- ── Checklist de relatórios ── -->
+      <div class="bg-white rounded-2xl shadow p-4 mb-4" style="border:1px solid #bfdbfe">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <i class="ti ti-list-check" style="font-size:17px;color:#1d4ed8" aria-hidden="true"></i>
+            <h2 class="text-base font-semibold text-blue-700">Relatórios disponíveis</h2>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="_relMarcarTodos(true)" style="font-size:11px;padding:5px 10px;border:0.5px solid #cbd5e1;border-radius:8px;background:transparent;color:#1e3a5f;cursor:pointer;font-weight:600">Selecionar todos</button>
+            <button onclick="_relMarcarTodos(false)" style="font-size:11px;padding:5px 10px;border:0.5px solid #cbd5e1;border-radius:8px;background:transparent;color:#64748b;cursor:pointer">Limpar seleção</button>
+          </div>
+        </div>
+        <div id="relChecklist" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px"></div>
+      </div>
+
+      <!-- ── Ações de exportação ── -->
+      <div class="bg-white rounded-2xl shadow p-4" style="border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div id="relContagem" style="font-size:12px;color:#64748b">Nenhum relatório selecionado</div>
+        <div style="display:flex;gap:10px">
+          <button onclick="gerarRelatoriosExcel()" style="background:#166534;color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 8px rgba(22,101,52,.35)">
+            <i class="ti ti-file-spreadsheet" style="font-size:15px" aria-hidden="true"></i> Gerar Excel
+          </button>
+          <button onclick="gerarRelatoriosPDF()" style="background:#b91c1c;color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 8px rgba(185,28,28,.35)">
+            <i class="ti ti-file-type-pdf" style="font-size:15px" aria-hidden="true"></i> Gerar PDF
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /viewRelatorios -->
 
     <!-- Rodapé -->
     <div class="flex items-center gap-3 pb-4 mt-2">
@@ -4372,6 +4460,9 @@ function entrarNoApp(user, novoLogin) {
   if (btnHist2) btnHist2.style.display = (user.role === 'admin') ? 'inline-flex' : 'none';
   const btnSO2 = document.getElementById('btnViewSellOut');
   if (btnSO2) btnSO2.style.display = (['admin','vendedor','diretor'].includes(user.role)) ? 'inline-flex' : 'none';
+  // Botão Relatórios: visível para Admin/Diretor/Vendedor
+  const btnRelat2 = document.getElementById('btnViewRelatorios');
+  if (btnRelat2) btnRelat2.style.display = (['admin','vendedor','diretor'].includes(user.role)) ? 'inline-flex' : 'none';
   // Botão Comunicados: visível para todos os perfis
   const btnComun = document.getElementById('btnViewComunicados');
   if (btnComun) btnComun.style.display = 'inline-flex';
@@ -10333,6 +10424,7 @@ function setView(v) {
   const selloutDiv   = document.getElementById('viewSellOut');
   const rankingDiv      = document.getElementById('viewRanking');
   const roteirizacaoDiv = document.getElementById('viewRoteirizacao');
+  const relatoriosDiv   = document.getElementById('viewRelatorios');
   const btnProd      = document.getElementById('btnViewProdutos');
   const btnLojas     = document.getElementById('btnViewLojas');
   const btnGraf      = document.getElementById('btnViewGraficos');
@@ -10340,6 +10432,7 @@ function setView(v) {
   const btnSO        = document.getElementById('btnViewSellOut');
   const btnRank      = document.getElementById('btnViewRanking');
   const btnRoteir    = document.getElementById('btnViewRoteirizacao');
+  const btnRelat     = document.getElementById('btnViewRelatorios');
   const _offStyle    = 'transparent';
   // Ocultar tudo primeiro
   if (graficosDiv)      graficosDiv.style.display      = 'none';
@@ -10347,6 +10440,7 @@ function setView(v) {
   if (selloutDiv)       selloutDiv.style.display       = 'none';
   if (rankingDiv)       rankingDiv.style.display       = 'none';
   if (roteirizacaoDiv)  roteirizacaoDiv.style.display  = 'none';
+  if (relatoriosDiv)    relatoriosDiv.style.display    = 'none';
   const comunDiv0 = document.getElementById('viewComunicados');
   if (comunDiv0) comunDiv0.style.display = 'none';
   // Barra Excel contextual: visível apenas em Produtos e Lojas
@@ -10362,6 +10456,7 @@ function setView(v) {
   if (btnSO)     { btnSO.style.background    =_offStyle; btnSO.style.color    ='#64748b'; btnSO.style.border    ='0.5px solid #cbd5e1'; btnSO.style.borderBottom=''; btnSO.style.boxShadow='none'; }
   if (btnRank)   { btnRank.style.background  =_offStyle; btnRank.style.color  ='#64748b'; btnRank.style.border  ='0.5px solid #cbd5e1'; btnRank.style.borderBottom=''; btnRank.style.boxShadow='none'; }
   if (btnRoteir) { btnRoteir.style.background=_offStyle; btnRoteir.style.color='#64748b'; btnRoteir.style.border='0.5px solid #cbd5e1'; btnRoteir.style.borderBottom=''; btnRoteir.style.boxShadow='none'; }
+  if (btnRelat)  { btnRelat.style.background =_offStyle; btnRelat.style.color ='#64748b'; btnRelat.style.border ='0.5px solid #cbd5e1'; btnRelat.style.borderBottom=''; btnRelat.style.boxShadow='none'; }
   const btnComun0 = document.getElementById('btnViewComunicados');
   if (btnComun0) { btnComun0.style.background=_offStyle; btnComun0.style.color='#64748b'; btnComun0.style.border='0.5px solid #cbd5e1'; btnComun0.style.borderBottom=''; btnComun0.style.boxShadow='none'; }
   // Ocultar formulário de adicionar produto quando não está na aba Produtos
@@ -10561,6 +10656,20 @@ function setView(v) {
       const btnXLR = document.getElementById('btnExportCSV');
       if (btnXLR) { btnXLR.style.display = 'none'; btnXLR.classList.add('hidden'); }
       loadRanking();
+      return;
+    }
+    if (v === 'relatorios') {
+      if (tabelaDiv)      tabelaDiv.style.display     = 'none';
+      if (lojasDiv)       lojasDiv.classList.add('hidden');
+      if (relatoriosDiv)  relatoriosDiv.style.display  = 'block';
+      if (cardFiltroProd) cardFiltroProd.style.display = 'none';
+      const _fdbRel = document.getElementById('filtroDataBadge'); if (_fdbRel) _fdbRel.style.display = 'none';
+      btnProd.style.background  = 'transparent'; btnProd.style.color = '#64748b'; btnProd.style.border = '0.5px solid #cbd5e1'; btnProd.style.borderBottom = ''; btnProd.style.boxShadow = 'none';
+      if (btnLojas) { btnLojas.style.background = 'transparent'; btnLojas.style.color = '#64748b'; btnLojas.style.border = '0.5px solid #cbd5e1'; btnLojas.style.borderBottom = ''; btnLojas.style.boxShadow = 'none'; }
+      if (btnRelat) { btnRelat.style.background = '#1e3a5f'; btnRelat.style.color = 'white'; btnRelat.style.border = 'none'; btnRelat.style.borderBottom = '3px solid #0c1f35'; btnRelat.style.boxShadow = '0 4px 12px rgba(30,58,95,.45)'; }
+      const btnXLRel = document.getElementById('btnExportCSV');
+      if (btnXLRel) { btnXLRel.style.display = 'none'; btnXLRel.classList.add('hidden'); }
+      initRelatorios();
       return;
     }
     btnProd.style.background  = '#1e3a5f';     btnProd.style.color = 'white';   btnProd.style.border = 'none'; btnProd.style.borderBottom = '3px solid #0c1f35'; btnProd.style.boxShadow = '0 4px 12px rgba(30,58,95,.45)';
@@ -16023,6 +16132,748 @@ function renderGraficoRuptura() {
     '</div>';
 }
 
+
+
+// ══════════════════════════════════════════════
+// ── RELATÓRIOS (Admin/Diretor/Vendedor) ──────
+// ══════════════════════════════════════════════
+
+const RELATORIOS_TIPOS = [
+  {
+    id: 'produtos', nome: 'Produtos por Rede', desc: 'Todos os produtos lançados, agrupados por rede/loja.', icon: 'ti-package',
+    headers: ['Rede','Loja','UF','Produto','Fábrica','Und','Qtde','Validade','Dias','Status'],
+    widthsXL: [16,30,7,32,14,7,9,13,9,13],
+    widthsPDF:[24,54,11,54,20,10,12,20,12,24],
+    dataFn: _relDataProdutos,
+    row: r => [r.rede, r.loja, r.uf, r.produto, r.fabrica, r.und, r.qtde, fmtData(r.validade), r.dias, ''],
+    statusCol: 9, statusFn: r => _relPillDias(r.dias),
+  },
+  {
+    id: 'critico', nome: 'Produtos com Data Crítica', desc: 'Produtos vencendo entre 0 e 20 dias.', icon: 'ti-alert-triangle',
+    headers: ['Produto','Loja','UF','Rede','Promotor','Validade','Dias','Status'],
+    widthsXL: [34,30,7,16,18,13,9,13],
+    widthsPDF:[56,50,11,26,28,20,12,24],
+    dataFn: _relDataCritico,
+    row: r => [r.produto, r.loja, r.uf, r.rede, r.promotor, fmtData(r.validade), r.dias, ''],
+    statusCol: 7, statusFn: r => _relPillDias(r.dias),
+  },
+  {
+    id: 'ruptura', nome: 'Ruptura de Gôndola', desc: 'Períodos sem produto na loja após uma saída.', icon: 'ti-box-off',
+    headers: ['Produto','Loja','UF','Rede','Promotor','Última Saída','Próxima Entrada','Dias Ruptura','Situação'],
+    widthsXL: [34,30,7,16,18,13,15,11,13],
+    widthsPDF:[52,46,10,22,24,20,22,16,22],
+    dataFn: _relDataRuptura,
+    row: r => [r.produto, r.loja, r.uf, r.rede, r.promotor, fmtData(_relISO(r.dataSaida)), r.ativa ? '— sem registro' : fmtData(_relISO(r.dataFim)), r.dias, ''],
+    statusCol: 8, statusFn: r => _relPillRuptura(r.ativa),
+  },
+  {
+    id: 'concorrencia', nome: 'Concorrência de Preços', desc: 'Comparação do nosso preço com até 3 concorrentes.', icon: 'ti-scale',
+    headers: ['Produto','Loja','UF','Rede','Nosso Preço','Concorrente 1','Preço C1','Concorrente 2','Preço C2','Concorrente 3','Preço C3'],
+    widthsXL: [30,28,7,16,12,20,10,20,10,20,10],
+    widthsPDF:[42,40,9,16,16,26,14,26,14,26,14],
+    dataFn: _relDataConcorrencia,
+    row: r => [r.produto, r.loja, r.uf, r.rede, _relMoeda(r.preco), r.c1nome, r.c1preco!=null?_relMoeda(r.c1preco):'', r.c2nome, r.c2preco!=null?_relMoeda(r.c2preco):'', r.c3nome, r.c3preco!=null?_relMoeda(r.c3preco):''],
+    statusCol: null,
+  },
+  {
+    id: 'cobertura', nome: 'Cobertura / Última Visita', desc: 'Última movimentação registrada em cada loja.', icon: 'ti-map-pin-check',
+    headers: ['Loja','Rede','UF','Promotor','Última Visita','Dias sem Visita','Situação'],
+    widthsXL: [32,16,7,18,14,15,13],
+    widthsPDF:[62,26,11,28,22,22,26],
+    dataFn: _relDataCobertura,
+    row: r => [r.loja, r.rede, r.uf, r.promotor, r.ultData ? fmtData(_relISO(r.ultData)) : '— sem registro', r.diasSem >= 9999 ? '—' : r.diasSem, ''],
+    statusCol: 6, statusFn: r => _relPillCobertura(r.diasSem),
+  },
+  {
+    id: 'sellout', nome: 'SellOut (Acompanhamento)', desc: 'Solicitações de sellout geradas por fábrica/rede.', icon: 'ti-tag-starred',
+    headers: ['Data','Fábrica','Rede','UF(s)','Vendedor','Qtde Produtos','Situação','Data Envio'],
+    widthsXL: [12,16,18,14,18,13,13,13],
+    widthsPDF:[20,26,30,22,28,20,22,20],
+    dataFn: _relDataSellOut,
+    row: r => [fmtData(_relISO(r.data)), r.fabrica, r.rede, r.ufs, r.vendedor, r.qtdProdutos, '', r.dataEnviada ? fmtData(r.dataEnviada) : '—'],
+    statusCol: 6, statusFn: r => _relPillSellOut(r.status),
+  },
+  {
+    id: 'distribuicao', nome: 'Distribuição por Validade', desc: 'Quantidade total por produto, agrupada por faixa de validade.', icon: 'ti-chart-bar',
+    headers: ['Produto','Und','Qtd Atenção (0–20d)','Qtd OK (>20d)','Total'],
+    widthsXL: [40,9,20,16,12],
+    widthsPDF:[90,16,40,32,24],
+    dataFn: _relDataDistribuicao,
+    row: r => [r.produto, r.und, r.atencao, r.ok, r.total],
+    statusCol: null,
+  },
+  {
+    id: 'historico', nome: 'Movimentações (Histórico)', desc: 'Entradas, saídas e alterações registradas no sistema.', icon: 'ti-history',
+    headers: ['Data','Ação','Tipo','Produto','Loja','UF','Rede','Fábrica','Qtde','Promotor','Data Entrega'],
+    widthsXL: [12,13,13,30,26,7,16,14,9,18,14],
+    widthsPDF:[20,20,20,44,40,10,22,18,12,26,20],
+    dataFn: _relDataHistorico,
+    row: r => [fmtData(r.data), r.acao, r.tipo, r.produto, r.loja, r.uf, r.rede, r.fabrica, r.qtde, r.promotor, r.dataEntrega ? fmtData(r.dataEntrega) : ''],
+    statusCol: null,
+  },
+  {
+    id: 'ranking', nome: 'Ranking de Promotores', desc: 'Pontuação de desempenho dos promotores no período.', icon: 'ti-trophy',
+    headers: ['Promotor','UF','Score','Nota','Em Dia %','Atualização %','Completude %','Regularidade %'],
+    widthsXL: [26,16,10,10,12,15,15,15],
+    widthsPDF:[50,30,16,16,22,26,26,26],
+    dataFn: _relDataRanking,
+    row: r => [r.nome, r.uf, r.score, '', r.pd, r.atu, r.comp, r.reg],
+    statusCol: 3, statusFn: r => _relPillNota(r.score),
+  },
+];
+
+// ── Helpers de cor/pill ──────────────────────
+function _relPillDias(dias) {
+  if (dias < 0)  return { label:'VENCIDO',  bg:'FEE2E2', tx:'991B1B', bgPdf:[254,226,226], txPdf:[153,27,27] };
+  if (dias <= 20) return { label:'ATENÇÃO', bg:'FEF3C7', tx:'92400E', bgPdf:[254,243,199], txPdf:[146,64,14] };
+  return { label:'OK', bg:'DCFCE7', tx:'166534', bgPdf:[220,252,231], txPdf:[22,101,52] };
+}
+function _relPillRuptura(ativa) {
+  return ativa
+    ? { label:'● Ativa',     bg:'FEE2E2', tx:'991B1B', bgPdf:[254,226,226], txPdf:[153,27,27] }
+    : { label:'✓ Resolvida', bg:'D1FAE5', tx:'065F46', bgPdf:[209,250,229], txPdf:[6,95,70] };
+}
+function _relPillCobertura(dias) {
+  if (dias >= 30) return { label:'CRÍTICO', bg:'FEE2E2', tx:'991B1B', bgPdf:[254,226,226], txPdf:[153,27,27] };
+  if (dias >= 15) return { label:'ATENÇÃO', bg:'FEF3C7', tx:'92400E', bgPdf:[254,243,199], txPdf:[146,64,14] };
+  return { label:'EM DIA', bg:'DCFCE7', tx:'166534', bgPdf:[220,252,231], txPdf:[22,101,52] };
+}
+function _relPillSellOut(status) {
+  if (status === 'aprovado') return { label:'✅ Aprovado', bg:'DCFCE7', tx:'166534', bgPdf:[220,252,231], txPdf:[22,101,52] };
+  if (status === 'recusado') return { label:'❌ Recusado', bg:'FEE2E2', tx:'991B1B', bgPdf:[254,226,226], txPdf:[153,27,27] };
+  return { label:'⏳ Pendente', bg:'FEF3C7', tx:'92400E', bgPdf:[254,243,199], txPdf:[146,64,14] };
+}
+function _relPillNota(score) {
+  const n = _notaScore(score || 0);
+  const hex = (h) => (h||'#94a3b8').replace('#','').toUpperCase();
+  const rgb = (h) => { const c = (h||'#94a3b8').replace('#',''); return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)]; };
+  return { label:'Nota ' + n.nota, bg: hex(n.bg), tx: hex(n.cor), bgPdf: rgb(n.bg), txPdf: rgb(n.cor) };
+}
+function _relMoeda(v) {
+  return (v || v === 0) ? Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+}
+// Normaliza qualquer formato de data (Firestore Timestamp, string ISO, Date) para 'YYYY-MM-DD'
+function _relISO(d) {
+  if (!d) return '';
+  if (typeof d === 'string') return d.slice(0,10);
+  const dt = d.toDate ? d.toDate() : (d.seconds ? new Date(d.seconds*1000) : new Date(d));
+  if (isNaN(dt)) return '';
+  return dt.toISOString().slice(0,10);
+}
+
+// ── Filtros em cascata (Fábrica → Rede → Vendedor → UF) ──
+function _relGetFiltros() {
+  const isVend = sessao?.role === 'vendedor';
+  const fFab  = document.getElementById('relFabrica')?.value  || '';
+  const fRede = document.getElementById('relRede')?.value     || '';
+  const fVend = isVend ? (sessao?.nome || '') : (document.getElementById('relVendedor')?.value || '');
+  const fUF   = document.getElementById('relUF')?.value       || '';
+  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
+  const ufsVend = isVend ? (sessao.ufs || []) : (vendSel?.ufs || []);
+  return { isVend, fFab, fRede, fVend, fUF, ufsVend };
+}
+
+function _relPopularFiltros() {
+  const isVend = sessao?.role === 'vendedor';
+  const wrapVend = document.getElementById('relVendedorWrap');
+  const chevVend = document.getElementById('relChevronVend');
+  const lblUF    = document.getElementById('relUFlabel');
+  if (wrapVend) wrapVend.style.display = isVend ? 'none' : '';
+  if (chevVend) chevVend.style.display = isVend ? 'none' : '';
+
+  // Fábrica
+  const selFab = document.getElementById('relFabrica');
+  if (selFab) {
+    const cur = selFab.value;
+    const fabs = [...new Set(produtos.map(p => p.fabrica).filter(Boolean))].sort();
+    selFab.innerHTML = '<option value="">Todas as Fábricas</option>' + fabs.map(f => `<option ${f===cur?'selected':''}>${esc(f)}</option>`).join('');
+  }
+
+  // Rede (cascata: baseada na Fábrica selecionada)
+  const fFab = selFab?.value || '';
+  const selRede = document.getElementById('relRede');
+  if (selRede) {
+    const cur = selRede.value;
+    const base = fFab ? produtos.filter(p => p.fabrica === fFab) : produtos;
+    const lojasBase = new Set(base.map(p => normTxt(p.loja)));
+    const redes = [...new Set(lojas.filter(l => lojasBase.has(normTxt(l.nome))).map(l => l.rede).filter(Boolean))].sort();
+    selRede.innerHTML = '<option value="">Todas as Redes</option>' + redes.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('');
+  }
+
+  // Vendedor
+  if (!isVend) {
+    const selVend = document.getElementById('relVendedor');
+    if (selVend) {
+      const cur = selVend.value;
+      const vends = usuarios.filter(u => u.role === 'vendedor').sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+      selVend.innerHTML = '<option value="">Todos os Vendedores</option>' + vends.map(v => {
+        const ufsStr = (v.ufs||[]).join('·');
+        return `<option value="${esc(v.nome)}" ${v.nome===cur?'selected':''}>${esc(v.nome)}${ufsStr?' ('+esc(ufsStr)+')':''}</option>`;
+      }).join('');
+    }
+  }
+
+  // UF (cascata: Fábrica + Rede + Vendedor)
+  const fRede = selRede?.value || '';
+  const fVend = isVend ? '' : (document.getElementById('relVendedor')?.value || '');
+  const vendSel = fVend ? usuarios.find(u => u.role === 'vendedor' && u.nome === fVend) : null;
+  const ufsVend = isVend ? (sessao.ufs || []) : (vendSel?.ufs || []);
+  const selUF = document.getElementById('relUF');
+  if (selUF) {
+    const cur = selUF.value;
+    let base = produtos;
+    if (fFab)  base = base.filter(p => p.fabrica === fFab);
+    if (fRede) base = base.filter(p => { const l = lojas.find(l => normTxt(l.nome)===normTxt(p.loja)); return l?.rede === fRede; });
+    if (ufsVend.length) base = base.filter(p => ufsVend.includes(p.uf));
+    const ufs = [...new Set(base.map(p => p.uf).filter(Boolean))].sort();
+    selUF.innerHTML = '<option value="">Todas as UFs</option>' + ufs.map(u => `<option ${u===cur?'selected':''}>${esc(u)}</option>`).join('');
+    if (lblUF) lblUF.textContent = 'UF';
+  }
+}
+
+function _relOnFiltroChange() {
+  _relPopularFiltros();
+  _relAtualizarResumo();
+}
+
+function _relAtualizarResumo() {
+  const f = _relGetFiltros();
+  const partes = [
+    f.fFab  ? 'Fábrica: '   + f.fFab  : null,
+    f.fRede ? 'Rede: '      + f.fRede : null,
+    f.fVend ? 'Vendedor: '  + f.fVend : null,
+    f.fUF   ? 'UF: '        + f.fUF   : null,
+  ].filter(Boolean);
+  const el = document.getElementById('relResumoFiltros');
+  if (el) el.textContent = partes.length ? partes.join('  ·  ') : 'Nenhum filtro aplicado — todos os dados serão considerados.';
+}
+
+function limparFiltrosRelatorios() {
+  const isVend = sessao?.role === 'vendedor';
+  ['relFabrica','relRede','relUF'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  if (!isVend) { const el = document.getElementById('relVendedor'); if (el) el.value = ''; }
+  _relOnFiltroChange();
+}
+
+function _relFiltroLabel() {
+  const f = _relGetFiltros();
+  const partes = [
+    'Fábrica: '  + (f.fFab  || 'Todas'),
+    'Rede: '     + (f.fRede || 'Todas'),
+    'Vendedor: ' + (f.fVend || 'Todos'),
+    'UF: '       + (f.fUF   || 'Todas'),
+  ];
+  return partes.join('  ·  ');
+}
+
+// ── Bases filtradas por origem de dados ──────
+function _relFiltrarProdutos(f) {
+  let base = [...produtos];
+  if (f.fFab)  base = base.filter(p => p.fabrica === f.fFab);
+  if (f.fRede) base = base.filter(p => { const l = lojas.find(l => normTxt(l.nome)===normTxt(p.loja)); return l?.rede === f.fRede; });
+  if (f.ufsVend.length) base = base.filter(p => f.ufsVend.includes(p.uf));
+  if (f.fUF)   base = base.filter(p => p.uf === f.fUF);
+  return base;
+}
+function _relFiltrarHistorico(f) {
+  let base = [...historico];
+  if (f.fFab)  base = base.filter(m => m.fabrica === f.fFab);
+  if (f.fRede) base = base.filter(m => m.rede === f.fRede);
+  if (f.ufsVend.length) base = base.filter(m => f.ufsVend.includes(m.uf));
+  if (f.fUF)   base = base.filter(m => m.uf === f.fUF);
+  return base;
+}
+function _relFabricaDoProduto(nomeProduto) {
+  const cat = catalogo.find(c => normTxt(c.nome) === normTxt(nomeProduto));
+  if (cat?.fabrica) return cat.fabrica;
+  const p = produtos.find(p => normTxt(p.produto) === normTxt(nomeProduto));
+  return p?.fabrica || '';
+}
+function _relFiltrarRuptura(f) {
+  let base = _calcularRupturas().map(r => ({ ...r, fabrica: _relFabricaDoProduto(r.produto) }));
+  if (f.fFab)  base = base.filter(r => r.fabrica === f.fFab);
+  if (f.fRede) base = base.filter(r => r.rede === f.fRede);
+  if (f.ufsVend.length) base = base.filter(r => f.ufsVend.includes(r.uf));
+  if (f.fUF)   base = base.filter(r => r.uf === f.fUF);
+  return base;
+}
+function _relFiltrarSellOut(f) {
+  let base = [...selloutHist];
+  if (f.fFab)  base = base.filter(r => r.fabrica === f.fFab);
+  if (f.fRede) base = base.filter(r => r.rede === f.fRede);
+  if (f.fVend) base = base.filter(r => r.vendedor === f.fVend);
+  if (f.ufsVend.length) base = base.filter(r => (r.ufs||[]).some(u => f.ufsVend.includes(u)));
+  if (f.fUF)   base = base.filter(r => (r.ufs||[]).includes(f.fUF));
+  return base;
+}
+
+// ── Dados de cada relatório ───────────────────
+function _relDataProdutos(f) {
+  return _relFiltrarProdutos(f).map(p => {
+    const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+    return {
+      rede: lojaObj?.rede || '', loja: p.loja, uf: p.uf, produto: p.produto,
+      fabrica: (p.fabrica||'').toUpperCase(), und: (p.und||'').toUpperCase(),
+      qtde: Number(p.quantidade)||0, validade: p.validade, dias: diasRestantes(p.validade),
+    };
+  }).sort((a,b) => a.dias - b.dias);
+}
+function _relDataCritico(f) {
+  return _relFiltrarProdutos(f)
+    .filter(p => { const d = diasRestantes(p.validade); return d >= 0 && d <= 20; })
+    .map(p => {
+      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+      return { produto: p.produto, loja: p.loja, uf: p.uf, rede: lojaObj?.rede || '', promotor: p.promotor || '', validade: p.validade, dias: diasRestantes(p.validade) };
+    }).sort((a,b) => a.dias - b.dias);
+}
+function _relDataRuptura(f) {
+  return _relFiltrarRuptura(f).map(r => ({ ...r })).sort((a,b) => b.dias - a.dias);
+}
+function _relDataConcorrencia(f) {
+  return _relFiltrarProdutos(f)
+    .filter(p => p.concorrencia && !p.concorrencia.semConcorrente && (p.concorrencia.c1?.nome || p.concorrencia.c2?.nome || p.concorrencia.c3?.nome))
+    .map(p => {
+      const lojaObj = lojas.find(l => normTxt(l.nome) === normTxt(p.loja));
+      const c1p = p.concorrencia.c1?.preco ? _parsePrecoBR(p.concorrencia.c1.preco) : null;
+      const c2p = p.concorrencia.c2?.preco ? _parsePrecoBR(p.concorrencia.c2.preco) : null;
+      const c3p = p.concorrencia.c3?.preco ? _parsePrecoBR(p.concorrencia.c3.preco) : null;
+      return {
+        produto: p.produto, loja: p.loja, uf: p.uf, rede: lojaObj?.rede || '',
+        preco: Number(p.preco)||0,
+        c1nome: p.concorrencia.c1?.nome || '', c1preco: c1p,
+        c2nome: p.concorrencia.c2?.nome || '', c2preco: c2p,
+        c3nome: p.concorrencia.c3?.nome || '', c3preco: c3p,
+      };
+    });
+}
+function _relDataCobertura(f) {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let lojasBase = [...lojas];
+  if (f.fRede) lojasBase = lojasBase.filter(l => l.rede === f.fRede);
+  if (f.ufsVend.length) lojasBase = lojasBase.filter(l => f.ufsVend.includes(l.uf));
+  if (f.fUF)   lojasBase = lojasBase.filter(l => l.uf === f.fUF);
+  return lojasBase.map(loja => {
+    let prods = produtos.filter(p => normTxt(p.loja) === normTxt(loja.nome));
+    if (f.fFab) prods = prods.filter(p => p.fabrica === f.fFab);
+    if (!prods.length) return null;
+    let ultData = null, promotorNome = '—';
+    prods.forEach(p => {
+      const dReg = p.dataRegistro    ? new Date(p.dataRegistro+'T00:00:00')    : null;
+      const dAtu = p.dataAtualizacao ? new Date(p.dataAtualizacao+'T00:00:00') : null;
+      const d = (dReg && dAtu) ? (dAtu > dReg ? dAtu : dReg) : (dReg || dAtu);
+      if (d && (!ultData || d > ultData)) { ultData = d; promotorNome = p.promotor || '—'; }
+    });
+    const diasSem = ultData ? Math.round((hoje - ultData) / 86400000) : 9999;
+    return { loja: loja.nome, rede: loja.rede || '', uf: loja.uf || '', promotor: promotorNome, ultData, diasSem };
+  }).filter(Boolean).sort((a,b) => b.diasSem - a.diasSem);
+}
+function _relDataSellOut(f) {
+  return _relFiltrarSellOut(f).map(r => ({
+    data: r.dataGerado, fabrica: r.fabrica || '', rede: r.rede || '', ufs: (r.ufs||[]).join(', '),
+    vendedor: r.vendedor || '', qtdProdutos: (r.produtos||[]).length, status: r.status || 'pendente', dataEnviada: r.dataEnviada || '',
+  })).sort((a,b) => new Date(b.data) - new Date(a.data));
+}
+function _relDataDistribuicao(f) {
+  const base = _relFiltrarProdutos(f).filter(p => diasRestantes(p.validade) >= 0);
+  const mapa = new Map();
+  base.forEach(p => {
+    const key = p.produto + '|||' + (p.und||'');
+    if (!mapa.has(key)) mapa.set(key, { produto: p.produto, und: (p.und||'').toUpperCase(), atencao: 0, ok: 0 });
+    const e = mapa.get(key);
+    const d = diasRestantes(p.validade);
+    const q = Number(p.quantidade) || 0;
+    if (d <= 20) e.atencao += q; else e.ok += q;
+  });
+  return [...mapa.values()].map(e => ({ ...e, total: e.atencao + e.ok })).sort((a,b) => b.total - a.total);
+}
+function _relDataHistorico(f) {
+  return _relFiltrarHistorico(f).map(m => ({
+    data: m.data, acao: m.acao || '', tipo: m.tipo || '', produto: m.produto || '', loja: m.loja || '',
+    uf: m.uf || '', rede: m.rede || '', fabrica: m.fabrica || '', qtde: m.qtde || 0, promotor: m.promotor || '',
+    dataEntrega: m.dataEntrega || '',
+  })).sort((a,b) => (b.data||'').localeCompare(a.data||''));
+}
+function _relDataRanking(f) {
+  const base = _relFiltrarProdutos(f);
+  const promotores = [...new Set(base.map(p => p.promotor).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pt-BR'));
+  return promotores.map(nome => {
+    const sc = _calcScorePromotor(nome);
+    const ufsProm = [...new Set(produtos.filter(p => normTxt(p.promotor)===normTxt(nome)).map(p => p.uf).filter(Boolean))].join(', ');
+    return { nome, uf: ufsProm, ...sc };
+  }).sort((a,b) => b.score - a.score);
+}
+
+// ── Checklist / UI ────────────────────────────
+function _relChecklistHtml() {
+  return RELATORIOS_TIPOS.map(t => `
+    <label style="display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;background:#f8fafc" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#f8fafc'">
+      <input type="checkbox" id="relChk-${t.id}" onchange="_relAtualizarContagem()" style="margin-top:2px;flex-shrink:0;width:15px;height:15px;accent-color:#1e3a5f">
+      <span>
+        <span style="display:flex;align-items:center;gap:5px">
+          <i class="ti ${t.icon}" style="font-size:14px;color:#1e3a5f" aria-hidden="true"></i>
+          <span style="font-size:12.5px;font-weight:600;color:#1e293b">${esc(t.nome)}</span>
+        </span>
+        <span style="font-size:11px;color:#64748b;display:block;margin-top:2px">${esc(t.desc)}</span>
+      </span>
+    </label>
+  `).join('');
+}
+
+function _relMarcarTodos(valor) {
+  RELATORIOS_TIPOS.forEach(t => { const el = document.getElementById('relChk-' + t.id); if (el) el.checked = valor; });
+  _relAtualizarContagem();
+}
+
+function _relTiposSelecionados() {
+  return RELATORIOS_TIPOS.filter(t => document.getElementById('relChk-' + t.id)?.checked);
+}
+
+function _relAtualizarContagem() {
+  const n = _relTiposSelecionados().length;
+  const el = document.getElementById('relContagem');
+  if (el) el.textContent = n ? `${n} relatório${n>1?'s':''} selecionado${n>1?'s':''}` : 'Nenhum relatório selecionado';
+}
+
+function initRelatorios() {
+  const checklist = document.getElementById('relChecklist');
+  if (checklist && !checklist.dataset.montado) {
+    checklist.innerHTML = _relChecklistHtml();
+    checklist.dataset.montado = '1';
+    // Pré-seleciona os dois primeiros relatórios (produtos e data crítica)
+    const c1 = document.getElementById('relChk-produtos'); if (c1) c1.checked = true;
+    const c2 = document.getElementById('relChk-critico');  if (c2) c2.checked = true;
+  }
+  _relPopularFiltros();
+  _relAtualizarResumo();
+  _relAtualizarContagem();
+}
+
+// ── Logo do fornecedor (fábrica selecionada) ──
+function _relLogoFornecedor(fFab) {
+  if (!fFab) return null;
+  const fab = fabricas.find(f => normTxt(f.nome) === normTxt(fFab));
+  return fab?.logo || null;
+}
+function _relDataUrlInfo(dataUrl) {
+  const m = /^data:image\/(png|jpe?g|webp);base64,(.*)$/i.exec(dataUrl || '');
+  if (!m) return null;
+  const ext = m[1].toLowerCase() === 'jpg' ? 'jpeg' : m[1].toLowerCase();
+  return { ext, base64: m[2] };
+}
+
+// ── Geração de Excel ──────────────────────────
+async function gerarRelatoriosExcel() {
+  const tipos = _relTiposSelecionados();
+  if (!tipos.length) { showToast('⚠️ Selecione ao menos um relatório.', '#92400e'); return; }
+  if (typeof ExcelJS === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca...', '#92400e'); return; }
+
+  showToast('⏳ Gerando planilha...', '#1e3a5f');
+  try {
+    const f = _relGetFiltros();
+    const filtrosLinha = _relFiltroLabel();
+    const logoCompartilhar = await getLogoBase64();
+    const logoFornecedorUrl = _relLogoFornecedor(f.fFab);
+    const logoFornecedorInfo = logoFornecedorUrl ? _relDataUrlInfo(logoFornecedorUrl) : null;
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Controle de Validade'; wb.created = new Date();
+
+    let algumComDados = false;
+    tipos.forEach(t => {
+      const linhas = t.dataFn(f);
+      if (linhas.length) algumComDados = true;
+      _relConstruirSheet(wb, t, linhas, filtrosLinha, logoCompartilhar, logoFornecedorInfo, f.fFab);
+    });
+
+    if (!algumComDados) { showToast('⚠️ Nenhum dado encontrado para os filtros selecionados.', '#92400e'); return; }
+
+    const buf  = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'Relatorios_ControleDeValidade.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('📊 Relatório(s) exportado(s) com sucesso!', '#166534');
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ Erro ao gerar planilha: ' + e.message, '#92400e');
+  }
+}
+
+function _relConstruirSheet(wb, tipo, linhas, filtrosLinha, logoCompartilhar, logoFornecedorInfo, fabricaSel) {
+  // Nome de aba: até 31 caracteres, sem caracteres inválidos
+  const nomeAba = tipo.nome.replace(/[\\/*?:[\]]/g, '').slice(0, 31);
+  const ws = wb.addWorksheet(nomeAba);
+  const ncols = tipo.headers.length; // colunas de dados (0-indexed vão de 0 a ncols-1)
+
+  const AZUL_ESC = 'FF0E2841';
+  const colLetra = (i) => { let s=''; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; };
+  const lastColData = colLetra(ncols - 1);
+  // Duas colunas extras reservadas à direita, só para as logos (não fazem parte dos dados)
+  const colLogo1 = ncols;      // Compartilhar
+  const colLogo2 = ncols + 1;  // Fornecedor
+  const lastColAll = colLetra(colLogo2);
+
+  ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left:0.25, right:0.25, top:0.5, bottom:0.5, header:0.2, footer:0.2 }, printTitlesRow: '6:6' };
+
+  const widthsData = tipo.widthsXL || tipo.headers.map(()=>16);
+  ws.columns = widthsData.concat([22, 13]).map(w => ({ width: w }));
+
+  // Linha 1 — Compartilhar
+  ws.mergeCells(`A1:${lastColData}1`);
+  const c1 = ws.getCell('A1');
+  c1.value = 'COMPARTILHAR VENDAS E PROMO';
+  c1.font = { name:'Arial', size:15, bold:true, color:{argb:AZUL_ESC} };
+  c1.alignment = { horizontal:'left', vertical:'middle' };
+  ws.getRow(1).height = 26;
+
+  // Linha 2 — subtítulo do relatório
+  ws.mergeCells(`A2:${lastColData}2`);
+  const c2 = ws.getCell('A2');
+  c2.value = 'RELATÓRIO: ' + tipo.nome.toUpperCase();
+  c2.font = { name:'Arial', size:11, color:{argb:'FF1B6B7A'} };
+  ws.getRow(2).height = 18;
+
+  // Linha 3 — filtros aplicados
+  ws.mergeCells(`A3:${lastColData}3`);
+  const c3 = ws.getCell('A3');
+  c3.value = filtrosLinha;
+  c3.font = { name:'Arial', size:9.5, color:{argb:'FF64748B'} };
+  ws.getRow(3).height = 15;
+
+  // Linha 4 — exportado em
+  ws.mergeCells(`A4:${lastColData}4`);
+  const c4 = ws.getCell('A4');
+  c4.value = 'Exportado em: ' + new Date().toLocaleString('pt-BR');
+  c4.font = { name:'Arial', size:9, color:{argb:'FF94A3B8'} };
+  ws.getRow(4).height = 14;
+  ws.getRow(5).height = 6;
+
+  // Logo Compartilhar (coluna reservada à direita dos dados)
+  if (logoCompartilhar) {
+    try {
+      const imgId = wb.addImage({ base64: logoCompartilhar, extension: 'png' });
+      ws.addImage(imgId, { tl:{ col: colLogo1 + 0.05, row: 0.05 }, ext:{ width:150, height:39 }, editAs:'oneCell' });
+    } catch(e) {}
+  }
+  // Logo do Fornecedor (quando uma fábrica está selecionada)
+  if (logoFornecedorInfo) {
+    try {
+      const imgId2 = wb.addImage({ base64: logoFornecedorInfo.base64, extension: logoFornecedorInfo.ext });
+      ws.addImage(imgId2, { tl:{ col: colLogo2 + 0.05, row: 0.05 }, ext:{ width:66, height:39 }, editAs:'oneCell' });
+    } catch(e) {}
+  } else if (fabricaSel) {
+    const cLogo = ws.getCell(`${colLetra(colLogo2)}1`);
+    cLogo.value = fabricaSel;
+    cLogo.font = { name:'Arial', size:9, italic:true, color:{argb:'FF64748B'} };
+    cLogo.alignment = { horizontal:'center', vertical:'middle', wrapText:true };
+  }
+
+  // Cabeçalhos (linha 6)
+  const hr = ws.getRow(6);
+  hr.height = 18;
+  tipo.headers.forEach((h, i) => {
+    const c = hr.getCell(i + 1);
+    c.value = h;
+    c.font = { name:'Arial', size:10, bold:true, color:{argb:'FFFFFFFF'} };
+    c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:AZUL_ESC} };
+    c.alignment = { horizontal:'center', vertical:'middle' };
+    c.border = { top:{style:'thin',color:{argb:'FFFFFFFF'}}, bottom:{style:'thin',color:{argb:'FFFFFFFF'}}, left:{style:'thin',color:{argb:'FFFFFFFF'}}, right:{style:'thin',color:{argb:'FFFFFFFF'}} };
+  });
+  ws.autoFilter = { from: 'A6', to: `${lastColData}6` };
+
+  // Linhas de dados
+  linhas.forEach((r, idx) => {
+    const rn = idx + 7;
+    const row = ws.getRow(rn);
+    row.height = 15;
+    const vals = tipo.row(r);
+    vals.forEach((v, i) => {
+      const cell = row.getCell(i + 1);
+      if (tipo.statusCol != null && i === tipo.statusCol) {
+        const pill = tipo.statusFn(r);
+        cell.value = pill.label;
+        cell.font = { name:'Arial', size:9.5, bold:true, color:{argb:'FF'+pill.tx} };
+        cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF'+pill.bg} };
+        cell.alignment = { horizontal:'center', vertical:'middle' };
+      } else {
+        cell.value = (typeof v === 'number') ? v : (v ?? '');
+        cell.font = { name:'Arial', size:10 };
+        cell.alignment = { vertical:'middle', horizontal: typeof v === 'number' ? 'center' : 'left' };
+      }
+      cell.border = { top:{style:'thin',color:{argb:'FFE2E8F0'}}, bottom:{style:'thin',color:{argb:'FFE2E8F0'}}, left:{style:'thin',color:{argb:'FFE2E8F0'}}, right:{style:'thin',color:{argb:'FFE2E8F0'}} };
+    });
+    if (idx % 2 === 1) {
+      vals.forEach((_, i) => {
+        const cell = row.getCell(i + 1);
+        if (!(tipo.statusCol != null && i === tipo.statusCol)) cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF8FAFC'} };
+      });
+    }
+  });
+
+  if (!linhas.length) {
+    ws.mergeCells(`A7:${lastColData}7`);
+    const cvazio = ws.getCell('A7');
+    cvazio.value = 'Nenhum registro encontrado para os filtros selecionados.';
+    cvazio.font = { name:'Arial', size:10, italic:true, color:{argb:'FF94A3B8'} };
+    cvazio.alignment = { horizontal:'center' };
+  }
+
+  ws.views = [{ state: 'frozen', ySplit: 6 }];
+}
+
+// ── Geração de PDF ────────────────────────────
+async function gerarRelatoriosPDF() {
+  const tipos = _relTiposSelecionados();
+  if (!tipos.length) { showToast('⚠️ Selecione ao menos um relatório.', '#92400e'); return; }
+  if (typeof window.jspdf === 'undefined') { showToast('⚠️ Aguarde o carregamento da biblioteca de PDF...', '#92400e'); return; }
+
+  showToast('⏳ Gerando PDF...', '#1e3a5f');
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
+    const f = _relGetFiltros();
+    const filtrosLinha = _relFiltroLabel();
+    const logoFornecedorUrl = _relLogoFornecedor(f.fFab);
+
+    let algumComDados = false;
+    tipos.forEach((tipo, idx) => {
+      if (idx > 0) doc.addPage();
+      const linhas = tipo.dataFn(f);
+      if (linhas.length) algumComDados = true;
+      _relDesenharRelatorioPDF(doc, tipo, linhas, filtrosLinha, f.fFab, logoFornecedorUrl);
+    });
+
+    if (!algumComDados) { showToast('⚠️ Nenhum dado encontrado para os filtros selecionados.', '#92400e'); return; }
+
+    _relRodapePDF(doc);
+    doc.save('Relatorios_ControleDeValidade.pdf');
+    showToast('📄 Relatório(s) em PDF gerado(s) com sucesso!', '#166534');
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ Erro ao gerar PDF: ' + e.message, '#92400e');
+  }
+}
+
+function _relDesenharRelatorioPDF(doc, tipo, linhas, filtrosLinha, fabricaSel, logoFornecedorUrl) {
+  const margemEsq  = 14;
+  const larguraPag = doc.internal.pageSize.getWidth();
+  const alturaPag  = doc.internal.pageSize.getHeight();
+  const NAVY = [14,40,65];
+
+  const desenharHeader = () => {
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.rect(0, 0, larguraPag, 24, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont(undefined, 'bold'); doc.setFontSize(15);
+    doc.text('COMPARTILHAR VENDAS E PROMO', margemEsq, 11);
+    doc.setFont(undefined, 'normal'); doc.setFontSize(9.5);
+    doc.setTextColor(147,197,253);
+    doc.text('RELATÓRIO: ' + tipo.nome.toUpperCase(), margemEsq, 17);
+
+    if (fabricaSel) {
+      const boxW = 46, boxH = 16, boxX = larguraPag - margemEsq - boxW, boxY = 4;
+      if (logoFornecedorUrl) {
+        try { doc.addImage(logoFornecedorUrl, boxX, boxY, boxW, boxH); } catch(e) {
+          doc.setFillColor(255,255,255); doc.rect(boxX, boxY, boxW, boxH, 'F');
+        }
+      } else {
+        doc.setFillColor(255,255,255);
+        doc.roundedRect ? doc.roundedRect(boxX, boxY, boxW, boxH, 2, 2, 'F') : doc.rect(boxX, boxY, boxW, boxH, 'F');
+        doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+        doc.setFont(undefined, 'bold'); doc.setFontSize(9.5);
+        doc.text(fabricaSel, boxX + boxW/2, boxY + boxH/2 + 1.5, { align:'center' });
+      }
+    }
+
+    doc.setTextColor(51,65,85);
+    doc.setFont(undefined, 'normal'); doc.setFontSize(8.5);
+    doc.text(filtrosLinha, margemEsq, 30);
+  };
+
+  const desenharTabela = (topY) => {
+    const headers = tipo.headers;
+    const larguraUtil = larguraPag - margemEsq*2;
+    const somaLarguras = (tipo.widthsPDF||[]).reduce((s,w)=>s+w,0) || larguraUtil;
+    const escala = larguraUtil / somaLarguras;
+    const colWidths = (tipo.widthsPDF || headers.map(()=>larguraUtil/headers.length)).map(w => w * escala);
+    const rowH = 7, headerH = 8;
+    let y = topY;
+
+    const desenharCabecalho = () => {
+      let x = margemEsq;
+      doc.setFont(undefined, 'bold'); doc.setFontSize(8);
+      headers.forEach((h, i) => {
+        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+        doc.rect(x, y, colWidths[i], headerH, 'F');
+        doc.setTextColor(255,255,255);
+        doc.text(h, x + 2, y + headerH/2 + 1.2);
+        x += colWidths[i];
+      });
+      y += headerH;
+    };
+    desenharCabecalho();
+
+    doc.setFont(undefined, 'normal'); doc.setFontSize(8);
+    linhas.forEach((r, idx) => {
+      if (y + rowH > alturaPag - 14) {
+        doc.addPage();
+        desenharHeader();
+        y = 36;
+        desenharCabecalho();
+      }
+      const vals = tipo.row(r);
+      let x = margemEsq;
+      if (idx % 2 === 1) { doc.setFillColor(241,245,249); doc.rect(margemEsq, y, colWidths.reduce((s,w)=>s+w,0), rowH, 'F'); }
+      vals.forEach((v, i) => {
+        doc.setDrawColor(226,232,240);
+        doc.rect(x, y, colWidths[i], rowH);
+        if (tipo.statusCol != null && i === tipo.statusCol) {
+          const pill = tipo.statusFn(r);
+          const pillW = colWidths[i] - 4, pillH = 4.6;
+          doc.setFillColor(pill.bgPdf[0], pill.bgPdf[1], pill.bgPdf[2]);
+          if (doc.roundedRect) doc.roundedRect(x + 2, y + (rowH-pillH)/2, pillW, pillH, 1.5, 1.5, 'F');
+          else doc.rect(x + 2, y + (rowH-pillH)/2, pillW, pillH, 'F');
+          doc.setTextColor(pill.txPdf[0], pill.txPdf[1], pill.txPdf[2]);
+          doc.setFont(undefined, 'bold'); doc.setFontSize(7.2);
+          doc.text(pill.label, x + colWidths[i]/2, y + rowH/2 + 1.2, { align:'center' });
+          doc.setFont(undefined, 'normal'); doc.setFontSize(8);
+        } else {
+          doc.setTextColor(30,41,59);
+          const texto = doc.splitTextToSize(String(v ?? ''), colWidths[i]-3)[0] || '';
+          doc.text(texto, x + 2, y + rowH/2 + 1.2);
+        }
+        x += colWidths[i];
+      });
+      y += rowH;
+    });
+
+    if (!linhas.length) {
+      doc.setTextColor(148,163,184);
+      doc.setFont(undefined, 'italic'); doc.setFontSize(9);
+      doc.text('Nenhum registro encontrado para os filtros selecionados.', margemEsq, y + 8);
+      doc.setFont(undefined, 'normal');
+    }
+  };
+
+  desenharHeader();
+  desenharTabela(36);
+}
+
+// Aplica um rodapé (linha + numeração de página) em todas as páginas do documento final
+function _relRodapePDF(doc) {
+  const larguraPag = doc.internal.pageSize.getWidth();
+  const alturaPag  = doc.internal.pageSize.getHeight();
+  const totalPaginas = doc.internal.getNumberOfPages();
+  const agora = new Date().toLocaleString('pt-BR');
+  for (let p = 1; p <= totalPaginas; p++) {
+    doc.setPage(p);
+    doc.setFont(undefined, 'normal'); doc.setFontSize(7.5);
+    doc.setTextColor(100,100,100);
+    doc.text('Controle de Validade — Compartilhar Vendas e Promo · Exportado em ' + agora, 14, alturaPag - 6);
+    doc.text('Página ' + p + ' de ' + totalPaginas, larguraPag - 14, alturaPag - 6, { align: 'right' });
+  }
+}
 
 carregarDados();
 </script>
