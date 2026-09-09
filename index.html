@@ -15989,14 +15989,14 @@ function renderGraficoRuptura() {
 
   let tbHtml = lista.map(function(r) {
     return '<tr>' +
-      '<td style="font-weight:600">' + esc(r.produto) + '</td>' +
-      '<td>' + esc(r.loja) + '</td>' +
-      '<td><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
-      '<td>' + esc(r.rede||'—') + '</td>' +
-      '<td>' + fmtData(r.dataSaida) + '</td>' +
-      '<td>' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
-      '<td><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
-      '<td><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
+      '<td style="font-weight:600;white-space:nowrap">' + esc(r.produto) + '</td>' +
+      '<td style="white-space:nowrap">' + esc(r.loja) + '</td>' +
+      '<td style="white-space:nowrap"><span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600">' + esc(r.uf||'—') + '</span></td>' +
+      '<td style="white-space:nowrap">' + esc(r.rede||'—') + '</td>' +
+      '<td style="white-space:nowrap">' + fmtData(r.dataSaida) + '</td>' +
+      '<td style="white-space:nowrap">' + (r.ativa ? '<span style="color:#94a3b8;font-size:11px">— sem registro novo</span>' : fmtData(r.dataFim)) + '</td>' +
+      '<td style="white-space:nowrap"><span style="background:' + (r.dias>20?'#fee2e2':'#fef3c7') + ';color:' + (r.dias>20?'#991b1b':'#92400e') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + r.dias + 'd</span></td>' +
+      '<td style="white-space:nowrap"><span style="background:' + (r.ativa?'#fee2e2':'#d1fae5') + ';color:' + (r.ativa?'#991b1b':'#065f46') + ';padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600">' + (r.ativa?'● Ativa':'✓ Resolvida') + '</span></td>' +
     '</tr>';
   }).join('');
 
@@ -16006,17 +16006,17 @@ function renderGraficoRuptura() {
       tlHtml +
       (lista.length>10 ? '<div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:4px">+ ' + (lista.length-10) + ' ocorrências adicionais na tabela abaixo</div>' : '') +
     '</div>' +
-    '<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">' +
-      '<table style="width:100%;border-collapse:collapse">' +
+    '<div style="border:1px solid #e2e8f0;border-radius:10px;overflow-x:auto">' +
+      '<table style="width:100%;min-width:760px;border-collapse:collapse">' +
         '<thead><tr style="background:#f8fafc">' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Produto</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Loja</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">UF</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Rede</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Último registro (saída)</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Próxima entrada</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Dias ruptura</th>' +
-          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left">Situação</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Produto</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Loja</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">UF</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Rede</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Último registro (saída)</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Próxima entrada</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Dias ruptura</th>' +
+          '<th style="font-size:10px;font-weight:600;color:#64748b;padding:7px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap">Situação</th>' +
         '</tr></thead>' +
         '<tbody>' + tbHtml + '</tbody>' +
       '</table>' +
