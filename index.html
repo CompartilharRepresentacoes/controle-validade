@@ -1809,6 +1809,17 @@
           </div>
         </div>
       </div>
+      <!-- Slot da barra de abas dos gráficos (movida via JS em setGraficoTab) -->
+      <div id="gTabSlot-dist">
+        <!-- ── Barra de abas dos gráficos ── -->
+        <div id="graficosTabBar" style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;margin-bottom:12px">
+          <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s">Distribuição</button>
+          <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ranking</button>
+          <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Movimentações</button>
+          <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ruptura</button>
+          <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Concorrência</button>
+        </div>
+      </div>
       <!-- Cabeçalho de filtros ativos -->
       <div id="headerFiltrosDist" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:var(--color-background-secondary);border-radius:10px;margin-bottom:10px;border:0.5px solid var(--color-border-tertiary)"></div>
       <!-- Rede + Métricas clicáveis -->
@@ -1883,6 +1894,9 @@
           </div>
         </div>
 
+        <!-- Slot da barra de abas dos gráficos (movida via JS em setGraficoTab) -->
+        <div id="gTabSlot-rank"></div>
+
         <!-- Select secundário -->
         <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
           <span id="rSelectLabel" style="font-size:12px;color:#64748b;white-space:nowrap;flex-shrink:0">Produto:</span>
@@ -1948,6 +1962,9 @@
           <div class="flex flex-col gap-1"><label class="text-xs text-slate-500">Produto</label><select id="mProduto" onchange="renderMovChart()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select></div>
         </div>
       </div>
+
+      <!-- Slot da barra de abas dos gráficos (movida via JS em setGraficoTab) -->
+      <div id="gTabSlot-mov"></div>
 
       <!-- Cabeçalho de filtros ativos -->
       <div id="headerFiltrosMov" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:var(--color-background-secondary);border-radius:10px;margin-bottom:10px;border:0.5px solid var(--color-border-tertiary)"></div>
@@ -2060,6 +2077,9 @@
         </div>
       </div>
 
+      <!-- Slot da barra de abas dos gráficos (movida via JS em setGraficoTab) -->
+      <div id="gTabSlot-conc"></div>
+
       <!-- Cabeçalho Concorrência -->
       <div id="concChartHeader" style="display:none;flex-direction:column;gap:10px;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px">
@@ -2122,6 +2142,8 @@
               <i class="ti ti-x" style="font-size:13px" aria-hidden="true"></i> Limpar filtro
             </button>
           </div>
+          <!-- Slot da barra de abas dos gráficos (movida via JS em setGraficoTab) -->
+          <div id="gTabSlot-rupt"></div>
           <!-- Cards de resumo -->
           <div id="gRuptStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
           <!-- Legenda -->
@@ -2135,14 +2157,6 @@
         </div>
       </div><!-- /tabPanelRupt -->
 
-      <!-- ── Barra de abas dos gráficos ── -->
-      <div style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;margin-top:12px">
-        <button id="gTab-dist" onclick="setGraficoTab('dist')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(30,58,95,.35);transition:all .2s">Distribuição</button>
-        <button id="gTab-rank" onclick="setGraficoTab('rank')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ranking</button>
-        <button id="gTab-mov"  onclick="setGraficoTab('mov')"  style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Movimentações</button>
-        <button id="gTab-rupt" onclick="setGraficoTab('rupt')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Ruptura</button>
-        <button id="gTab-conc" onclick="setGraficoTab('conc')" style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;font-weight:600;transition:all .2s">Concorrência</button>
-      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
@@ -9028,6 +9042,10 @@ function setGraficoTab(tab) {
     const el = document.getElementById(id);
     if (el) el.style.display = k === tab ? '' : 'none';
   });
+  // Move a barra de abas para logo após o filtro da aba selecionada
+  const slotBar = document.getElementById('gTabSlot-' + tab);
+  const barra    = document.getElementById('graficosTabBar');
+  if (slotBar && barra) slotBar.appendChild(barra);
   ['dist','rank','mov','rupt','conc'].forEach(k => {
     const btn = document.getElementById('gTab-'+k);
     if (!btn) return;
