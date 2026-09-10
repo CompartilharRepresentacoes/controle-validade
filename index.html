@@ -3681,7 +3681,7 @@
         <span>Ao confirmar, a loja ficará preenchida para o próximo cadastro.</span>
       </div>
       <div class="flex gap-2">
-        <button onclick="_confirmarLancamentoSIM()" class="flex-1 text-white font-semibold text-sm rounded-xl py-3 transition flex items-center justify-center gap-2" style="background:#16a34a">
+        <button id="btnConfirmarLancamentoSim" onclick="_confirmarLancamentoSIM()" class="flex-1 text-white font-semibold text-sm rounded-xl py-3 transition flex items-center justify-center gap-2" style="background:#16a34a">
           <i class="ti ti-check" style="font-size:16px" aria-hidden="true"></i> Sim, salvar
         </button>
         <button onclick="_confirmarLancamentoNAO()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl py-3 transition flex items-center justify-center gap-2">
@@ -7060,12 +7060,21 @@ function _abrirConfirmacaoLancamento(p) {
   document.getElementById('modalConfirmarLancamento').classList.remove('hidden');
 }
 
+let _confirmandoLancamento = false;
+
 async function _confirmarLancamentoSIM() {
-  if (!_pendingConfirmacao) return;
+  if (!_pendingConfirmacao || _confirmandoLancamento) return;
+  _confirmandoLancamento = true;
+  const btnSim = document.getElementById('btnConfirmarLancamentoSim');
+  if (btnSim) { btnSim.disabled = true; btnSim.style.opacity = '0.6'; btnSim.style.pointerEvents = 'none'; }
   const p = _pendingConfirmacao;
   produtos.push(p);
   FS_PRODUTOS.doc(String(p.id)).set(p);
   renderTabela();
+  // Fecha o modal já aqui — antes de aguardar a geolocalização (pode levar alguns
+  // segundos) — para impedir um segundo clique em "Sim, salvar" nesse intervalo,
+  // que gerava um registro duplicado no Histórico mesmo o produto sendo salvo uma única vez.
+  document.getElementById('modalConfirmarLancamento').classList.add('hidden');
   // Produto já vencido no lançamento: não registra no histórico
   const _hojeConf = new Date().toISOString().slice(0,10);
   if (!p.validade || p.validade >= _hojeConf) {
@@ -7073,7 +7082,6 @@ async function _confirmarLancamentoSIM() {
     const geoInfo = sessao?.role === 'promotor' ? await _capturarPresencaLoja(lojaObj) : null;
     _registrarMovimento('entrada', p.quantidade, p, 'novo', null, geoInfo);
   }
-  document.getElementById('modalConfirmarLancamento').classList.add('hidden');
   limparForm();
   if (_lojaSnapshot && _lojaSnapshot.nome) {
     document.getElementById('f_loja').value = _lojaSnapshot.nome;
@@ -7088,6 +7096,8 @@ async function _confirmarLancamentoSIM() {
   }
   _pendingConfirmacao = null;
   _lojaSnapshot = null;
+  _confirmandoLancamento = false;
+  if (btnSim) { btnSim.disabled = false; btnSim.style.opacity = ''; btnSim.style.pointerEvents = ''; }
   showToast('✅ Produto salvo!', '#166534');
   setTimeout(() => { const b = document.getElementById('f_produto_busca'); if (b) b.focus(); }, 100);
 }
