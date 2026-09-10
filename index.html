@@ -12595,6 +12595,7 @@ function renderSellOut() {
       // Buscar item no catálogo para pegar und e codigosRedes
       const cat = catalogo.find(c => normTxt(c.nome) === normTxt(p.produto||'') && normTxt(c.fabrica||'') === normTxt(p.fabrica||''));
       grupos[key] = {
+        keyProd: keyProd,
         nome:    p.produto || '',
         fabrica: p.fabrica || '',
         und:     cat?.und   || p.und || '',
@@ -12615,10 +12616,17 @@ function renderSellOut() {
   });
 
   // Filtrar grupos: manter somente produtos com código de rede (quando rede selecionada)
+  // No modo "Por Loja", ordena primeiro por produto (keyProd) para manter as lojas de um
+  // mesmo produto sempre agrupadas — mesmo quando duas datas de vencimento coincidem.
   const lista = Object.values(grupos).filter(g => {
     if (redeFiltro && !g.codRede) return false;
     return true;
-  }).sort((a,b) => a.minData?.localeCompare(b.minData||'') || (a.loja||'').localeCompare(b.loja||'','pt-BR'));
+  }).sort((a,b) => {
+    if (modo === 'loja') {
+      return (a.minData||'').localeCompare(b.minData||'') || a.keyProd.localeCompare(b.keyProd) || (a.loja||'').localeCompare(b.loja||'','pt-BR');
+    }
+    return (a.minData||'').localeCompare(b.minData||'');
+  });
 
   if (!lista.length) {
     tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">Nenhum produto com código de rede cadastrado nos filtros selecionados.</td></tr>`;
@@ -12626,22 +12634,69 @@ function renderSellOut() {
     return;
   }
 
-  if (contEl) contEl.textContent = lista.length + ' produto' + (lista.length !== 1 ? 's' : '');
-  tbody.innerHTML = lista.map((g, i) => {
+  // No modo "Por Loja", pré-calcula o total (soma de todas as lojas) de cada produto,
+  // para desenhar uma linha-resumo antes das linhas de loja daquele produto.
+  const totaisPorProduto = {};
+  if (modo === 'loja') {
+    lista.forEach(g => {
+      if (!totaisPorProduto[g.keyProd]) {
+        totaisPorProduto[g.keyProd] = { nome: g.nome, fabrica: g.fabrica, codRede: g.codRede, und: g.und, qtde: 0, minData: g.minData, preco: 0, count: 0 };
+      }
+      const t = totaisPorProduto[g.keyProd];
+      t.qtde += g.qtde;
+      t.count++;
+      if (g.preco > t.preco) t.preco = g.preco;
+    });
+  }
+
+  const totalProdutos = modo === 'loja' ? Object.keys(totaisPorProduto).length : lista.length;
+  if (contEl) contEl.textContent = totalProdutos + ' produto' + (totalProdutos !== 1 ? 's' : '') + (modo === 'loja' ? ' · ' + lista.length + ' loja' + (lista.length !== 1 ? 's' : '') : '');
+
+  let html = '';
+  let lastKeyProd = null;
+  let grupoIdx = -1;
+  lista.forEach((g, i) => {
     const dias = g.minData ? diasRestantes(g.minData) : null;
     const corData = dias !== null && dias <= 20 ? '#d97706' : '#16a34a';
     const qtdeStr = Number.isInteger(g.qtde) ? g.qtde : g.qtde.toFixed(1);
+
+    if (modo === 'loja' && g.keyProd !== lastKeyProd) {
+      lastKeyProd = g.keyProd;
+      grupoIdx++;
+      const t = totaisPorProduto[g.keyProd];
+      const diasT = t.minData ? diasRestantes(t.minData) : null;
+      const corDataT = diasT !== null && diasT <= 20 ? '#d97706' : '#16a34a';
+      const qtdeStrT = Number.isInteger(t.qtde) ? t.qtde : t.qtde.toFixed(1);
+      html += `<tr style="background:#eef2f9;border-top:1.5px solid #cbd5e1;border-bottom:1px solid #cbd5e1">
+        <td style="padding:7px 10px">
+          <input type="checkbox" class="so-cb-group" data-kp="${grupoIdx}" checked onchange="_soToggleGrupoProduto(${grupoIdx}, this.checked)" style="accent-color:#1e3a5f;width:14px;height:14px" />
+        </td>
+        <td style="padding:7px 10px;font-weight:700;color:#1e3a5f;white-space:nowrap">${esc(t.codRede||'—')}</td>
+        <td style="padding:7px 10px;font-weight:700;color:#0e2841;font-size:12.5px">${esc(t.nome)} <span style="background:#1e3a5f;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:8px;letter-spacing:.3px">TOTAL · ${t.count} LOJA${t.count!==1?'S':''}</span></td>
+        <td></td>
+        <td style="padding:7px 10px;color:#64748b;font-size:11px;font-weight:700">${esc(t.fabrica)}</td>
+        <td style="padding:7px 10px;text-align:center"><span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:700;border-radius:4px;padding:2px 7px">${esc(t.und||'—')}</span></td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700">${qtdeStrT}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700;color:${corDataT}">${t.minData ? fmtData(t.minData) : '—'}</td>
+        <td style="padding:7px 10px;text-align:center;font-weight:700">${t.preco ? 'R$ ' + t.preco.toFixed(2).replace('.',',') : '—'}</td>
+      </tr>`;
+    }
+
     const tdLoja = modo === 'loja'
       ? `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px"><span style="font-weight:600">${esc(g.loja||'—')}</span>${g.uf ? ' <span style="background:#f1f5f9;color:#475569;padding:1px 6px;border-radius:20px;font-size:9.5px;font-weight:600">'+esc(g.uf)+'</span>' : ''}</td>`
       : '';
-    return `<tr style="${i%2===1?'background:#f8fafc':''}">
+    const nomeCell = modo === 'loja'
+      ? `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px;color:#94a3b8"><span style="color:#cbd5e1;font-weight:700;margin-right:2px">↳</span></td>`
+      : `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px">${esc(g.nome)}</td>`;
+
+    html += `<tr style="${i%2===1?'background:#f8fafc':''}">
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0">
-        <input type="checkbox" class="so-cb" data-idx="${i}" checked style="accent-color:#1e3a5f;width:14px;height:14px" />
+        <input type="checkbox" class="so-cb" data-idx="${i}" data-kp="${grupoIdx}" checked style="accent-color:#1e3a5f;width:14px;height:14px" />
       </td>
-      <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-weight:700;color:#1e3a5f;white-space:nowrap">${esc(g.codRede||'—')}</td>
-      <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px">${esc(g.nome)}</td>
+      <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-weight:700;color:#1e3a5f;white-space:nowrap">${modo === 'loja' ? '' : esc(g.codRede||'—')}</td>
+      ${nomeCell}
       ${tdLoja}
-      <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;color:#64748b;font-size:11px">${esc(g.fabrica)}</td>
+      <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;color:#64748b;font-size:11px">${modo === 'loja' ? '' : esc(g.fabrica)}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;text-align:center">
         <span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:700;border-radius:4px;padding:2px 7px">${esc(g.und||'—')}</span>
       </td>
@@ -12649,11 +12704,16 @@ function renderSellOut() {
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;text-align:center;font-weight:700;color:${corData}">${g.minData ? fmtData(g.minData) : '—'}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;text-align:center">${g.preco ? 'R$ ' + g.preco.toFixed(2).replace('.',',') : '—'}</td>
     </tr>`;
-  }).join('');
+  });
+  tbody.innerHTML = html;
 
   // Sincronizar "selecionar todos"
   const allCb = document.getElementById('soCheckAll');
   if (allCb) allCb.checked = true;
+}
+
+function _soToggleGrupoProduto(kp, checked) {
+  document.querySelectorAll('#soTableBody .so-cb[data-kp="'+kp+'"]').forEach(cb => cb.checked = checked);
 }
 
 async function gerarExcelSellOut() {
@@ -12698,6 +12758,7 @@ async function gerarExcelSellOut() {
     if (!grupos[key]) {
       const cat = catalogo.find(c => normTxt(c.nome) === normTxt(p.produto||'') && normTxt(c.fabrica||'') === normTxt(p.fabrica||''));
       grupos[key] = {
+        keyProd: keyProd,
         nome:p.produto||'', fabrica:p.fabrica||'', und:cat?.und||p.und||'',
         codRede:cat?(cat.codigosRedes?.[redeFiltro]||''):'', qtde:0, minData:minDataPorProduto[keyProd], preco:0,
         loja: modo === 'loja' ? (p.loja||'') : '',
@@ -12711,9 +12772,16 @@ async function gerarExcelSellOut() {
     grupos[key].lancamentos.push(p);
   });
 
+  // Mesma ordenação usada em renderSellOut — precisa bater exatamente, pois os checkboxes
+  // marcados referenciam o índice desta lista (data-idx).
   let lista = Object.values(grupos)
     .filter(g => !redeFiltro || g.codRede)
-    .sort((a,b) => a.minData?.localeCompare(b.minData||'') || (a.loja||'').localeCompare(b.loja||'','pt-BR'));
+    .sort((a,b) => {
+      if (modo === 'loja') {
+        return (a.minData||'').localeCompare(b.minData||'') || a.keyProd.localeCompare(b.keyProd) || (a.loja||'').localeCompare(b.loja||'','pt-BR');
+      }
+      return (a.minData||'').localeCompare(b.minData||'');
+    });
 
   // Filtrar só os selecionados (por índice)
   const idxSel = new Set([...cbs].map(cb => Number(cb.dataset.idx)));
