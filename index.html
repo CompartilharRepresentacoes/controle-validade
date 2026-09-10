@@ -1554,6 +1554,19 @@
               <select id="soVendedor" onchange="_soOnVendedorChange()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Todos</option></select>
             </div>
           </div>
+          <div class="mb-3">
+            <label class="text-xs font-medium text-slate-600" style="display:block;margin-bottom:6px">Agrupar por</label>
+            <div style="background:#e8edf2;padding:3px;border-radius:10px;display:flex;gap:2px;max-width:420px">
+              <button type="button" id="soModoRede" onclick="_soSetModoAgrupamento('rede')"
+                style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:#1e3a5f;color:#fff;box-shadow:0 2px 6px rgba(30,58,95,.35)">
+                <i class="ti ti-building-store" style="font-size:14px" aria-hidden="true"></i> Por Rede / UF
+              </button>
+              <button type="button" id="soModoLoja" onclick="_soSetModoAgrupamento('loja')"
+                style="flex:1;padding:9px 8px;border:none;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;color:#64748b">
+                <i class="ti ti-building-warehouse" style="font-size:14px" aria-hidden="true"></i> Por Loja
+              </button>
+            </div>
+          </div>
           <div>
             <label class="text-xs font-medium text-slate-600" style="display:block;margin-bottom:6px">UF — clique para selecionar (vazio = todas)</label>
             <div id="soUFChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
@@ -1586,6 +1599,7 @@
                 </th>
                 <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;border-bottom:0.5px solid #3b4a6b">COD. REDE</th>
                 <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;border-bottom:0.5px solid #3b4a6b">Produto</th>
+                <th id="soThLoja" style="display:none;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;border-bottom:0.5px solid #3b4a6b">Loja (UF)</th>
                 <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;border-bottom:0.5px solid #3b4a6b">Fábrica</th>
                 <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;border-bottom:0.5px solid #3b4a6b">UND</th>
                 <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;border-bottom:0.5px solid #3b4a6b">Qtde Total</th>
@@ -12432,6 +12446,23 @@ function fecharRankDetalhe() {
 const _ALL_UFS_SO = ['AL','BA','PB','PE','RN','SE'];
 let _soUFs = new Set(_ALL_UFS_SO); // UFs selecionadas
 let _soVendSOInicializado = false; // evita resetar as UFs do vendedor a cada vez que ele reabre a aba
+let _soModoAgrupamento = 'rede'; // 'rede' (padrão, como sempre foi) | 'loja' (uma linha por loja)
+
+function _soToggleModoBtn(btn, on) {
+  if (!btn) return;
+  btn.style.background = on ? '#1e3a5f' : 'transparent';
+  btn.style.color      = on ? '#fff'    : '#64748b';
+  btn.style.boxShadow  = on ? '0 2px 6px rgba(30,58,95,.35)' : 'none';
+}
+
+function _soSetModoAgrupamento(modo) {
+  _soModoAgrupamento = modo;
+  _soToggleModoBtn(document.getElementById('soModoRede'), modo === 'rede');
+  _soToggleModoBtn(document.getElementById('soModoLoja'), modo === 'loja');
+  const thLoja = document.getElementById('soThLoja');
+  if (thLoja) thLoja.style.display = modo === 'loja' ? '' : 'none';
+  renderSellOut();
+}
 
 function toggleFiltrosSellOut() {
   const body    = document.getElementById('filtrosSellOutBody');
@@ -12538,16 +12569,28 @@ function renderSellOut() {
     return true;
   });
 
+  const modo = _soModoAgrupamento;
+  const totalCols = modo === 'loja' ? 9 : 8;
+
   if (!lancFiltrados.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">Nenhum produto encontrado com os filtros selecionados.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">Nenhum produto encontrado com os filtros selecionados.</td></tr>`;
     if (contEl) contEl.textContent = '0 produtos';
     return;
   }
 
-  // Agrupar por produto (usando nome normalizado + fábrica)
+  // Vencimento único por produto (o menor entre TODAS as lojas), usado em ambos os modos —
+  // mesmo separando por loja, cada produto mantém uma única data de vencimento.
+  const minDataPorProduto = {};
+  lancFiltrados.forEach(p => {
+    const keyProd = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    if (!minDataPorProduto[keyProd] || p.validade < minDataPorProduto[keyProd]) minDataPorProduto[keyProd] = p.validade;
+  });
+
+  // Agrupar por produto (e também por loja, quando o modo "Por Loja" está ativo)
   const grupos = {};
   lancFiltrados.forEach(p => {
-    const key = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    const keyProd = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    const key = modo === 'loja' ? (keyProd + '|' + normTxt(p.loja || '')) : keyProd;
     if (!grupos[key]) {
       // Buscar item no catálogo para pegar und e codigosRedes
       const cat = catalogo.find(c => normTxt(c.nome) === normTxt(p.produto||'') && normTxt(c.fabrica||'') === normTxt(p.fabrica||''));
@@ -12558,13 +12601,15 @@ function renderSellOut() {
         codRede: cat ? (cat.codigosRedes?.[redeFiltro] || '') : '',
         cat:     cat,
         qtde:    0,
-        minData: null,
+        minData: minDataPorProduto[keyProd],
         preco:   0,
+        loja:    modo === 'loja' ? (p.loja || '') : '',
+        uf:      modo === 'loja' ? (p.uf   || '') : '',
+        rede:    modo === 'loja' ? (lojaRedeMap[normTxt(p.loja||'')] || '') : '',
         lancamentos: []
       };
     }
     grupos[key].qtde += Number(p.quantidade) || 0;
-    if (!grupos[key].minData || p.validade < grupos[key].minData) grupos[key].minData = p.validade;
     if (p.preco && Number(p.preco) > grupos[key].preco) grupos[key].preco = Number(p.preco);
     grupos[key].lancamentos.push(p);
   });
@@ -12573,10 +12618,10 @@ function renderSellOut() {
   const lista = Object.values(grupos).filter(g => {
     if (redeFiltro && !g.codRede) return false;
     return true;
-  }).sort((a,b) => a.minData?.localeCompare(b.minData||'') || 0);
+  }).sort((a,b) => a.minData?.localeCompare(b.minData||'') || (a.loja||'').localeCompare(b.loja||'','pt-BR'));
 
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">Nenhum produto com código de rede cadastrado nos filtros selecionados.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">Nenhum produto com código de rede cadastrado nos filtros selecionados.</td></tr>`;
     if (contEl) contEl.textContent = '0 produtos';
     return;
   }
@@ -12586,12 +12631,16 @@ function renderSellOut() {
     const dias = g.minData ? diasRestantes(g.minData) : null;
     const corData = dias !== null && dias <= 20 ? '#d97706' : '#16a34a';
     const qtdeStr = Number.isInteger(g.qtde) ? g.qtde : g.qtde.toFixed(1);
+    const tdLoja = modo === 'loja'
+      ? `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px"><span style="font-weight:600">${esc(g.loja||'—')}</span>${g.uf ? ' <span style="background:#f1f5f9;color:#475569;padding:1px 6px;border-radius:20px;font-size:9.5px;font-weight:600">'+esc(g.uf)+'</span>' : ''}</td>`
+      : '';
     return `<tr style="${i%2===1?'background:#f8fafc':''}">
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0">
         <input type="checkbox" class="so-cb" data-idx="${i}" checked style="accent-color:#1e3a5f;width:14px;height:14px" />
       </td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-weight:700;color:#1e3a5f;white-space:nowrap">${esc(g.codRede||'—')}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px">${esc(g.nome)}</td>
+      ${tdLoja}
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;color:#64748b;font-size:11px">${esc(g.fabrica)}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;text-align:center">
         <span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:700;border-radius:4px;padding:2px 7px">${esc(g.und||'—')}</span>
@@ -12633,21 +12682,38 @@ async function gerarExcelSellOut() {
     return true;
   });
 
+  const modo = _soModoAgrupamento;
+
+  // Vencimento único por produto (o menor entre TODAS as lojas) — igual ao renderSellOut
+  const minDataPorProduto = {};
+  lancFiltrados.forEach(p => {
+    const keyProd = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    if (!minDataPorProduto[keyProd] || p.validade < minDataPorProduto[keyProd]) minDataPorProduto[keyProd] = p.validade;
+  });
+
   const grupos = {};
   lancFiltrados.forEach(p => {
-    const key = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    const keyProd = normTxt(p.produto || '') + '|' + normTxt(p.fabrica || '');
+    const key = modo === 'loja' ? (keyProd + '|' + normTxt(p.loja || '')) : keyProd;
     if (!grupos[key]) {
       const cat = catalogo.find(c => normTxt(c.nome) === normTxt(p.produto||'') && normTxt(c.fabrica||'') === normTxt(p.fabrica||''));
-      grupos[key] = { nome:p.produto||'', fabrica:p.fabrica||'', und:cat?.und||p.und||'', codRede:cat?(cat.codigosRedes?.[redeFiltro]||''):'', qtde:0, minData:null, preco:0 };
+      grupos[key] = {
+        nome:p.produto||'', fabrica:p.fabrica||'', und:cat?.und||p.und||'',
+        codRede:cat?(cat.codigosRedes?.[redeFiltro]||''):'', qtde:0, minData:minDataPorProduto[keyProd], preco:0,
+        loja: modo === 'loja' ? (p.loja||'') : '',
+        uf:   modo === 'loja' ? (p.uf||'')   : '',
+        rede: modo === 'loja' ? (lojaRedeMap[normTxt(p.loja||'')] || '') : '',
+        lancamentos: [],
+      };
     }
     grupos[key].qtde += Number(p.quantidade)||0;
-    if (!grupos[key].minData || p.validade < grupos[key].minData) grupos[key].minData = p.validade;
     if (p.preco && Number(p.preco) > grupos[key].preco) grupos[key].preco = Number(p.preco);
+    grupos[key].lancamentos.push(p);
   });
 
   let lista = Object.values(grupos)
     .filter(g => !redeFiltro || g.codRede)
-    .sort((a,b) => a.minData?.localeCompare(b.minData||'')||0);
+    .sort((a,b) => a.minData?.localeCompare(b.minData||'') || (a.loja||'').localeCompare(b.loja||'','pt-BR'));
 
   // Filtrar só os selecionados (por índice)
   const idxSel = new Set([...cbs].map(cb => Number(cb.dataset.idx)));
@@ -12726,9 +12792,11 @@ async function gerarExcelSellOut() {
     const undSuffix = g.und ? ` "${g.und}"` : '';
     const precoBR  = g.preco ? parseFloat(g.preco.toFixed(2)) : null;
     const vencFmt  = g.minData ? fmtData(g.minData) : '';
+    const clienteCell = modo === 'loja' ? (g.rede || cliente) : cliente;
+    const lojasCell   = modo === 'loja' ? (g.loja || '') + (g.uf ? ' (' + g.uf + ')' : '') : ufsStr;
     const r = ws.addRow([
-      cliente,
-      ufsStr,
+      clienteCell,
+      lojasCell,
       g.codRede || '',
       g.nome,
       null,      // CUSTO
@@ -12764,7 +12832,7 @@ async function gerarExcelSellOut() {
 
   // Linha de totais — borda SOMENTE em J (col 10) e K (col 11)
   const lastDataRow = 6 + lista.length;
-  const totRow = ws.addRow([null,null,null,null,null,null,null,null,null,'TOTAL',{ formula:`SUMPRODUCT((K7:K${lastDataRow})*1)` }]);
+  const totRow = ws.addRow([null,null,null,null,null,null,null,null,null,'TOTAL',{ formula:`SUM(K7:K${lastDataRow})` }]);
   totRow.getCell(10).font      = { bold:true, color:{ argb:'FF1E3A8A' } };
   totRow.getCell(10).alignment = { horizontal:'right' };
   totRow.getCell(10).border    = allBorders;
