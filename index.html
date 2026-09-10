@@ -12667,12 +12667,12 @@ function renderSellOut() {
       const diasT = t.minData ? diasRestantes(t.minData) : null;
       const corDataT = diasT !== null && diasT <= 20 ? '#d97706' : '#16a34a';
       const qtdeStrT = Number.isInteger(t.qtde) ? t.qtde : t.qtde.toFixed(1);
-      html += `<tr style="background:#eef2f9;border-top:1.5px solid #cbd5e1;border-bottom:1px solid #cbd5e1">
-        <td style="padding:7px 10px">
+      html += `<tr class="so-total-row" style="background:#eef2f9;border-top:1.5px solid #cbd5e1;border-bottom:1px solid #cbd5e1;cursor:pointer" onclick="_soToggleGrupoAberto(this, ${grupoIdx})">
+        <td style="padding:7px 10px" onclick="event.stopPropagation()">
           <input type="checkbox" class="so-cb-group" data-kp="${grupoIdx}" checked onchange="_soToggleGrupoProduto(${grupoIdx}, this.checked)" style="accent-color:#1e3a5f;width:14px;height:14px" />
         </td>
         <td style="padding:7px 10px;font-weight:700;color:#1e3a5f;white-space:nowrap">${esc(t.codRede||'—')}</td>
-        <td style="padding:7px 10px;font-weight:700;color:#0e2841;font-size:12.5px">${esc(t.nome)} <span style="background:#1e3a5f;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:8px;letter-spacing:.3px">TOTAL · ${t.count} LOJA${t.count!==1?'S':''}</span></td>
+        <td style="padding:7px 10px;font-weight:700;color:#0e2841;font-size:12.5px"><span class="so-chev" style="display:inline-block;width:12px;color:#64748b;font-size:11px">▶</span> ${esc(t.nome)} <span style="background:#1e3a5f;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:8px;letter-spacing:.3px">TOTAL · ${t.count} LOJA${t.count!==1?'S':''}</span></td>
         <td></td>
         <td style="padding:7px 10px;color:#64748b;font-size:11px;font-weight:700">${esc(t.fabrica)}</td>
         <td style="padding:7px 10px;text-align:center"><span style="background:#eff6ff;color:#1e40af;font-size:10px;font-weight:700;border-radius:4px;padding:2px 7px">${esc(t.und||'—')}</span></td>
@@ -12689,7 +12689,9 @@ function renderSellOut() {
       ? `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px;color:#94a3b8"><span style="color:#cbd5e1;font-weight:700;margin-right:2px">↳</span></td>`
       : `<td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0;font-size:12px">${esc(g.nome)}</td>`;
 
-    html += `<tr style="${i%2===1?'background:#f8fafc':''}">
+    const trClass = modo === 'loja' ? 'so-loja-sub' : '';
+    const trStyle = (i%2===1?'background:#f8fafc;':'') + (modo === 'loja' ? 'display:none;' : '');
+    html += `<tr class="${trClass}" data-kp="${grupoIdx}" style="${trStyle}">
       <td style="padding:7px 10px;border-bottom:0.5px solid #e2e8f0">
         <input type="checkbox" class="so-cb" data-idx="${i}" data-kp="${grupoIdx}" checked style="accent-color:#1e3a5f;width:14px;height:14px" />
       </td>
@@ -12714,6 +12716,15 @@ function renderSellOut() {
 
 function _soToggleGrupoProduto(kp, checked) {
   document.querySelectorAll('#soTableBody .so-cb[data-kp="'+kp+'"]').forEach(cb => cb.checked = checked);
+}
+
+function _soToggleGrupoAberto(totalRowEl, kp) {
+  const rows = document.querySelectorAll('#soTableBody .so-loja-sub[data-kp="'+kp+'"]');
+  if (!rows.length) return;
+  const willOpen = rows[0].style.display === 'none';
+  rows.forEach(r => r.style.display = willOpen ? '' : 'none');
+  const chev = totalRowEl.querySelector('.so-chev');
+  if (chev) chev.textContent = willOpen ? '▼' : '▶';
 }
 
 async function gerarExcelSellOut() {
